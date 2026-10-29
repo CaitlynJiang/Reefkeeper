@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>珊瑚苗床 v2 设计稿</title>
+<style>
+  :root {
+    --bg: #F3F1EA; --card: #FFFDF8; --ink: #12313A; --soft: #4C6870; --line: #DCE3DD;
+    --teal: #1F7A70; --teal-bg: #DCEEEA; --coral: #D9644A; --coral-bg: #FBE3DA; --gold: #E0A030; --gold-bg: #FBF0D6;
+    --violet: #7A5CC8; --violet-bg: #ECE6F8;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 40px 24px 64px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 18px; }
+  h1 { font-size: 36px; line-height: 1.2; margin: 0; letter-spacing: 1px; }
+  h1 small { display: block; font-size: 15px; font-weight: 600; color: var(--teal); letter-spacing: 3px; margin-bottom: 6px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 2px 10px; border-radius: 999px; }
+  .tag.concept { background: var(--coral-bg); color: #9C3A25; }
+  .tag.plan { background: var(--teal-bg); color: var(--teal); }
+  .tag.now { background: #E6E9E7; color: #3F5258; }
+  h2 { font-size: 22px; margin: 44px 0 14px; display: flex; align-items: center; gap: 12px; }
+  h2 .n { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 15px; }
+  p.lead { color: var(--soft); margin: 0 0 18px; max-width: 900px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .card img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+  .card .body { padding: 14px 18px 18px; }
+  .card h3 { margin: 0 0 4px; font-size: 18px; }
+  .card p { margin: 0; color: var(--soft); font-size: 14.5px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .step { position: relative; }
+  .step .badge { position: absolute; top: 12px; left: 12px; background: var(--ink); color: #fff; font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 999px; }
+  .arrow { color: var(--coral); font-weight: 800; }
+  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .stats span { font-size: 12.5px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; color: var(--ink); }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; font-size: 15px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #E9EEEA; font-size: 13.5px; letter-spacing: .5px; }
+  tr:last-child td { border-bottom: none; }
+  .diagram { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+  .legend div { border-radius: 10px; padding: 8px 12px; font-size: 14px; }
+  .compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+  .compare .box { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 20px; }
+  .compare ul { margin: 6px 0 0; padding-left: 18px; color: var(--soft); }
+  .compare .big { font-size: 34px; color: var(--coral); font-weight: 800; }
+  code { font-family: Consolas, monospace; background: #E9EEEA; padding: 1px 6px; border-radius: 6px; font-size: 13.5px; }
+  footer { margin-top: 40px; color: var(--soft); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+  @media (max-width: 900px) { .grid3, .grid4, .grid2, .legend { grid-template-columns: 1fr 1fr; } .compare { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .grid3, .grid4, .grid2, .legend { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1><small>REEFKEEPER · CORAL RACK v2</small>珊瑚苗床重设计：底座 → 桌面珊瑚 → 附生珊瑚</h1>
+  <div><span class="tag concept">CONCEPT 概念渲染</span>&nbsp; <span class="tag plan">PLANNED 规划</span></div>
+</header>
+
+<h2><span class="n">0</span>为什么要改</h2>
+<div class="compare">
+  <div class="box"><span class="tag now">现在</span>
+    <ul>
+      <li>水平格栅 + 悬挂碎片：碎片挂在横杆<b>下方</b>，没有能承载东西的上表面</li>
+      <li>每个碎片是独立的点，彼此之间没有关系</li>
+      <li>整体是一个"工具架"，长大了也不会变成珊瑚礁</li>
+    </ul>
+  </div>
+  <div class="big">→</div>
+  <div class="box"><span class="tag plan">v2</span>
+    <ul>
+      <li>架子只提供<b>插槽</b>，真正的"地面"是长出来的<b>桌面珊瑚</b></li>
+      <li>台面会产生新插槽，其他珊瑚种在台面上 → 天然形成依赖和层次</li>
+      <li>长满后架子几乎被盖住，看起来就是一座珊瑚礁</li>
+    </ul>
+  </div>
+</div>
+<div class="grid2" style="margin-top:16px">
+  <div class="card"><div class="body"><h3>造型：一整块有机的"沉木"</h3>
+    <p>不再是钢管 + 混凝土底座。主干是 S 形扭转的木质曲线，根系铺开压在沙上，枝杈先顺着主干长、再向外分开，所有分叉都融成一体，像雕刻出来的整块木头。枝杈末端是浅木托座，桌面珊瑚插在里面。</p></div></div>
+  <div class="card"><div class="body"><h3>颜色：低饱和深棕</h3>
+    <p>深胡桃色（底部 #3E2A1E → 顶部 #72503A），只有很淡的木纹明暗。架子只负责轮廓和结构，把颜色和视觉焦点都留给珊瑚；长满后几乎只露出主干的曲线。</p></div></div>
+</div>
+
+<h2><span class="n">1</span>核心逻辑：三层生长</h2>
+<p class="lead">以"阶梯塔"为例。玩家每一步都在给下一步创造位置：架子给桌面珊瑚位置，桌面珊瑚给其他珊瑚位置。</p>
+<div class="grid3">
+  <div class="card step"><span class="badge">① 架子底座</span><img src="growth_1_base.png" alt="只有底座和空插槽的阶梯塔">
+    <div class="body"><h3>只接受桌面珊瑚</h3><p>主干和枝杈末端的木托座是<b>桌面珊瑚插槽</b>（发光圈）。一开始能种的只有桌面珊瑚苗。</p></div></div>
+  <div class="card step"><span class="badge">② 桌面珊瑚</span><img src="growth_2_tables.png" alt="桌面珊瑚长成平台，台面出现插槽">
+    <div class="body"><h3>长成平台，台面开出新插槽</h3><p>桌面珊瑚 3 个阶段：小盘 → 中盘 → 大盘，台面插槽 <b>1 → 3 → 5</b>。最下层的大盘先长好，所以先开放。</p></div></div>
+  <div class="card step"><span class="badge">③ 附生珊瑚</span><img src="growth_3_full.png" alt="台面上种满管状、桶状、柱状、指状和分枝珊瑚">
+    <div class="body"><h3>在台面上种其他珊瑚</h3><p>管状、桶状、珊瑚虫柱、指状、分枝珊瑚种在台面插槽上；扇珊瑚挂在边缘和底面；海草自动围住底座。</p></div></div>
+</div>
+
+<h2><span class="n">2</span>台面插槽类型</h2>
+<p class="lead">每个桌面珊瑚不只提供台面，还提供<b>边缘</b>和<b>底面</b>位置，所以一块台面能同时容纳喜光和喜阴的物种，自然形成参考图里那种上下堆叠。</p>
+<div class="diagram">
+  <svg viewBox="0 0 1180 330" role="img" aria-label="桌面珊瑚侧视图：台面插槽、边缘插槽、底面插槽和底座外圈">
+    <!-- sand -->
+    <rect x="0" y="292" width="1180" height="38" fill="#E7E2CF"/>
+    <!-- base + post -->
+    <rect x="520" y="262" width="140" height="30" rx="8" fill="#9AA3A1"/>
+    <rect x="582" y="140" width="16" height="124" fill="#6D7A72"/>
+    <rect x="566" y="128" width="48" height="14" rx="4" fill="#6D7A72"/>
+    <!-- table coral -->
+    <path d="M574 128 C 574 110, 560 104, 470 100 C 420 98, 360 104, 330 112 Q 315 118 334 122 L 840 122 Q 862 118 850 112 C 820 104, 760 98, 710 100 C 620 104, 606 110, 606 128 Z" fill="#8DBE6A"/>
+    <path d="M330 112 C 420 92, 760 92, 850 112 C 840 100, 760 86, 590 86 C 420 86, 340 100, 330 112 Z" fill="#C4E583"/>
+    <!-- top sockets -->
+    <g fill="none" stroke="#E0A030" stroke-width="4">
+      <ellipse cx="430" cy="92" rx="22" ry="6"/><ellipse cx="520" cy="88" rx="22" ry="6"/><ellipse cx="590" cy="87" rx="22" ry="6"/>
+      <ellipse cx="660" cy="88" rx="22" ry="6"/><ellipse cx="750" cy="92" rx="22" ry="6"/>
+    </g>
+    <!-- upright corals -->
+    <rect x="508" y="30" width="26" height="58" rx="10" fill="#E44BC8"/><rect x="540" y="50" width="20" height="38" rx="8" fill="#FF8FB0"/>
+    <path d="M410 90 q -4 -40 10 -50 q 10 0 8 50 z M432 90 q 2 -34 14 -40 q 8 6 -2 40 z" fill="#F4A84A"/>
+    <rect x="642" y="38" width="38" height="50" rx="12" fill="#8FD9EA"/><circle cx="650" cy="36" r="9" fill="#F2678F"/><circle cx="666" cy="32" r="9" fill="#F2678F"/><circle cx="680" cy="38" r="8" fill="#F2678F"/>
+    <!-- rim fan -->
+    <path d="M846 112 L 930 40 Q 960 70 948 116 Z" fill="#EE6F5A" opacity=".9"/>
+    <circle cx="846" cy="114" r="8" fill="none" stroke="#7A5CC8" stroke-width="4"/>
+    <!-- under fan -->
+    <path d="M700 124 L 650 210 Q 700 228 748 210 Z" fill="#C2453F" opacity=".9"/>
+    <circle cx="700" cy="126" r="8" fill="none" stroke="#1F7A70" stroke-width="4"/>
+    <!-- shade -->
+    <path d="M330 122 L 850 122 L 900 292 L 280 292 Z" fill="#12313A" opacity=".06"/>
+    <!-- grass ring -->
+    <g stroke="#2E9FB8" stroke-width="5" stroke-linecap="round">
+      <path d="M470 292 q -6 -30 4 -52"/><path d="M490 292 q 4 -36 -6 -58"/><path d="M700 292 q -4 -40 6 -60"/><path d="M720 292 q 6 -30 -2 -48"/>
+    </g>
+    <circle cx="480" cy="250" r="8" fill="none" stroke="#D9644A" stroke-width="4"/>
+  </svg>
+  <div class="legend">
+    <div style="background:var(--gold-bg)"><b style="color:#9A6A10">● 台面插槽</b><br>直立珊瑚：管状、桶状、珊瑚虫柱、指状、分枝。数量随台面阶段 1/3/5。</div>
+    <div style="background:var(--violet-bg)"><b style="color:var(--violet)">● 边缘插槽</b><br>向外伸展：扇珊瑚、软珊瑚。决定外轮廓，参考图里的"翅膀"。</div>
+    <div style="background:var(--teal-bg)"><b style="color:var(--teal)">● 底面插槽</b><br>喜阴物种倒挂：扇珊瑚、海绵。只在台面足够大、有遮挡时出现。</div>
+    <div style="background:var(--coral-bg)"><b style="color:#9C3A25">● 底座外圈（自动）</b><br>海草、碎石、小珊瑚虫自动填充，玩家不用摆，负责"长好了"的感觉。</div>
+  </div>
+</div>
+
+<h2><span class="n">3</span>架子变体</h2>
+<p class="lead">同一套插槽规则，用不同骨架给出不同的空间形态。可以按解锁顺序或花园区域来分配。</p>
+<div class="grid4">
+  <div class="card"><img src="variant_A_pillar.png" alt="单柱台：一根立柱顶着一个桌面珊瑚">
+    <div class="body"><h3>A · 单枝台</h3><p>一根 S 形木枝、三条根、一个桌面插槽。教学用：第一次走完"种桌面 → 种上面"的循环。</p>
+    <div class="stats"><span>桌面插槽 1</span><span>附生 ≤5</span><span>高 ≈0.9 m</span><span>新手</span></div></div></div>
+  <div class="card"><img src="variant_B_tower.png" alt="阶梯塔：中柱和三条错开的斜臂">
+    <div class="body"><h3>B · 阶梯树</h3><p>扭转的主干 + 三条错开 120° 的枝杈，像一棵盆景树。上层给下层遮光，形成喜阴区。VR 里要抬头、绕圈看，是主力造景件。</p>
+    <div class="stats"><span>桌面插槽 4</span><span>附生 ≤15</span><span>高 ≈1.7 m</span><span>中期</span></div></div></div>
+  <div class="card"><img src="variant_C_arch.png" alt="拱梁：两根立柱架一根横梁">
+    <div class="body"><h3>C · 拱桥</h3><p>两条腿顺势弯成一根起伏的横梁，是一整条流动的曲线。梁上 3 个桌面插槽，梁下是悬挂区，鱼群从下面穿过，适合做花园边界或通道。</p>
+    <div class="stats"><span>桌面插槽 3</span><span>附生 ≤11</span><span>宽 ≈1.6 m</span><span>中期</span></div></div></div>
+  <div class="card"><img src="variant_D_cairn.png" alt="礁石台：叠起来的天然礁石">
+    <div class="body"><h3>D · 礁石台</h3><p>叠起来的天然礁石，石头顶面和侧面都是插槽。可以作为后期奖励：架子长满后"自然化"成礁石，象征修复完成。</p>
+    <div class="stats"><span>桌面插槽 1–2</span><span>侧面插槽 3</span><span>后期</span></div></div></div>
+</div>
+
+<h2><span class="n">3+</span>E · 悬挂苗圃（保留最初的挂式架子）</h2>
+<p class="lead">最接近现在原型的那种架子：一层层横枝，碎片挂在绳子上，顶上有浮球。造型换成同一套深棕沉木。它和 A–D 的分工不同：A–D 是<b>造景</b>，E 是<b>育苗</b>。在这里把碎片养大，再掰下来移植到桌面和礁石上。</p>
+<div class="grid3">
+  <div class="card step"><span class="badge">① 空架</span><img src="hanging_1_empty.png" alt="悬挂苗圃：三层沉木横枝，绳子末端是发光的挂钩">
+    <div class="body"><h3>挂钩插槽</h3><p>三层横枝，每根枝上挂 3 根绳，每根绳末端一个挂钩（发光圈）。玩家把碎片挂上去，就像现在原型里把碎片放到苗圃上。</p></div></div>
+  <div class="card step"><span class="badge">② 幼苗</span><img src="hanging_2_young.png" alt="挂着的小块分枝珊瑚、扇珊瑚和软珊瑚">
+    <div class="body"><h3>四面受光、受水流</h3><p>挂着的碎片不碰地面，也不被邻居挡，四周都能长。现在的清洁玩法照样适用：藻类长在横枝和绳子上。</p></div></div>
+  <div class="card step"><span class="badge">③ 长成</span><img src="hanging_3_grown.png" alt="上层挂满球形分枝珊瑚，下层挂扇珊瑚和下垂的软珊瑚">
+    <div class="body"><h3>上层长珊瑚球，下层挂喜阴的</h3><p>上层光多，分枝珊瑚长成一团团"珊瑚球"；下层被上层遮住，适合扇珊瑚和下垂的软珊瑚。成熟后可以掰枝移植。</p></div></div>
+</div>
+<table style="margin-top:16px">
+  <tr><th style="width:24%">珊瑚类型</th><th style="width:14%">适合挂吗</th><th>原因 / 挂着长成什么样</th></tr>
+  <tr><td><b>分枝珊瑚</b>（现有 BranchCoral）</td><td><span class="tag plan">最适合</span></td><td>断下的小枝就能继续长，生长快，是苗圃的主力。挂着时没有地面，会向四面分枝，长成一团"珊瑚球"。上层最好。</td></tr>
+  <tr><td><b>扇珊瑚</b>（新增）</td><td><span class="tag plan">适合</span></td><td>平面扇形、靠水流带来食物。挂着正好迎着水流摆动；不太需要强光，适合下层。</td></tr>
+  <tr><td><b>下垂软珊瑚 / 海鞭</b>（新增）</td><td><span class="tag plan">适合</span></td><td>身体柔软，可以自然下垂、随水摆动，悬挂时的动画最好看。适合下层和横枝末端。</td></tr>
+  <tr><td>指状珊瑚</td><td><span class="tag now">勉强</span></td><td>小块可以挂，但它长成的是向上的一簇，更适合移植到桌面后再长。</td></tr>
+  <tr><td>桶状海绵、管状海绵、珊瑚虫柱</td><td><span class="tag concept">不适合</span></td><td>需要固着在底座上、重心低、往上长，挂着会翻倒、口朝下。它们属于桌面和礁石。</td></tr>
+</table>
+<div class="grid2" style="margin-top:16px">
+  <div class="card"><div class="body"><h3>和桌面架子的依赖：育苗 → 移植</h3>
+    <p>悬挂苗圃是"生产者"：珊瑚球长到成熟后，玩家可以掰下一小枝（掰枝的手感和清洁一样是亲手操作），拿去种到桌面或礁石的插槽上。苗圃里的品种越多，造景能用的珊瑚就越多。</p></div></div>
+  <div class="card"><div class="body"><h3>为什么保留挂式</h3>
+    <p>它是现有原型的直接延续：碎片抓取、清洁藻类、浮球和锚绳的视觉都能沿用，只替换架子造型。也给花园加了一个"珊瑚从哪来"的起点，和修复主题对应。</p></div></div>
+</div>
+
+<h2><span class="n">4</span>依赖规则</h2>
+<table>
+  <tr><th style="width:22%">关系</th><th style="width:42%">规则</th><th>玩家看到的反馈</th></tr>
+  <tr><td><b>承载</b></td><td>附生珊瑚只能种在台面插槽上；台面阶段决定插槽数量（1/3/5）。</td><td>台面长大时，新插槽一个个亮起来并轻轻回弹。</td></tr>
+  <tr><td><b>健康传递</b></td><td>台面被藻类覆盖时，上面的珊瑚停止生长；清洁后恢复。</td><td>台面变暗、珊瑚虫收起；刷干净后珊瑚虫依次张开。</td></tr>
+  <tr><td><b>遮光</b></td><td>上层台面投影范围内的下层插槽变成"喜阴插槽"，只接受扇珊瑚、海绵。</td><td>喜阴插槽显示为青色，种错时幽灵预览会提示。</td></tr>
+  <tr><td><b>空间挤压</b></td><td>相邻台面边缘重叠时，较小的一方长得更慢、往空的方向偏。</td><td>台面边缘自然错开，不会互相穿插。</td></tr>
+  <tr><td><b>多样性</b></td><td>同一架子上物种越多，吸引的鱼越多，并解锁图鉴条目。</td><td>新鱼种游过来绕架子转，对应图鉴页点亮。</td></tr>
+</table>
+
+<h2><span class="n">5</span>和现有玩法的衔接</h2>
+<div class="grid2">
+  <div class="card"><div class="body"><h3>清洁 <span class="tag now">现有</span></h3>
+    <p>藻类改成长在<b>斜臂、台面底部和台面边缘</b>，沿用现在的刷子、接触判定和进度弧。清洁不再是单独的练习点，而是维持台面健康的日常照料。</p></div></div>
+  <div class="card"><div class="body"><h3>抓取与种植 <span class="tag plan">规划</span></h3>
+    <p>沿用现有的珊瑚碎片抓取。碎片靠近合适的插槽时出现半透明幽灵预览并吸附，松手即种下；不合适的插槽不吸附，也没有惩罚。</p></div></div>
+</div>
+
+<h2><span class="n">6</span>实现要点</h2>
+<table>
+  <tr><th style="width:26%">模块</th><th>做什么</th></tr>
+  <tr><td><code>RackSocket</code></td><td>插槽：类型（桌面 / 台面 / 边缘 / 底面）、位置、法线、可容纳尺寸、当前占用者。架子和桌面珊瑚都挂这个组件。</td></tr>
+  <tr><td><code>TableCoral</code></td><td>继承现有 <code>CoralGrowth</code>：每个阶段启用对应的台面插槽，并把自己的健康度广播给台面上的珊瑚。</td></tr>
+  <tr><td><code>CoralSpecies</code></td><td>新增"需要哪种插槽"和"喜光 / 喜阴"；种植时只匹配允许的插槽。</td></tr>
+  <tr><td>架子预制体</td><td>A–D 四种骨架用 Blender 生成：样条曲线定义主干和枝杈 → 每段蒙皮成管 → 体素重建网格把分叉融成一体 → 平滑。插槽位置作为空物体导出，Unity 里自动挂上 <code>RackSocket</code>。出包前需要减面（概念稿约 1.7 万顶点）。</td></tr>
+  <tr><td>新物种</td><td>桌面珊瑚（3 阶段）和扇珊瑚是新增的；海草作为自动填充件，不需要玩家种。</td></tr>
+</table>
+
+<footer>
+  概念渲染由 Blender 生成（<code>rack_concepts.py</code>，复用现有珊瑚生成器），颜色未烘焙斑点细节，不代表最终美术。数字（插槽数、尺寸）为初始建议值，原型阶段再调。
+</footer>
+</div>
+</body>
+</html>
