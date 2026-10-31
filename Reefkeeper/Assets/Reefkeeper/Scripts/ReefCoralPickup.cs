@@ -39,6 +39,8 @@ namespace Reefkeeper
             simulator = workshop.xrGroup.GetComponentInChildren<XRInteractionSimulator>(true);
             var templates = new GameObject("Coral reset templates");
             templates.transform.SetParent(transform, false); templates.SetActive(false);
+            // Fragments deleted in the editor leave empty slots; skip them.
+            fragments = System.Array.FindAll(fragments, f => f);
             foreach (var fragment in fragments)
                 homes.Add(new Home { template = Instantiate(fragment, templates.transform), parent = fragment.transform.parent,
                     position = fragment.transform.localPosition, rotation = fragment.transform.localRotation, scale = fragment.transform.localScale });
