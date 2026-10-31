@@ -14,6 +14,7 @@ Shader "Reefkeeper/UnderWater/Lit Sway"
         _Flutter ("Flutter 细碎抖动 (m)", Range(0,0.05)) = 0.012
         _SwayDir ("Current direction (xz) 水流方向", Vector) = (0.35, 0.2, 0, 0)
         _SwayHeight ("Typical height (m)", Float) = 0.5
+        _Fuzz ("Fuzz rim 绒毛边缘光 (ground cover)", Range(0,1)) = 0
         [HideInInspector] _Cutoff ("Cutoff", Float) = 0.5
     }
     SubShader
@@ -28,10 +29,11 @@ Shader "Reefkeeper/UnderWater/Lit Sway"
             float4 _BaseColor;
             float4 _BaseMap_ST;
             float4 _SwayDir;
-            float _Wrap, _CausticsAmount, _Cutoff, _SwayAmount, _SwaySpeed, _Flutter, _SwayHeight;
+            float _Wrap, _CausticsAmount, _Cutoff, _SwayAmount, _SwaySpeed, _Flutter, _SwayHeight, _Fuzz;
         CBUFFER_END
 
-        struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; float2 uv:TEXCOORD0; float2 sway:TEXCOORD1; };
+        // Instancing: needed for Terrain detail meshes (painted ground cover) and DrawMeshInstanced.
+        struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; float2 uv:TEXCOORD0; float2 sway:TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
 
         // World position after the current has pushed it: a slow lean plus a small flutter,
         // both growing toward the tip; the tip dips a little so blades keep their length.
@@ -60,6 +62,7 @@ Shader "Reefkeeper/UnderWater/Lit Sway"
             #pragma fragment frag
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_instancing
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "../UnderWater/UnderwaterCommon.hlsl"
 
@@ -69,6 +72,7 @@ Shader "Reefkeeper/UnderWater/Lit Sway"
             Varyings vert(Attributes v)
             {
                 Varyings o;
+                UNITY_SETUP_INSTANCE_ID(v);
                 o.positionWS = SwayWS(v.positionOS.xyz, v.sway);
                 o.positionCS = TransformWorldToHClip(o.positionWS);
                 o.normalWS = TransformObjectToWorldNormal(v.normalOS);
@@ -86,6 +90,9 @@ Shader "Reefkeeper/UnderWater/Lit Sway"
                 float3 caustics = sun.color * sun.shadowAttenuation * UW_Caustics(i.positionWS, n) * _CausticsAmount;
                 float3 ambient = UW_Ambient(n) * lerp(_UW_ShadowTint.rgb, 1.0, wrap * sun.shadowAttenuation);
                 float3 col = albedo * (ambient + direct + caustics);
+                // Fuzz: edges turned away from the viewer glow softly, like velvet or moss.
+                float rim = pow(1.0 - saturate(abs(dot(n, GetWorldSpaceNormalizeViewDir(i.positionWS)))), 2.5) * _Fuzz;
+                col += albedo * rim * (UW_Ambient(n) * 1.5 + sun.color * 0.6 * sun.shadowAttenuation);
                 return half4(UW_ApplyWater(col, i.positionWS), 1);
             }
             ENDHLSL
@@ -101,12 +108,14 @@ Shader "Reefkeeper/UnderWater/Lit Sway"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            #pragma multi_compile_instancing
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
             float3 _LightDirection;
             float3 _LightPosition;
 
             float4 vert(Attributes v) : SV_POSITION
             {
+                UNITY_SETUP_INSTANCE_ID(v);
                 float3 ws = SwayWS(v.positionOS.xyz, v.sway);
                 float3 n = TransformObjectToWorldNormal(v.normalOS);
             #if _CASTING_PUNCTUAL_LIGHT_SHADOW
@@ -134,7 +143,8 @@ Shader "Reefkeeper/UnderWater/Lit Sway"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            float4 vert(Attributes v) : SV_POSITION { return TransformWorldToHClip(SwayWS(v.positionOS.xyz, v.sway)); }
+            #pragma multi_compile_instancing
+            float4 vert(Attributes v) : SV_POSITION { UNITY_SETUP_INSTANCE_ID(v); return TransformWorldToHClip(SwayWS(v.positionOS.xyz, v.sway)); }
             half frag() : SV_Target { return 0; }
             ENDHLSL
         }
