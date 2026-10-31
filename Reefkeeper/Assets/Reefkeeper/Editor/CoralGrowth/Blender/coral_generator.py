@@ -759,6 +759,66 @@ def build_fuzzmoss(b, stage, rng):
                arch=rng.uniform(0.2, 0.5), leaf=True, cup=0.35)
 
 
+def build_leaftuft(b, stage, rng):
+    """Leaf tuft made of leaf *cards* (the "Ghibli grass" approach): ~48 small quads cut out by a leaf
+    alpha texture, standing on a disc, upright in the middle and leaning out toward the rim so the
+    tuft reads as a soft dome. Colour, lighting (normals forced up) and wind come from the
+    'Lit Foliage' shader, so the mesh only carries card UVs (UV0) and sway data (UV2)."""
+    R, N = 0.17, 48
+    for i in range(N):
+        r = R * math.sqrt((i + 0.5) / N)
+        ang = i * 2.39996 + rng.uniform(-0.3, 0.3)                    # sunflower spread, no clumping
+        k = r / R
+        H = (0.13 - 0.06 * k) * rng.uniform(0.85, 1.15)              # taller in the middle: a dome
+        W = rng.uniform(0.05, 0.07)
+        frame = element_frame(Vector((math.cos(ang) * r, math.sin(ang) * r, -0.004)),
+                              0.1 + 0.8 * k + rng.uniform(-0.1, 0.1), ang + rng.uniform(-0.35, 0.35))
+        curl, ph = rng.uniform(0.05, 0.2), rng.random()
+        rows = []
+        for t in (0.0, 0.5, 1.0):                                     # 3 rows so the card can bend in the wind
+            row = []
+            for u in (0.0, 1.0):
+                p = frame @ Vector((curl * H * t * t, (u - 0.5) * W, t * H))
+                row.append(b.vert(p, col=Vector((1, 1, 1)), sxy=(u, t), sway=(t, ph)))
+            rows.append(row)
+        for a0, a1 in zip(rows, rows[1:]):
+            b.face((a0[0], a0[1], a1[1], a1[0]))
+
+
+def write_leaf_mask(path, size=256):
+    """One leaf on a transparent card: pointed oval, narrow stalk, lighter centre, soft midrib."""
+    img = bpy.data.images.new("LeafMask", size, size, alpha=True)
+    px = [0.0] * (size * size * 4)
+    for y in range(size):
+        v = (y + 0.5) / size
+        w = 0.44 * math.sin(math.pi * min(1.0, v ** 0.85)) ** 0.75 + 0.03 * (1 - v)   # half width at this height
+        for x in range(size):
+            dx = abs((x + 0.5) / size - 0.5)
+            a = max(0.0, min(1.0, (w - dx) * size / 2.0))               # ~2 px soft edge
+            if a <= 0:
+                continue
+            centre = 1 - dx / max(w, 1e-4)
+            shade = 0.82 + 0.18 * centre - 0.1 * max(0.0, 1 - dx * size / 3.0) * (0.3 < v < 0.92)
+            i = (y * size + x) * 4
+            px[i:i + 4] = [shade, shade, shade, a]
+    img.pixels.foreach_set(px)
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+
+
+def card_uv(ob):
+    """UV0 straight from the card coordinates (the leaf texture covers each card)."""
+    me = ob.data
+    sx, sy = me.attributes["sx"].data, me.attributes["sy"].data
+    uv = me.uv_layers.new(name="UVMap")
+    for loop in me.loops:
+        uv.data[loop.index].uv = (sx[loop.vertex_index].value, sy[loop.vertex_index].value)
+
+
+NO_BAKE = {"Ground_LeafTuft"}     # leaf cards: shader-coloured, use LeafMask.png instead of a bake
+
+
 SEAWEEDS = [
     # name, builder, speckle  (single stage, sways in Unity; Ground_* go to the Groundcover folder)
     ("Seaweed_Kelp", build_kelp, 0.05),
@@ -767,6 +827,7 @@ SEAWEEDS = [
     ("Seaweed_Feather", build_feather, 0.05),
     ("Ground_Clover", build_clover, 0.04),
     ("Ground_FuzzMoss", build_fuzzmoss, 0.08),
+    ("Ground_LeafTuft", build_leaftuft, 0.0),   # leaf-card experiment for the Lit Foliage shader (kept, not used in scenes)
 ]
 SINGLE_FOLDERS = {"Seaweed": "Seaweed", "Ground": "Groundcover"}
 TEX_SIZES_SINGLE = {"Ground_Clover": 256, "Ground_FuzzMoss": 512}
@@ -1051,7 +1112,11 @@ def main():
             mat = paint_material(obj_name, speckle, spot_scale, STRIPES.get(name, 0))
             ob.data.materials.append(mat)
             img = None
-            if not args.no_bake:
+            if name in NO_BAKE:
+                card_uv(ob)
+                if not args.no_export:
+                    write_leaf_mask(os.path.join(tex_dir, "LeafMask.png"))
+            elif not args.no_bake:
                 unwrap(ob)
                 tex_path = os.path.join(tex_dir if not args.no_export else args.work, f"{obj_name}.png")
                 img = bake(ob, mat, tex_path, TEX_SIZES.get(name, TEX_SIZES_SINGLE.get(name, TEX_SIZE)))

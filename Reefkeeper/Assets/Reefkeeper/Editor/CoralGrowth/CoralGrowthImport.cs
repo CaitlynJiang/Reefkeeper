@@ -36,6 +36,15 @@ namespace Reefkeeper.CoralGrowthTools
             t.wrapMode = UnityEngine.TextureWrapMode.Clamp;
             // Coral stages are small (512); rack bases carry moss detail over a large surface.
             t.maxTextureSize = assetPath.Contains("/RackBases/") || assetPath.Contains("/Shipwreck/") ? 2048 : assetPath.Contains("DiscCoral") ? 1024 : 512;
+            if (assetPath.EndsWith("LeafMask.png"))
+            {
+                // leaf card cut-out: keep alpha coverage in the mips so far-away tufts don't thin out
+                t.alphaSource = TextureImporterAlphaSource.FromInput;
+                t.alphaIsTransparency = true;
+                t.mipMapsPreserveCoverage = true;
+                t.alphaTestReferenceValue = 0.4f;
+                t.maxTextureSize = 256;
+            }
         }
     }
 }

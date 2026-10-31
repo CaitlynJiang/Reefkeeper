@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Ground_LeafGreen
+  m_Shader: {fileID: 4800000, guid: d316de08af495474b8e03dbbb6c49147, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 4166b261137ea724badd541fdc80ae43, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CausticsAmount: 0.6
+    - _ColorNoiseScale: 0.6
+    - _Cutoff: 0.4
+    - _Flutter: 0.008
+    - _Fuzz: 0.15
+    - _GustFreq: 0.6
+    - _NormalOverride: 0.85
+    - _Roundness: 0.45
+    - _WindAmount: 0.04
+    - _WindSpeed: 1.4
+    - _Wrap: 0.6
+    m_Colors:
+    - _ColorA: {r: 0.28, g: 0.5, b: 0.22, a: 1}
+    - _ColorB: {r: 0.56, g: 0.76, b: 0.3, a: 1}
+    - _RootColor: {r: 0.26, g: 0.36, b: 0.3, a: 1}
+    - _TipColor: {r: 1.12, g: 1.1, b: 0.92, a: 1}
+    - _WindDir: {r: 1, g: 0.4, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
