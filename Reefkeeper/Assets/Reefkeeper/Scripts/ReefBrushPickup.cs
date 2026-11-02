@@ -19,7 +19,12 @@ namespace Reefkeeper
         public bool AimingBrush { get; private set; }
         public bool IsScrubbing { get; private set; }
         public bool SpotInReach { get; private set; }
-        public float Progress => practiceSpot.Cleaned;
+        /// <summary>The moss / algae patch in scrub reach right now, if any.</summary>
+        public RackDirtPatch Target { get; private set; }
+        /// <summary>The patch the HUD should report on: the one in reach, else the last one scrubbed.</summary>
+        public RackDirtPatch ActivePatch => Target ? Target : lastTarget ? lastTarget : practiceSpot;
+        public float Progress => ActivePatch.Cleaned;
+        RackDirtPatch lastTarget;
         public Camera View => corals.View;
         readonly RaycastHit[] hits = new RaycastHit[64];
         Vector3 tipLocal;
@@ -37,11 +42,22 @@ namespace Reefkeeper
             AimingBrush = canAct && !brush.isSelected && hit.collider && hit.collider.GetComponentInParent<ReefBrushInteractable>() == brush;
             brush.SetAim(AimingBrush);
             if (AimingBrush && Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame) Grab();
-            SpotInReach = canAct && hit.collider && hit.collider.GetComponent<RackDirtPatch>() == practiceSpot && hit.distance <= scrubReach;
+            var patch = hit.collider ? PatchOf(hit.collider) : null;
+            SpotInReach = canAct && patch && !patch.Complete && hit.distance <= scrubReach;
+            Target = SpotInReach ? patch : null;
+            if (Target) lastTarget = Target;
             bool heldButton = Mouse.current != null && Mouse.current.leftButton.isPressed;
-            IsScrubbing = Carrying && canAct && SpotInReach && !practiceSpot.Complete && heldButton;
+            IsScrubbing = Carrying && canAct && SpotInReach && !Target.Complete && heldButton;
             if (Carrying) Pose(); else posed = false;
             if (Carrying && Keyboard.current != null && Keyboard.current.hKey.wasPressedThisFrame) workshop.ReturnBrush();
+        }
+        // A patch hit directly, or the moss on the socket of a planted coral.
+        static RackDirtPatch PatchOf(Collider c)
+        {
+            var patch = c.GetComponent<RackDirtPatch>();
+            if (patch) return patch;
+            var socket = c.GetComponentInParent<Corals.RackSocket>();
+            return socket ? socket.moss : null;
         }
         RaycastHit FindVisible(float distance)
         {
@@ -86,7 +102,7 @@ namespace Reefkeeper
             if (IsScrubbing)
             {
                 strokePhase += Time.deltaTime * 2 * Mathf.PI * 2.2f;
-                var surface = practiceSpot.transform;
+                var surface = (Target ? Target : practiceSpot).transform;
                 var forward = Vector3.ProjectOnPlane(View.transform.forward, surface.up).normalized;
                 if (forward.sqrMagnitude < 0.01f) forward = surface.forward;
                 targetRotation = Quaternion.LookRotation(forward, surface.up);

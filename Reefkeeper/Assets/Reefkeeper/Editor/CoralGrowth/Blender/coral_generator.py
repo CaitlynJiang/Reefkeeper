@@ -606,19 +606,25 @@ def build_tendril(b, stage, rng):
 
 # ---------------------------------------------------------------- seaweed (no stages; sways in Unity)
 
-def ribbon(b, frame, H, W, stops, phase, ruffle=0.0, waves=0.03, cols=3, rows=26, taper=1.0, sway_base=0.0, sway_span=1.0):
-    """A flat, tapering blade along local +Z (width along local Y). Double-sided in the shader."""
+def ribbon(b, frame, H, W, stops, phase, ruffle=0.0, waves=0.03, cols=3, rows=26, taper=1.0, sway_base=0.0, sway_span=1.0,
+           arch=0.0, leaf=False, cup=0.0):
+    """A flat, tapering blade along local +Z (width along local Y). Double-sided in the shader.
+    arch curls the blade toward local +X as it grows (fronds that bend over).
+    leaf=True gives a rounded oval outline instead of a pointed blade; cup bows the sides forward."""
     grid = []
     for i in range(rows + 1):
         t = i / rows
-        x = waves * math.sin(t * 5.0 + phase) * t
-        w = W * (math.sin(math.pi * min(1.0, 0.08 + t * 0.95)) ** 0.5) * (1 - t ** 6 * taper)
+        x = waves * math.sin(t * 5.0 + phase) * t + arch * H * t * t
+        if leaf:
+            w = W * math.sqrt(max(0.0, 1 - ((t - 0.55) / 0.56) ** 2)) + W * 0.12 * (1 - t)   # rounded tip, narrow stalk
+        else:
+            w = W * (math.sin(math.pi * min(1.0, 0.08 + t * 0.95)) ** 0.5) * (1 - t ** 6 * taper)
         row = []
         for c in range(cols):
             u = (c / (cols - 1)) * 2 - 1
             edge = abs(u)
             dx = ruffle * w * edge * math.sin(t * 38 + phase * 3 + u * 2)
-            mid = 0.12 * w * (1 - edge)          # slight midrib
+            mid = 0.12 * w * (1 - edge) - cup * w * edge * edge   # slight midrib, sides bowed
             p = frame @ Vector((x + dx + mid, u * w, t * H))
             col = ramp(stops, t) * (0.85 if c == cols // 2 and cols > 2 else 1.0)
             row.append(b.vert(p, col=col, sway=(sway_base + sway_span * t, phase / math.tau)))
@@ -697,13 +703,135 @@ def build_feather(b, stage, rng):
                 stem(b, tw, H * 0.32 * (1.1 - t), 0.005, stops, ph, bend=0.3, sway_base=t, sway_span=0.2)
 
 
+# ---------------------------------------------------------------- ground cover (terrain detail meshes)
+# Small, low-poly clumps (~400 tris) meant to be painted thousands of times onto a terrain.
+
+def build_clover(b, stage, rng):
+    """Parasol clover: thin stems with soft four-lobed caps, pale peach to cream."""
+    stem_stops = [(0, hexc("A88F6A")), (1, hexc("D8C49A"))]
+    for i in range(8):
+        a, d = rng.uniform(0, math.tau), 0.11 * math.sqrt(rng.random())
+        H = rng.uniform(0.035, 0.1) * (1.2 - d * 2.5)        # short stems, taller in the middle: a soft mound
+        R = rng.uniform(0.036, 0.056)                          # big overlapping caps
+        tilt, az = rng.uniform(0.0, 0.35), rng.uniform(0, math.tau)
+        base = Vector((math.cos(a) * d, math.sin(a) * d, 0))
+        ph = rng.uniform(0, math.tau)
+        bend = rng.uniform(-0.2, 0.2)
+        frame = element_frame(base, tilt, az)
+        stem(b, frame, H, 0.0045, stem_stops, ph, bend=bend)
+        top = frame @ Vector((bend * H, 0, H))
+        cap = Matrix.Translation(top) @ Matrix.Rotation(rng.uniform(-0.25, 0.25), 4, "X") @ Matrix.Rotation(rng.uniform(0, math.tau), 4, "Z")
+        tint = rng.uniform(0, 1)
+        centre = mix(hexc("E3A985"), hexc("EAB7A3"), tint)
+        mid, edge = hexc("F1D3A8"), hexc("FBF0D6")
+        sway = (1.0, ph / math.tau)
+        c0 = b.vert(cap @ Vector((0, 0, R * 0.16)), col=centre, sway=sway)
+        seg, rings = 14, []
+        for rr, cc in ((0.55, mix(centre, mid, 0.6)), (1.0, edge)):
+            ring = []
+            for j in range(seg):
+                th = math.tau * j / seg
+                lobe = 0.7 + 0.3 * (0.5 + 0.5 * math.cos(4 * th))        # four smooth, rounded lobes
+                r = R * rr * lobe
+                z = R * (0.18 * (1 - rr * rr) - 0.1 * rr ** 2 * (0.5 + 0.5 * math.cos(4 * th)))   # domed, lobes droop
+                ring.append(b.vert(cap @ Vector((r * math.cos(th), r * math.sin(th), z)), col=cc, sway=sway))
+            rings.append(ring)
+        for j in range(seg):
+            k = (j + 1) % seg
+            b.face((c0, rings[0][j], rings[0][k]))
+            b.face((rings[0][j], rings[1][j], rings[1][k], rings[0][k]))
+
+
+def build_fuzzmoss(b, stage, rng):
+    """Purple leaf tuft: only foliage, no base. Short, frilly, rounded fronds fan out from the ground
+    and curl over; deep purple at the root, lilac at the tips. The fuzz rim softens the edges."""
+    for i in range(16):
+        a = rng.uniform(0, math.tau)
+        d = 0.035 * math.sqrt(rng.random())
+        inner = d < 0.018
+        stops = [(0.0, hexc("3E2A70")), (0.35, mix(hexc("6E4BB8"), hexc("7A4FB0"), rng.random())),
+                 (0.8, hexc("B585E6")), (1.0, mix(hexc("E2B8F5"), hexc("F0C8EC"), rng.random()))]
+        frame = element_frame(Vector((math.cos(a) * d, math.sin(a) * d, -0.003)),
+                              rng.uniform(0.15, 0.45) if inner else rng.uniform(0.55, 1.05), a) \
+            @ Matrix.Rotation(math.pi / 2 + rng.uniform(-0.4, 0.4), 4, "Z")     # leaf face turned toward the outside
+        ribbon(b, frame, rng.uniform(0.06, 0.11) * (1.1 if inner else 1.0), rng.uniform(0.022, 0.032), stops,
+               rng.uniform(0, math.tau), ruffle=0.12, waves=0.006, cols=4, rows=6,
+               arch=rng.uniform(0.2, 0.5), leaf=True, cup=0.35)
+
+
+def build_leaftuft(b, stage, rng):
+    """Leaf tuft made of leaf *cards* (the "Ghibli grass" approach): ~48 small quads cut out by a leaf
+    alpha texture, standing on a disc, upright in the middle and leaning out toward the rim so the
+    tuft reads as a soft dome. Colour, lighting (normals forced up) and wind come from the
+    'Lit Foliage' shader, so the mesh only carries card UVs (UV0) and sway data (UV2)."""
+    R, N = 0.17, 48
+    for i in range(N):
+        r = R * math.sqrt((i + 0.5) / N)
+        ang = i * 2.39996 + rng.uniform(-0.3, 0.3)                    # sunflower spread, no clumping
+        k = r / R
+        H = (0.13 - 0.06 * k) * rng.uniform(0.85, 1.15)              # taller in the middle: a dome
+        W = rng.uniform(0.05, 0.07)
+        frame = element_frame(Vector((math.cos(ang) * r, math.sin(ang) * r, -0.004)),
+                              0.1 + 0.8 * k + rng.uniform(-0.1, 0.1), ang + rng.uniform(-0.35, 0.35))
+        curl, ph = rng.uniform(0.05, 0.2), rng.random()
+        rows = []
+        for t in (0.0, 0.5, 1.0):                                     # 3 rows so the card can bend in the wind
+            row = []
+            for u in (0.0, 1.0):
+                p = frame @ Vector((curl * H * t * t, (u - 0.5) * W, t * H))
+                row.append(b.vert(p, col=Vector((1, 1, 1)), sxy=(u, t), sway=(t, ph)))
+            rows.append(row)
+        for a0, a1 in zip(rows, rows[1:]):
+            b.face((a0[0], a0[1], a1[1], a1[0]))
+
+
+def write_leaf_mask(path, size=256):
+    """One leaf on a transparent card: pointed oval, narrow stalk, lighter centre, soft midrib."""
+    img = bpy.data.images.new("LeafMask", size, size, alpha=True)
+    px = [0.0] * (size * size * 4)
+    for y in range(size):
+        v = (y + 0.5) / size
+        w = 0.44 * math.sin(math.pi * min(1.0, v ** 0.85)) ** 0.75 + 0.03 * (1 - v)   # half width at this height
+        for x in range(size):
+            dx = abs((x + 0.5) / size - 0.5)
+            a = max(0.0, min(1.0, (w - dx) * size / 2.0))               # ~2 px soft edge
+            if a <= 0:
+                continue
+            centre = 1 - dx / max(w, 1e-4)
+            shade = 0.82 + 0.18 * centre - 0.1 * max(0.0, 1 - dx * size / 3.0) * (0.3 < v < 0.92)
+            i = (y * size + x) * 4
+            px[i:i + 4] = [shade, shade, shade, a]
+    img.pixels.foreach_set(px)
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+
+
+def card_uv(ob):
+    """UV0 straight from the card coordinates (the leaf texture covers each card)."""
+    me = ob.data
+    sx, sy = me.attributes["sx"].data, me.attributes["sy"].data
+    uv = me.uv_layers.new(name="UVMap")
+    for loop in me.loops:
+        uv.data[loop.index].uv = (sx[loop.vertex_index].value, sy[loop.vertex_index].value)
+
+
+NO_BAKE = {"Ground_LeafTuft"}     # leaf cards: shader-coloured, use LeafMask.png instead of a bake
+
+
 SEAWEEDS = [
-    # name, builder, speckle
+    # name, builder, speckle  (single stage, sways in Unity; Ground_* go to the Groundcover folder)
     ("Seaweed_Kelp", build_kelp, 0.05),
     ("Seaweed_Grass", build_seagrass, 0.04),
     ("Seaweed_Leafy", build_leafy, 0.05),
     ("Seaweed_Feather", build_feather, 0.05),
+    ("Ground_Clover", build_clover, 0.04),
+    ("Ground_FuzzMoss", build_fuzzmoss, 0.08),
+    ("Ground_LeafTuft", build_leaftuft, 0.0),   # leaf-card experiment for the Lit Foliage shader (kept, not used in scenes)
 ]
+SINGLE_FOLDERS = {"Seaweed": "Seaweed", "Ground": "Groundcover"}
+TEX_SIZES_SINGLE = {"Ground_Clover": 256, "Ground_FuzzMoss": 512}
+SINGLE_SPOT = {}                              # fleck density per model (cells per metre)
 
 STRIPES = {"DiscCoral": 64}
 TEX_SIZES = {"DiscCoral": 1024}   # fine stripes need more pixels
@@ -960,14 +1088,15 @@ def main():
 
     # corals: (name, stages, builder, speckle, spot scale, seaweed?)
     entries = [(n, st, bld, sp, ss, False) for n, st, bld, sp, ss in MODELS]
-    entries += [(n, 1, (lambda f: lambda b, s, r, c: f(b, s, r))(bld), sp, 20.0, True) for n, bld, sp in SEAWEEDS]
+    entries += [(n, 1, (lambda f: lambda b, s, r, c: f(b, s, r))(bld), sp, SINGLE_SPOT.get(n, 20.0), True) for n, bld, sp in SEAWEEDS]
 
     built = {}
     for name, stages, builder, speckle, spot_scale, seaweed in entries:
         if args.only and args.only.lower() not in name.lower():
             continue
-        mesh_dir = os.path.join(MESH_DIR, "Seaweed") if seaweed else MESH_DIR
-        tex_dir = os.path.join(TEX_DIR, "Seaweed") if seaweed else TEX_DIR
+        sub = SINGLE_FOLDERS.get(name.split("_")[0], "Seaweed")
+        mesh_dir = os.path.join(MESH_DIR, sub) if seaweed else MESH_DIR
+        tex_dir = os.path.join(TEX_DIR, sub) if seaweed else TEX_DIR
         if not args.no_export:
             os.makedirs(mesh_dir, exist_ok=True)
             os.makedirs(tex_dir, exist_ok=True)
@@ -983,10 +1112,14 @@ def main():
             mat = paint_material(obj_name, speckle, spot_scale, STRIPES.get(name, 0))
             ob.data.materials.append(mat)
             img = None
-            if not args.no_bake:
+            if name in NO_BAKE:
+                card_uv(ob)
+                if not args.no_export:
+                    write_leaf_mask(os.path.join(tex_dir, "LeafMask.png"))
+            elif not args.no_bake:
                 unwrap(ob)
                 tex_path = os.path.join(tex_dir if not args.no_export else args.work, f"{obj_name}.png")
-                img = bake(ob, mat, tex_path, TEX_SIZES.get(name, TEX_SIZE))
+                img = bake(ob, mat, tex_path, TEX_SIZES.get(name, TEX_SIZES_SINGLE.get(name, TEX_SIZE)))
             if seaweed:
                 add_sway_uv(ob)
             ob.data.materials.clear()

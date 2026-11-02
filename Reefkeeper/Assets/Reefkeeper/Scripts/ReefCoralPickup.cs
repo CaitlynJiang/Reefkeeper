@@ -39,6 +39,8 @@ namespace Reefkeeper
             simulator = workshop.xrGroup.GetComponentInChildren<XRInteractionSimulator>(true);
             var templates = new GameObject("Coral reset templates");
             templates.transform.SetParent(transform, false); templates.SetActive(false);
+            // Fragments deleted in the editor leave empty slots; skip them.
+            fragments = System.Array.FindAll(fragments, f => f);
             foreach (var fragment in fragments)
                 homes.Add(new Home { template = Instantiate(fragment, templates.transform), parent = fragment.transform.parent,
                     position = fragment.transform.localPosition, rotation = fragment.transform.localRotation, scale = fragment.transform.localScale });
@@ -128,9 +130,37 @@ namespace Reefkeeper
             Held = fragment;
             pendingHold = false;
         }
+        /// <summary>Called when a held coral is let go; return true if it was planted instead of kept.</summary>
+        public System.Func<ReefCoralFragment, bool> PlantOnRelease { get; set; }
+
+        /// <summary>Puts a coral straight into the player's hand (e.g. one bought from the shop).</summary>
+        public void Give(ReefCoralFragment fragment)
+        {
+            SetAim(null);
+            ClearHeld();
+            holdParent = null;
+            if (View) UpdateHand(View);
+            hand.Requested = fragment;
+            hand.StartManualInteraction((IXRSelectInteractable)fragment);
+        }
+
+        /// <summary>Lets go of the held coral without destroying it (used when it gets planted).</summary>
+        public ReefCoralFragment TakeHeld()
+        {
+            var fragment = Held;
+            if (!fragment) return null;
+            clearing = true; pendingHold = false;
+            if (hand.isPerformingManualInteraction) hand.EndManualInteraction();
+            hand.Requested = null;
+            if (fragment.isSelected) fragment.interactionManager.CancelInteractableSelection((IXRSelectInteractable)fragment);
+            Held = null; clearing = false;
+            return fragment;
+        }
+
         public void KeepInHand(ReefCoralFragment fragment, Transform controller)
         {
             if (clearing || Held != fragment) return;
+            if (PlantOnRelease != null && PlantOnRelease(fragment)) return;
             holdParent = controller == hand.transform ? null : controller;
             pendingHold = true;
         }
