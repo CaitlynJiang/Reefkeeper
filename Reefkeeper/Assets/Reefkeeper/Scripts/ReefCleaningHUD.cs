@@ -16,6 +16,9 @@ namespace Reefkeeper
         public Sprite panelSprite, arcTrack, arcFill;
         public Material arcMaterial;
         public Sprite[] inputGlyphs;
+        [Tooltip("Coral planting loop; when set, its prompts and objectives take over.")]
+        public Corals.CoralPlanting planting;
+        public Corals.CoralShop shop;
         Canvas canvas;
         RectTransform progress, prompt, helpPanel, objectives;
         CanvasGroup progressGroup;
@@ -32,7 +35,7 @@ namespace Reefkeeper
         static readonly Color Cream = new Color(0.97f, 0.93f, 0.81f);
         static readonly Color Navy = new Color(0.15f, 0.22f, 0.28f, 0.94f);
         public float DisplayedProgress => displayedProgress;
-        public string Status => pickup.practiceSpot.Complete ? "Restoration complete" : promptLabel.text;
+        public string Status => pickup.ActivePatch.Complete ? "Restoration complete" : promptLabel.text;
         public bool ProgressVisible => progress && progress.gameObject.activeInHierarchy && progressGroup.alpha > 0;
         public bool HelpVisible { get; private set; }
         public bool ObjectivesExpanded { get; private set; } = true;
@@ -118,7 +121,7 @@ namespace Reefkeeper
 
             displayedProgress = pickup.Progress;
             fillMaterial.SetFloat("_Progress", displayedProgress);
-            bool complete = pickup.practiceSpot.Complete;
+            bool complete = pickup.ActivePatch.Complete;
             if (!complete) { completedAt = -1; collapsedOnComplete = false; }
             else if (completedAt < 0) completedAt = Time.unscaledTime;
             float completionAge = complete ? Time.unscaledTime - completedAt : 0;
@@ -126,9 +129,9 @@ namespace Reefkeeper
             progressLabel.text = complete ? "Clean!" : (displayedProgress * 100).ToString("0") + "%";
             progress.gameObject.SetActive(complete ? completionAge < CompletionHold + CompletionFade
                 : pickup.SpotInReach || (pickup.workshop.brush.Held && !pickup.CenterMode));
-            if (complete && completionAge >= CompletionHold + CompletionFade && !collapsedOnComplete)
+            if (!planting && complete && completionAge >= CompletionHold + CompletionFade && !collapsedOnComplete)
             { ObjectivesExpanded = false; collapsedOnComplete = true; }
-            objectiveBody.text = complete ? "Nursery restored" : "Clean the nursery frame";
+            objectiveBody.text = planting ? planting.Objective : complete ? "Nursery restored" : "Clean the nursery frame";
             objectiveBody.gameObject.SetActive(ObjectivesExpanded);
             objectives.sizeDelta = new Vector2(308, ObjectivesExpanded ? 86 : 48);
             objectives.anchoredPosition = new Vector2(178, ObjectivesExpanded ? -64 : -45);
@@ -154,6 +157,10 @@ namespace Reefkeeper
                 else if (!complete && pickup.SpotInReach && context.Length == 0)
                 { context = "Pick up the brush from the tray"; key = ""; }
             }
+            // Coral loop prompts (talk, plant, fertilize, moss notes); scrubbing keeps priority.
+            if (shop && shop.AimingCat) { context = shop.Prompt; key = shop.PromptKey; }
+            else if (planting && planting.Prompt.Length > 0 && !(pickup.SpotInReach && pickup.Carrying))
+            { context = planting.Prompt; key = planting.PromptKey; }
             if (!pickup.workshop.xrGroup.activeSelf && Cursor.lockState != CursorLockMode.Locked && !pickup.Automated && !pickup.corals.Automated)
             { context = "Click to dive"; key = "mouse_left"; }
             SetIcon(promptIcon, key);
@@ -178,7 +185,7 @@ namespace Reefkeeper
             HelpRow(0, "keyboard_w", "WASD  Swim");
             HelpRow(1, xr ? "keyboard_q" : "keyboard_space", xr ? "Down / up" : "Up / down", xr ? "keyboard_e" : "keyboard_c");
             HelpRow(2, "keyboard_shift", "Boost"); HelpRow(3, xr ? "keyboard_b" : "mouse_right", "Brake", xr ? "" : "keyboard_x");
-            HelpRow(4, "keyboard_g", "Pick up brush / coral"); HelpRow(5, "mouse_left", "Hold to scrub");
+            HelpRow(4, "keyboard_g", "Talk to cat / plant / pick up"); HelpRow(5, "mouse_left", "Hold: scrub  Click: fertilize");
             HelpRow(6, "keyboard_h", "Return brush");
             HelpRow(7, xr ? "keyboard_tab" : "keyboard_escape", xr ? "Body / device mode" : "Cursor; click to resume");
             HelpRow(8, xr ? "mouse_right" : "keyboard_r", xr ? "Toggle mouse look" : "Return to start");

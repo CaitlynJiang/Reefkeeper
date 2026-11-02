@@ -45,7 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Reefkeeper.Corals.RackSocket
   kind: 0
+  grade: 1
   occupant: {fileID: 0}
+  moss: {fileID: 0}
 --- !u!1 &2194760374472863060
 GameObject:
   m_ObjectHideFlags: 0
@@ -239,7 +241,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Reefkeeper.Corals.RackSocket
   kind: 0
+  grade: 1
   occupant: {fileID: 0}
+  moss: {fileID: 0}
 --- !u!1 &4246800075588256730
 GameObject:
   m_ObjectHideFlags: 0
@@ -285,7 +289,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Reefkeeper.Corals.RackSocket
   kind: 0
+  grade: 1
   occupant: {fileID: 0}
+  moss: {fileID: 0}
 --- !u!1 &5519943069290888493
 GameObject:
   m_ObjectHideFlags: 0
@@ -421,7 +427,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Reefkeeper.Corals.RackSocket
   kind: 0
+  grade: 1
   occupant: {fileID: 0}
+  moss: {fileID: 0}
 --- !u!1 &8579697588618391065
 GameObject:
   m_ObjectHideFlags: 0
@@ -562,4 +570,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Reefkeeper.Corals.RackSocket
   kind: 0
+  grade: 1
   occupant: {fileID: 0}
+  moss: {fileID: 0}

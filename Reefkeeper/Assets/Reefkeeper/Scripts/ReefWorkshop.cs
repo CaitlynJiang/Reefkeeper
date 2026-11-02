@@ -42,6 +42,8 @@ namespace Reefkeeper
             ReturnBrush();
             var corals = GetComponent<ReefCoralPickup>();
             if (corals) corals.ResetCorals();
+            var planting = GetComponent<Corals.CoralPlanting>();
+            if (planting) planting.ResetAll();
         }
         public void ReturnBrush()
         {

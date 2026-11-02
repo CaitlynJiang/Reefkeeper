@@ -25,8 +25,6 @@ namespace Reefkeeper.V2
         const string PrefabDir = "Assets/Reefkeeper/Prefabs/CoralGrowth";
         const string RopePath = "Assets/Reefkeeper/Generated/NurseryRope.mat";
         const string StrayGroupPrefix = "Rack corals";
-        const float HangGap = 0.06f;      // space between hook and coral top, filled by a line
-        const float LineWidth = 0.006f;
 
         [MenuItem("Reefkeeper/V2/Fix rack corals - 修复架子珊瑚")]
         static void FixMenu() => RunOnWorkshop(false);
@@ -61,7 +59,11 @@ namespace Reefkeeper.V2
                 {
                     bool wanted = socket.kind == RackSocket.Kind.Table || hook++ % 2 == 0;
                     if (!socket.occupant && refill && wanted)
-                        socket.occupant = SpawnCoral(CoralNames[rng.Next(CoralNames.Length)], rng);
+                    {
+                        // Only species this socket grade allows.
+                        var allowed = CoralNames.Where(n => CoralRules.CanPlant(n, socket.grade)).ToArray();
+                        if (allowed.Length > 0) socket.occupant = SpawnCoral(allowed[rng.Next(allowed.Length)], rng);
+                    }
                     if (!socket.occupant)
                     {
                         // A coral deleted by hand leaves its line on the hook.
@@ -70,8 +72,9 @@ namespace Reefkeeper.V2
                         continue;
                     }
                     var fragment = socket.occupant.GetComponent<ReefCoralFragment>();
-                    if (!fragment) fragment = MakePickable(socket.occupant, pickup, outline, manager);
-                    Seat(socket.occupant, socket, fragment);
+                    if (!fragment) fragment = CoralSeating.MakePickable(socket.occupant, pickup, outline, manager);
+                    fragment.suspensionLine = CoralSeating.Seat(socket.occupant, socket, fragment.suspensionLine,
+                        AssetDatabase.LoadAssetAtPath<Material>(RopePath));
                     kept.Add(socket.occupant.gameObject);
                     EditorUtility.SetDirty(socket);
                 }
@@ -109,75 +112,5 @@ namespace Reefkeeper.V2
             return coral;
         }
 
-        /// <summary>
-        /// Puts the coral under its socket at world scale 1: sitting on a table socket, or
-        /// hanging just below a hook on a short line.
-        /// </summary>
-        public static void Seat(CoralGrowth coral, RackSocket socket, ReefCoralFragment fragment)
-        {
-            var t = coral.transform;
-            var yaw = Quaternion.Euler(0, t.eulerAngles.y, 0);
-            t.SetParent(socket.transform, false);
-            t.rotation = yaw;
-            t.localScale = Divide(Vector3.one, socket.transform.lossyScale);
-            t.position = socket.transform.position;
-
-            var line = fragment ? fragment.suspensionLine : null;
-            if (socket.kind == RackSocket.Kind.Table)
-            {
-                if (line) Object.DestroyImmediate(line);
-                if (fragment) fragment.suspensionLine = null;
-                return;
-            }
-
-            float height = coral.Current.GetComponentsInChildren<Renderer>().Max(r => r.bounds.max.y) - t.position.y;
-            t.position = socket.transform.position + Vector3.down * (height + HangGap);
-            if (!line)
-            {
-                line = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                Object.DestroyImmediate(line.GetComponent<Collider>());
-                line.name = "Coral line";
-                var rope = AssetDatabase.LoadAssetAtPath<Material>(RopePath);
-                if (rope) line.GetComponent<Renderer>().sharedMaterial = rope;
-            }
-            line.transform.SetParent(socket.transform, false);
-            line.transform.SetPositionAndRotation(socket.transform.position + Vector3.down * (HangGap * 0.5f), Quaternion.identity);
-            line.transform.localScale = Divide(new Vector3(LineWidth, HangGap * 0.5f, LineWidth), socket.transform.lossyScale);
-            if (fragment) fragment.suspensionLine = line;
-        }
-
-        /// <summary>Wraps a growth coral so the existing pickup flow can grab it.</summary>
-        public static ReefCoralFragment MakePickable(CoralGrowth coral, ReefCoralPickup pickup, Material outline, XRInteractionManager manager)
-        {
-            var go = coral.gameObject;
-            var bounds = new Bounds(go.transform.position, Vector3.zero);
-            foreach (var r in coral.Current.GetComponentsInChildren<Renderer>()) bounds.Encapsulate(r.bounds);
-            var box = go.AddComponent<BoxCollider>();
-            box.center = go.transform.InverseTransformPoint(bounds.center);
-            var size = go.transform.InverseTransformVector(bounds.size);
-            box.size = Vector3.Max(new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)), Vector3.one * 0.12f);
-
-            var fragment = go.AddComponent<ReefCoralFragment>(); // brings its Rigidbody
-            var body = go.GetComponent<Rigidbody>();
-            body.useGravity = false; body.isKinematic = true; body.mass = 0.04f;
-
-            fragment.owner = pickup;
-            fragment.outlineMaterial = outline;
-            fragment.interactionManager = manager;
-            fragment.movementType = XRBaseInteractable.MovementType.Instantaneous;
-            fragment.throwOnDetach = false;
-            fragment.useDynamicAttach = false;
-            fragment.attachEaseInTime = 0.12f;
-            fragment.selectMode = InteractableSelectMode.Single;
-            fragment.colliders.Clear();
-            fragment.colliders.Add(box);
-            var grip = new GameObject("Grip pose").transform;
-            grip.SetParent(go.transform, false);
-            grip.position = bounds.center;
-            fragment.attachTransform = grip;
-            return fragment;
-        }
-
-        static Vector3 Divide(Vector3 a, Vector3 b) => new Vector3(a.x / b.x, a.y / b.y, a.z / b.z);
     }
 }
