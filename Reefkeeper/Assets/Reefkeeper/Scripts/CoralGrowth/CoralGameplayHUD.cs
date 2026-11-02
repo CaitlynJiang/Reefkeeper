@@ -31,6 +31,7 @@ namespace Reefkeeper.Corals
         Image statusIcon, fillImage;
         readonly Image[] pipRings = new Image[3], pips = new Image[3];
         CoralNurture shown;
+        XRWorldHud worldHud;
 
         void Awake()
         {
@@ -45,6 +46,7 @@ namespace Reefkeeper.Corals
             scaler.referenceResolution = new Vector2(1280, 720);
             scaler.matchWidthOrHeight = 1;
             canvasRect = (RectTransform)go.transform;
+            worldHud = go.AddComponent<XRWorldHud>();   // floats in front of the player in a headset
             BuildCard();
             BuildBubble();
         }
@@ -165,7 +167,8 @@ namespace Reefkeeper.Corals
             {
                 var top = shop.catCollider.bounds.center + Vector3.up * (shop.catCollider.bounds.extents.y + 0.25f);
                 var screen = view.WorldToScreenPoint(top);
-                visible = screen.z > 0 && RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out local);
+                var uiCamera = worldHud && worldHud.InWorld ? view : null;
+                visible = screen.z > 0 && RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, uiCamera, out local);
             }
             bubbleGroup.alpha = Mathf.MoveTowards(bubbleGroup.alpha, visible ? 1 : 0, Time.unscaledDeltaTime * 6);
             if (!visible) return;

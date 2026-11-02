@@ -55,6 +55,7 @@ namespace Reefkeeper
             canvas.sortingOrder = 80;
             var scaler = go.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1280, 720); scaler.matchWidthOrHeight = 1;
+            go.AddComponent<XRWorldHud>();   // floats in front of the player in a headset
 
             objectives = Rect("Objectives", go.transform, new Vector2(0, 1), new Vector2(178, -64), new Vector2(308, 86));
             Background(objectives);
