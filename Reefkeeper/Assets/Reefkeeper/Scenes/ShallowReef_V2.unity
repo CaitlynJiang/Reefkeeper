@@ -27290,6 +27290,7 @@ MonoBehaviour:
   reach: 4
   touchReach: 0.35
   lineSeconds: 3.5
+  rayReach: 8
 --- !u!1 &497538846
 GameObject:
   m_ObjectHideFlags: 0
@@ -35723,6 +35724,7 @@ MonoBehaviour:
   mossPrefab: {fileID: 1954480297613666654, guid: 86ebf185c275c154481db59a9ad6ddfe, type: 3}
   reach: 3
   handReach: 0.3
+  rayReach: 4
   secondsPerStage: 30
   mossReturnSeconds: {x: 25, y: 50}
 --- !u!114 &659147668
@@ -45835,6 +45837,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1268319625}
     m_Modifications:
+    - target: {fileID: 1319746308, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1767192439, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_ClearFlags
       value: 1
@@ -45955,6 +45961,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: d3519a023bf2fb54fb4c79a0ade36822, type: 2}
+    - target: {fileID: 2449787133337329437, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2717550568034688974, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -46144,6 +46154,7 @@ MonoBehaviour:
   view: {fileID: 896995178}
   simulator: {fileID: 976985703}
   Automated: 0
+  snapTurnAngle: 45
 --- !u!114 &896995183
 MonoBehaviour:
   m_ObjectHideFlags: 0
