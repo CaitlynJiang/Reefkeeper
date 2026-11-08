@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Reefkeeper.Corals;
@@ -18,6 +19,22 @@ namespace Reefkeeper
         ReefWorkshop workshop;
         ReefBrushPickup pickup;
         string output;
+        InputSettings originalInputSettings;
+        InputSettings testInputSettings;
+        float originalCaptureDeltaTime;
+        bool settingsCaptured;
+        readonly List<string> checks = new List<string>();
+
+#if UNITY_EDITOR
+        public static void RunInEditor(string outputFolder)
+        {
+            if (!Application.isPlaying) throw new InvalidOperationException("Enter Play Mode before running the integration check.");
+            var w = FindFirstObjectByType<ReefWorkshop>();
+            w.xrGroup.SetActive(false); w.desktopPlayer.SetActive(true);
+            UnityEditor.EditorApplication.isPaused = false;
+            new GameObject("V3 cleaning integration check").AddComponent<ReefV3SmokeCheck>().output = outputFolder;
+        }
+#endif
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Bootstrap()
@@ -31,6 +48,11 @@ namespace Reefkeeper
         IEnumerator Start()
         {
             Directory.CreateDirectory(output);
+            originalInputSettings = InputSystem.settings;
+            testInputSettings = Instantiate(originalInputSettings);
+            InputSystem.settings = testInputSettings;
+            originalCaptureDeltaTime = Time.captureDeltaTime;
+            settingsCaptured = true;
             Time.captureDeltaTime = 1f / 60f;
             var routine = Check();
             while (true)
@@ -40,14 +62,14 @@ namespace Reefkeeper
                 catch (Exception e) { error = e; }
                 if (error != null)
                 {
-                    File.WriteAllText(Path.Combine(output, "result.txt"), "FAIL\n" + error);
+                    File.WriteAllText(Path.Combine(output, "result.txt"), "FAIL\n" + string.Join("\n", checks) + "\n" + error);
                     Debug.LogException(error); Finish(1); yield break;
                 }
                 if (!more) break;
                 yield return current;
             }
             File.WriteAllText(Path.Combine(output, "result.txt"),
-                "PASS: both surfaces, wrong-tool rejection, G pickup, real contact cleaning, pause/resume, occlusion, HUD hints, tool switching, directional scrape, no idle cleaning, blocked planting, regrowth rules, reset and return.\n");
+                "PASS: " + checks.Count + " integration assertions\n" + string.Join("\n", checks) + "\n");
             Finish(0);
         }
 
@@ -73,6 +95,21 @@ namespace Reefkeeper
             algae.ApplyStroke(100f, CleaningToolKind.Scraper);
             Require(fire.Cleaned == 0 && algae.Cleaned == 0, "Wrong tools never change progress");
             Require(fireSocket.Mossy && planting.Plant(fireSocket) == null, "Covered socket rejects planting");
+            var practiceFire = workshop.patches.FirstOrDefault(p => p.name == "Practice spot / fire coral");
+            if (practiceFire)
+            {
+                Require(pickup.practiceSpot.surfaceKind == ReefSurfaceKind.Algae && practiceFire.surfaceKind == ReefSurfaceKind.FireCoral,
+                    "Practice station presents both surface types");
+                foreach (var sample in workshop.patches.Where(p => p.surfaceKind == ReefSurfaceKind.FireCoral))
+                {
+                    sample.ApplyStroke(100f, CleaningToolKind.Brush);
+                    Require(sample.Cleaned == 0, sample.name + " rejects brush");
+                    sample.ApplyStroke(100f, CleaningToolKind.Scraper);
+                    Require(sample.Complete && !sample.dirtVisual.enabled, sample.name + " clears with file");
+                }
+                workshop.ResetWorkshop();
+                Require(workshop.patches.All(p => p.Cleaned == 0 && p.dirtVisual.enabled), "Practice and attached tree samples reset together");
+            }
 
             // Isolate contact/input checks from the scene's decorative collisions.
             var fixture = new GameObject("Cleaning test fixture");
@@ -143,6 +180,20 @@ namespace Reefkeeper
             for (int frame = 0; frame < 40; frame++)
             { tracked.transform.position = center - tipLocal + Vector3.forward * (Mathf.Sin(frame * 0.2f) * 0.065f); yield return null; }
             Require(f.Cleaned > 0.03f, "Forward/backward tracked strokes scrape fire coral");
+            foreach (var sample in workshop.patches.Where(p => p.surfaceKind == ReefSurfaceKind.FireCoral))
+            {
+                var pose = sample.transform.rotation;
+                var contact = sample.transform.position + sample.transform.up * 0.025f;
+                tracked.transform.SetPositionAndRotation(contact - pose * tipLocal, pose);
+                yield return new WaitForSeconds(0.3f);
+                sample.ResetDirt();
+                for (int frame = 0; frame < 45; frame++)
+                {
+                    tracked.transform.position = contact - pose * tipLocal + sample.transform.forward * (Mathf.Sin(frame * 0.2f) * 0.04f);
+                    yield return null;
+                }
+                Require(sample.Cleaned > 0.01f, sample.name + " receives tracked file contact at its surface angle");
+            }
             tracked.EndManualInteraction(); tracked.Requested = null; Destroy(tracked.gameObject);
             pickup.scraper.owner = pickup;
 
@@ -184,11 +235,28 @@ namespace Reefkeeper
         }
         void Keys(params Key[] keys) { keyboard.MakeCurrent(); InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys)); }
         void Click(bool down) { mouse.MakeCurrent(); InputSystem.QueueStateEvent(mouse, new MouseState { buttons = (ushort)(down ? 1 : 0) }); }
-        static void Require(bool valid, string message) { if (!valid) throw new InvalidOperationException("V3: " + message); Debug.Log("V3_CHECK: " + message); }
-        static void Finish(int code)
+        void Require(bool valid, string message)
         {
+            if (!valid) throw new InvalidOperationException("V3: " + message);
+            checks.Add(message); Debug.Log("V3_CHECK: " + message);
+        }
+        void OnDestroy() => RestoreTestSettings();
+        void RestoreTestSettings()
+        {
+            if (!settingsCaptured) return;
+            settingsCaptured = false;
+            if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
+            if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);
+            InputSystem.settings = originalInputSettings;
+            Time.captureDeltaTime = originalCaptureDeltaTime;
+            if (testInputSettings) Destroy(testInputSettings);
+        }
+        void Finish(int code)
+        {
+            RestoreTestSettings();
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.Exit(code);
+            if (Application.isBatchMode) UnityEditor.EditorApplication.Exit(code);
+            else UnityEditor.EditorApplication.isPlaying = false;
 #else
             Application.Quit(code);
 #endif
