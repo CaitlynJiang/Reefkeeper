@@ -9,10 +9,12 @@ namespace Reefkeeper
         public AudioClip scrubClip;
         [Range(0, 1)] public float volume = 0.35f;
         public AudioSource Source { get; private set; }
+        ReefBrush tool;
         float activeUntil = -1;
 
         void Awake()
         {
+            tool = GetComponent<ReefBrush>();
             Source = gameObject.AddComponent<AudioSource>();
             Source.clip = scrubClip; Source.loop = true; Source.playOnAwake = false;
             Source.volume = volume; Source.priority = 64; Source.spatialBlend = 0.6f;
@@ -21,11 +23,11 @@ namespace Reefkeeper
         }
         void LateUpdate()
         {
-            var brush = pickup.workshop.brush;
+            var brush = tool;
             if (brush.Scrubbing) activeUntil = Time.unscaledTime + 0.08f;
             // Bridge tiny gaps at a stroke's turning point, but stop on release, lost contact or completion.
             bool active = brush.Held && brush.InContact && Time.unscaledTime < activeUntil
-                && !pickup.practiceSpot.Complete && (!pickup.Carrying || pickup.IsScrubbing);
+                && brush.ContactPatch && !brush.ContactPatch.Complete && (!pickup.Carrying || pickup.IsScrubbing);
             Source.volume = volume;
             if (active && scrubClip) { if (!Source.isPlaying) Source.Play(); }
             else if (Source.isPlaying) Source.Stop();

@@ -41,8 +41,8 @@ namespace Reefkeeper
         public bool ObjectivesExpanded { get; private set; } = true;
         public bool UsesQuestPrompts => pickup.workshop.xrGroup.activeSelf && !pickup.CenterMode;
         public string CurrentPromptGlyph => promptIcon.enabled && promptIcon.sprite ? promptIcon.sprite.name : "";
-        public string ControllerGripGlyph => GripGlyph(pickup.brush.isSelected || pickup.brush.isHovered
-            ? pickup.brush : pickup.corals.Aimed);
+        public string ControllerGripGlyph => GripGlyph(pickup.ActiveInteractable.isSelected || pickup.ActiveInteractable.isHovered
+            ? pickup.ActiveInteractable : pickup.corals.Aimed);
 
         void Awake()
         {
@@ -129,7 +129,7 @@ namespace Reefkeeper
             progressGroup.alpha = complete ? Mathf.Clamp01(1 - (completionAge - CompletionHold) / CompletionFade) : 1;
             progressLabel.text = complete ? "Clean!" : (displayedProgress * 100).ToString("0") + "%";
             progress.gameObject.SetActive(complete ? completionAge < CompletionHold + CompletionFade
-                : pickup.SpotInReach || (pickup.workshop.brush.Held && !pickup.CenterMode));
+                : pickup.SpotInReach);
             if (!planting && complete && completionAge >= CompletionHold + CompletionFade && !collapsedOnComplete)
             { ObjectivesExpanded = false; collapsedOnComplete = true; }
             objectiveBody.text = planting ? planting.Objective : complete ? "Nursery restored" : "Clean the nursery frame";
@@ -144,24 +144,26 @@ namespace Reefkeeper
             if (UsesQuestPrompts)
             {
                 key = ControllerGripGlyph;
-                if (pickup.brush.isSelected) context = pickup.workshop.brush.Scrubbing ? "" : "Release to let go of brush";
-                else if (pickup.brush.isHovered) context = "Hold to grab brush";
+                if (pickup.ToolHeld) context = pickup.ActiveTool.Scrubbing ? "" : "Release to let go of " + pickup.ActiveTool.ToolName;
+                else if (pickup.ActiveInteractable.isHovered) context = "Hold to grab " + pickup.ActiveTool.ToolName;
                 else if (pickup.corals.HasPrompt) context = pickup.corals.Held ? "Hold to replace coral" : "Hold to pick up coral";
             }
             else
             {
                 key = "keyboard_g";
-                context = pickup.AimingBrush ? "Pick up brush" : pickup.corals.HasPrompt
+                context = pickup.AimingBrush ? "Pick up " + pickup.AimedToolName : pickup.corals.HasPrompt
                     ? pickup.corals.Held ? "Replace coral" : "Pick up coral" : "";
                 if (pickup.SpotInReach && pickup.Carrying)
-                { context = complete || pickup.IsScrubbing ? "" : "Hold to scrub"; key = "mouse_left"; }
+                { context = complete || pickup.IsScrubbing ? "" : pickup.ActiveTool.toolKind == CleaningToolKind.Scraper ? "Hold to scrape" : "Hold to scrub"; key = "mouse_left"; }
                 else if (!complete && pickup.SpotInReach && context.Length == 0)
-                { context = "Pick up the brush from the tray"; key = ""; }
+                { context = pickup.Target.CleaningHint; key = ""; }
             }
             // Coral loop prompts (talk, plant, fertilize, moss notes); scrubbing keeps priority.
             if (shop && shop.AimingCat) { context = shop.Prompt; key = shop.PromptKey; }
-            else if (planting && planting.Prompt.Length > 0 && !(pickup.SpotInReach && pickup.Carrying))
+            else if (planting && planting.Prompt.Length > 0 && !(pickup.SpotInReach && pickup.ToolHeld))
             { context = planting.Prompt; key = planting.PromptKey; }
+            if (pickup.SpotInReach && pickup.ToolHeld && !pickup.CorrectTool)
+            { context = pickup.Target.CleaningHint; key = ""; }
             if (!pickup.workshop.xrGroup.activeSelf && Cursor.lockState != CursorLockMode.Locked && !pickup.Automated && !pickup.corals.Automated)
             { context = "Click to dive"; key = "mouse_left"; }
             SetIcon(promptIcon, key);
@@ -175,8 +177,8 @@ namespace Reefkeeper
             if (UsesQuestPrompts)
             {
                 string grip = ControllerGripGlyph;
-                HelpRow(0, grip, "Hold to grab brush"); HelpRow(1, grip, "Release to let go of brush");
-                HelpRow(2, "", "Move brush across the algae"); HelpRow(3, "", "Coral stays held after release");
+                HelpRow(0, grip, "Hold to grab a tool"); HelpRow(1, grip, "Release to let go of tool");
+                HelpRow(2, "", "Brush algae; scrape fire coral"); HelpRow(3, "", "Scraper: push and pull");
                 HelpRow(4, "keyboard_g", "Simulator: hold for Grip");
                 HelpRow(5, "keyboard_w", "WASD  Move controller"); HelpRow(6, "keyboard_q", "Down / up", "keyboard_e");
                 HelpRow(7, "keyboard_tab", "Body / device mode"); HelpRow(8, "", "[ / ]  Select left / right hand");
@@ -186,8 +188,8 @@ namespace Reefkeeper
             HelpRow(0, "keyboard_w", "WASD  Swim");
             HelpRow(1, xr ? "keyboard_q" : "keyboard_space", xr ? "Down / up" : "Up / down", xr ? "keyboard_e" : "keyboard_c");
             HelpRow(2, "keyboard_shift", "Boost"); HelpRow(3, xr ? "keyboard_b" : "mouse_right", "Brake", xr ? "" : "keyboard_x");
-            HelpRow(4, "keyboard_g", "Talk to cat / plant / pick up"); HelpRow(5, "mouse_left", "Hold: scrub  Click: fertilize");
-            HelpRow(6, "keyboard_h", "Return brush");
+            HelpRow(4, "keyboard_g", "Talk / plant / pick up a tool"); HelpRow(5, "mouse_left", "Hold: clean  Click: fertilize");
+            HelpRow(6, "keyboard_h", "Return tools to tray");
             HelpRow(7, xr ? "keyboard_tab" : "keyboard_escape", xr ? "Body / device mode" : "Cursor; click to resume");
             HelpRow(8, xr ? "mouse_right" : "keyboard_r", xr ? "Toggle mouse look" : "Return to start");
             HelpRow(9, "keyboard_f2", "Desktop / XR simulator"); HelpRow(10, "keyboard_f5", "Reset nursery");

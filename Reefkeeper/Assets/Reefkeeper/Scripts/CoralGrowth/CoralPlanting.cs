@@ -110,7 +110,7 @@ namespace Reefkeeper.Corals
                 return true;
             }
             if (nurture) { CarePrompt(nurture, carePressed, controller); return true; }
-            if (socket && socket.IsFree && socket.Mossy && !BrushInHand) { Prompt = "Clear the moss with the brush"; return true; }
+            if (socket && socket.IsFree && socket.Mossy && !BrushInHand) { Prompt = socket.CleaningHint; return true; }
             return false;
         }
 
@@ -119,7 +119,7 @@ namespace Reefkeeper.Corals
             string species = CoralRules.Species(corals.Held.gameObject), name = CoralRules.DisplayName(species);
             if (!socket.IsFree) { Prompt = "This spot is taken"; return; }
             if (!CoralRules.CanPlant(species, socket.grade)) { Prompt = $"Needs a {Where(species)}"; return; }
-            if (socket.Mossy) { Prompt = "Brush the moss off first"; return; }
+            if (socket.Mossy) { Prompt = socket.CleaningHint; return; }
             Prompt = controller ? $"Pull the trigger to plant {name}" : $"Plant {name}";
             PromptKey = controller ? "" : "keyboard_g";
             if (pressed) Plant(socket);
@@ -127,7 +127,7 @@ namespace Reefkeeper.Corals
 
         void CarePrompt(CoralNurture nurture, bool pressed, bool controller)
         {
-            if (nurture.Paused) { if (!BrushInHand) Prompt = "Clear the moss with the brush"; return; }
+            if (nurture.Paused) { if (!BrushInHand) Prompt = nurture.socket.CleaningHint; return; }
             if (!nurture.Ready) return;
             Prompt = controller ? "Pull the trigger to fertilize" : "Fertilize";
             PromptKey = controller ? "" : "mouse_left";
@@ -135,7 +135,7 @@ namespace Reefkeeper.Corals
         }
 
         // Carrying covers the desktop hand; Held covers a real controller's grip.
-        bool BrushInHand => brushes.Carrying || workshop.brush.Held;
+        bool BrushInHand => brushes.ToolHeld;
 
         static string Where(string species) => species == CoralRules.Disc ? "cairn or flat cradle"
             : species == CoralRules.Finger ? "hanging hook" : "flat cradle";
@@ -163,6 +163,7 @@ namespace Reefkeeper.Corals
                 if (c.transform.IsChildOf(workshop.desktopPlayer.transform) || c.transform.IsChildOf(workshop.xrGroup.transform)) continue;
                 if (corals.Held && c.transform.IsChildOf(corals.Held.transform)) continue;
                 if (workshop.brush.Held && c.transform.IsChildOf(workshop.brush.transform)) continue;
+                if (workshop.scraper && workshop.scraper.Held && c.transform.IsChildOf(workshop.scraper.transform)) continue;
                 if (c.isTrigger && !c.GetComponentInParent<RackSocket>()) continue;
                 if (hits[i].distance < nearest) { nearest = hits[i].distance; best = hits[i]; }
             }
@@ -199,7 +200,7 @@ namespace Reefkeeper.Corals
                 }
             }
             if (!Hovered) return;
-            if (Hovered.Paused) Prompt = "Clear the moss with the brush";
+            if (Hovered.Paused) Prompt = Hovered.socket.CleaningHint;
             else if (Hovered.Ready)
             {
                 Prompt = "Pull the trigger to fertilize";
@@ -236,6 +237,8 @@ namespace Reefkeeper.Corals
 
         public CoralNurture Plant(RackSocket socket)
         {
+            if (!socket || !socket.IsFree || socket.Mossy || !corals.Held
+                || !CoralRules.CanPlant(CoralRules.Species(corals.Held.gameObject), socket.grade)) return null;
             var fragment = corals.TakeHeld();
             if (!fragment) return null;
             var coral = fragment.GetComponent<CoralGrowth>();
@@ -316,7 +319,7 @@ namespace Reefkeeper.Corals
             get
             {
                 planted.RemoveAll(n => !n);
-                if (!cleanedThree) return $"Clean {MossToClean} mossy spots ({Mathf.Min(cleanSockets, MossToClean)}/{MossToClean})";
+                if (!cleanedThree) return $"Clear {MossToClean} planting spots ({Mathf.Min(cleanSockets, MossToClean)}/{MossToClean})";
                 if (!gotCoral) return "Talk to Lucky Cat";
                 if (!plantedOne) return corals.Held
                     ? $"Plant the {CoralRules.DisplayName(CoralRules.Species(corals.Held.gameObject))}"
@@ -327,7 +330,7 @@ namespace Reefkeeper.Corals
                     var species = CoralRules.Species(corals.Held.gameObject);
                     return $"Plant the {CoralRules.DisplayName(species)}";
                 }
-                if (planted.Any(n => n.Paused)) return "Brush the moss off your corals";
+                if (planted.Any(n => n.Paused)) return "Clear the growth around your corals";
                 if (planted.Count == 0) return "Get a coral from Lucky Cat";
                 if (planted.All(n => n.FullyGrown)) return "All corals fully grown!";
                 return "Let your corals grow";

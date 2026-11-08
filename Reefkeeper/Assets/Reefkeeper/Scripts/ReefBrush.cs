@@ -4,11 +4,16 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace Reefkeeper
 {
+    public enum CleaningToolKind { Brush, Scraper }
+
     [RequireComponent(typeof(XRGrabInteractable))]
     public sealed class ReefBrush : MonoBehaviour
     {
         public Transform bristles;
+        public CleaningToolKind toolKind;
         public float contactRadius = 0.075f;
+        public string ToolName => toolKind == CleaningToolKind.Scraper ? "scraper" : "brush";
+        public RackDirtPatch ContactPatch { get; private set; }
         public bool InContact { get; private set; }
         public bool Scrubbing { get; private set; }
         public bool Held => grab && grab.isSelected;
@@ -25,6 +30,7 @@ namespace Reefkeeper
             Vector3 tip = bristles.position;
             InContact = false;
             Scrubbing = false;
+            ContactPatch = null;
             if (Held && wasHeld && (!assisted || !assisted.Carrying || assisted.IsScrubbing)) Sweep(lastTip, tip);
             lastTip = tip;
             wasHeld = Held;
@@ -47,12 +53,18 @@ namespace Reefkeeper
                     Vector3 normal = patch.transform.up;
                     // Bristles face the surface, and their center stays on its exposed side.
                     if (Vector3.Dot(bristles.up, normal) < 0.55f || Vector3.Dot(point - patch.transform.position, normal) < -0.015f) continue;
+                    ContactPatch = patch;
+                    if (!patch.Accepts(toolKind)) continue;
                     InContact = true;
-                    float travel = Vector3.ProjectOnPlane(delta, normal).magnitude;
-                    if (travel > 0.0005f) { patch.ApplyStroke(travel); Scrubbing = !patch.Complete; }
+                    Vector3 tangent = Vector3.ProjectOnPlane(delta, normal);
+                    // The scraper cuts forwards/backwards across its blade; sideways shuffling does not cut.
+                    float travel = toolKind == CleaningToolKind.Scraper
+                        ? Mathf.Abs(Vector3.Dot(tangent, Vector3.ProjectOnPlane(bristles.forward, normal).normalized))
+                        : tangent.magnitude;
+                    if (travel > 0.0005f) { patch.ApplyStroke(travel, toolKind); Scrubbing = !patch.Complete; }
                 }
             }
         }
-        void OnDisable() { wasHeld = false; InContact = false; Scrubbing = false; }
+        void OnDisable() { wasHeld = false; InContact = false; Scrubbing = false; ContactPatch = null; }
     }
 }

@@ -50,14 +50,16 @@ namespace Reefkeeper.Corals
                 Progress = Mathf.Min(1f, Progress + Time.deltaTime * growthRate / secondsPerStage);
                 // Moss only creeps back while the coral is actively growing.
                 mossTimer -= Time.deltaTime;
-                if (mossTimer <= 0f && socket && socket.moss) { socket.moss.ResetDirt(); ResetMossTimer(); }
+                // Only algae returns on this short care timer. Cleared fire coral stays cleared.
+                if (mossTimer <= 0f && socket && socket.moss && socket.moss.surfaceKind == ReefSurfaceKind.Algae)
+                { socket.moss.ResetDirt(); ResetMossTimer(); }
             }
         }
 
         /// <summary>Plays the growth animation and starts the next stage. Returns false if not ready.</summary>
         public bool Fertilize()
         {
-            if (!Ready) return false;
+            if (!Ready || Paused) return false;
             coral.Grow();
             Progress = 0f;
             ResetMossTimer();

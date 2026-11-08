@@ -10,28 +10,36 @@ namespace Reefkeeper
         public ReefWorkshop workshop;
         public ReefCoralPickup corals;
         public ReefBrushInteractable brush;
+        public ReefBrushInteractable scraper;
         public ReefPickupInteractor hand;
         public RackDirtPatch practiceSpot;
         public float grabReach = 3, scrubReach = 1.35f;
         public bool Automated { get; set; }
-        public bool Carrying => hand && hand.isPerformingManualInteraction && brush.isSelected;
+        public ReefBrushInteractable ActiveInteractable => brush.isSelected ? brush
+            : scraper && scraper.isSelected ? scraper : aimedTool ? aimedTool
+            : scraper && scraper.isHovered ? scraper : brush;
+        public ReefBrush ActiveTool => ActiveInteractable.GetComponent<ReefBrush>();
+        public bool ToolHeld => ActiveInteractable.isSelected;
+        public bool Carrying => hand && hand.isPerformingManualInteraction && ToolHeld;
+        public bool CorrectTool => Target && Target.Accepts(ActiveTool.toolKind);
         public bool CenterMode => corals.CenterAimMode;
         public bool AimingBrush { get; private set; }
+        public string AimedToolName => aimedTool ? aimedTool.GetComponent<ReefBrush>().ToolName : "tool";
         public bool IsScrubbing { get; private set; }
         public bool SpotInReach { get; private set; }
         /// <summary>The moss / algae patch in scrub reach right now, if any.</summary>
         public RackDirtPatch Target { get; private set; }
         /// <summary>The patch the HUD should report on: the one in reach, else the last one scrubbed.</summary>
         public RackDirtPatch ActivePatch => Target ? Target : lastTarget ? lastTarget : practiceSpot;
-        public float Progress => ActivePatch.Cleaned;
+        public float Progress => ActivePatch ? ActivePatch.Cleaned : 0;
         RackDirtPatch lastTarget;
+        ReefBrushInteractable aimedTool;
         public Camera View => corals.View;
         readonly RaycastHit[] hits = new RaycastHit[64];
         Vector3 tipLocal;
         float strokePhase;
         bool posed, quitting;
 
-        void Start() { tipLocal = brush.transform.InverseTransformPoint(workshop.brush.bristles.position); }
         void Update()
         {
             if (!View) return;
@@ -39,15 +47,19 @@ namespace Reefkeeper
             if (Carrying && !CenterMode) workshop.ReturnBrush();
             bool canAct = CenterMode && (Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked);
             var hit = FindVisible(grabReach);
-            AimingBrush = canAct && !brush.isSelected && hit.collider && hit.collider.GetComponentInParent<ReefBrushInteractable>() == brush;
-            brush.SetAim(AimingBrush);
+            var aimed = hit.collider ? hit.collider.GetComponentInParent<ReefBrushInteractable>() : null;
+            aimedTool = canAct && aimed && !aimed.isSelected && (aimed == brush || aimed == scraper) ? aimed : null;
+            AimingBrush = aimedTool;
+            brush.SetAim(aimedTool == brush);
+            if (scraper) scraper.SetAim(aimedTool == scraper);
             if (AimingBrush && Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame) Grab();
             var patch = hit.collider ? PatchOf(hit.collider) : null;
-            SpotInReach = canAct && patch && !patch.Complete && hit.distance <= scrubReach;
+            if (!CenterMode) patch = ToolHeld ? ActiveTool.ContactPatch : null;
+            SpotInReach = patch && !patch.Complete && (CenterMode ? canAct && hit.distance <= scrubReach : ToolHeld);
             Target = SpotInReach ? patch : null;
             if (Target) lastTarget = Target;
             bool heldButton = Mouse.current != null && Mouse.current.leftButton.isPressed;
-            IsScrubbing = Carrying && canAct && SpotInReach && !Target.Complete && heldButton;
+            IsScrubbing = Carrying && canAct && SpotInReach && CorrectTool && heldButton;
             if (Carrying) Pose(); else posed = false;
             if (Carrying && Keyboard.current != null && Keyboard.current.hKey.wasPressedThisFrame) workshop.ReturnBrush();
         }
@@ -67,7 +79,7 @@ namespace Reefkeeper
             {
                 var c = hits[i].collider;
                 if (c.transform.IsChildOf(workshop.desktopPlayer.transform) || c.transform.IsChildOf(workshop.xrGroup.transform)) continue;
-                if (brush.isSelected && c.transform.IsChildOf(brush.transform)) continue;
+                if (ToolHeld && c.transform.IsChildOf(ActiveInteractable.transform)) continue;
                 if (corals.Held && c.transform.IsChildOf(corals.Held.transform)) continue;
                 if (c.isTrigger && !c.GetComponent<RackDirtPatch>()) continue;
                 if (hits[i].distance < best) { best = hits[i].distance; nearest = hits[i]; }
@@ -76,13 +88,23 @@ namespace Reefkeeper
         }
         public void Grab()
         {
-            if (!AimingBrush || brush.isSelected) return;
+            if (!AimingBrush || !aimedTool || aimedTool.isSelected) return;
+            var selected = aimedTool;
+            workshop.ReturnBrush();
             corals.ClearHeld();
+            var tool = selected.GetComponent<ReefBrush>();
+            tipLocal = selected.transform.InverseTransformPoint(tool.bristles.position);
             hand.transform.SetParent(transform, true);
             SetIdlePose(); posed = true;
-            hand.Requested = brush;
-            hand.StartManualInteraction((IXRSelectInteractable)brush);
-            AimingBrush = false; brush.SetAim(false);
+            hand.Requested = selected;
+            hand.StartManualInteraction((IXRSelectInteractable)selected);
+            AimingBrush = false; selected.SetAim(false); aimedTool = null;
+        }
+        public void OnToolSelected(ReefBrushInteractable selected)
+        {
+            corals.ClearHeld();
+            var other = selected == brush ? scraper : brush;
+            if (other && other.isSelected) workshop.ReturnTool(other.GetComponent<ReefBrush>());
         }
         public void Release()
         {
@@ -107,9 +129,11 @@ namespace Reefkeeper
                 if (forward.sqrMagnitude < 0.01f) forward = surface.forward;
                 targetRotation = Quaternion.LookRotation(forward, surface.up);
                 // Two short tangent strokes move the actual bristles across the contact collider.
-                Vector3 tip = surface.position + surface.up * 0.025f
-                    + surface.right * (Mathf.Sin(strokePhase) * 0.075f)
-                    + surface.forward * (Mathf.Sin(strokePhase * 1.6f) * 0.025f);
+                Vector3 stroke = ActiveTool.toolKind == CleaningToolKind.Scraper
+                    ? forward * (Mathf.Sin(strokePhase) * 0.085f)
+                    : surface.right * (Mathf.Sin(strokePhase) * 0.075f)
+                        + surface.forward * (Mathf.Sin(strokePhase * 1.6f) * 0.025f);
+                Vector3 tip = surface.position + surface.up * 0.025f + stroke;
                 targetPosition = tip - targetRotation * tipLocal;
             }
             else
@@ -124,6 +148,6 @@ namespace Reefkeeper
             posed = true;
         }
         void OnApplicationQuit() { quitting = true; }
-        void OnDisable() { if (quitting) return; Release(); if (brush) brush.SetAim(false); }
+        void OnDisable() { if (quitting) return; Release(); if (brush) brush.SetAim(false); if (scraper) scraper.SetAim(false); }
     }
 }

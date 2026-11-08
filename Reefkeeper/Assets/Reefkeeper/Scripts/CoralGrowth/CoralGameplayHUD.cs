@@ -97,7 +97,7 @@ namespace Reefkeeper.Corals
         {
             var hovered = planting ? planting.Hovered : null;
             // While scrubbing, the existing arc shows the cleaning progress in the same spot.
-            if (planting && planting.brushes && planting.brushes.Carrying && planting.brushes.SpotInReach) hovered = null;
+            if (planting && planting.brushes && planting.brushes.ToolHeld && planting.brushes.SpotInReach) hovered = null;
             if (hovered) shown = hovered;
             cardGroup.alpha = Mathf.MoveTowards(cardGroup.alpha, hovered ? 1 : 0, Time.unscaledDeltaTime * 8);
             if (!shown || cardGroup.alpha <= 0) return;
@@ -122,7 +122,7 @@ namespace Reefkeeper.Corals
             status.gameObject.SetActive(!ready);
             card.sizeDelta = new Vector2(CardWidth, ready ? 150 : 132);
             if (ready) return;
-            if (shown.Paused) SetStatus(moss, "Moss is blocking growth", Amber, 1);
+            if (shown.Paused) SetStatus(moss, shown.socket.moss.SurfaceName + " is blocking growth", Amber, 1);
             else if (shown.FullyGrown) SetStatus(check, "Fully grown", Green, 1);
             else if (shown.Ready) SetStatus(fertilize, "Ready to fertilize", Green, 1);
             else SetStatus(leaf, "Growing", Cream, 0.75f);

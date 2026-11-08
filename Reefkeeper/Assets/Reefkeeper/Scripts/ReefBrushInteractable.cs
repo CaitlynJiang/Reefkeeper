@@ -44,6 +44,7 @@ namespace Reefkeeper
         protected override void OnSelectEntered(SelectEnterEventArgs args)
         {
             base.OnSelectEntered(args);
+            if (owner) owner.OnToolSelected(this);
             foreach (var c in colliders) c.isTrigger = true;
             aimed = false; Refresh();
         }
