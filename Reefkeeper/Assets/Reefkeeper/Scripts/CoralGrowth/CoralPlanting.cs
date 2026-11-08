@@ -7,9 +7,10 @@ namespace Reefkeeper.Corals
 {
     /// <summary>
     /// Planting and care loop at the nursery. While carrying a coral, aim at a socket and press G
-    /// to plant it (or, with real controllers, let go near the socket). The socket's grade must fit
-    /// the coral and its moss must be brushed off first. Aim at a planted coral to see its stage;
-    /// when a stage is full, click (or pull the trigger) to fertilize and grow it.
+    /// to plant it (with real controllers: point a controller ray at the socket and pull that
+    /// hand's trigger, or let go near the socket). The socket's grade must fit the coral and its
+    /// moss must be brushed off first. Aim at a planted coral to see its stage; when a stage is
+    /// full, click (or point and pull the trigger, or reach and pull it) to fertilize and grow it.
     /// </summary>
     [DefaultExecutionOrder(120)]
     public sealed class CoralPlanting : MonoBehaviour
@@ -23,6 +24,8 @@ namespace Reefkeeper.Corals
         public float reach = 3f;
         [Tooltip("With real controllers: how close a hand must be to plant on release or to tend a coral (m).")]
         public float handReach = 0.3f;
+        [Tooltip("With real controllers: how far a controller ray reaches sockets and corals (m).")]
+        public float rayReach = 4f;
         [Min(1)] public float secondsPerStage = 30f;
         public Vector2 mossReturnSeconds = new Vector2(25f, 50f);
 
@@ -37,15 +40,19 @@ namespace Reefkeeper.Corals
         readonly List<RackSocket> sockets = new List<RackSocket>();
         readonly RaycastHit[] hits = new RaycastHit[64];
         Transform[] hands = new Transform[0];
-        InputAction trigger;
+        // Index 0 = left, 1 = right.
+        readonly Transform[] rayOrigins = new Transform[2];
+        InputAction[] triggers;
 
         void Awake()
         {
             corals.PlantOnRelease = TryPlantNear;
-            trigger = new InputAction("Fertilize", InputActionType.Button);
-            trigger.AddBinding("<XRController>{LeftHand}/triggerPressed");
-            trigger.AddBinding("<XRController>{RightHand}/triggerPressed");
-            trigger.Enable();
+            triggers = new[]
+            {
+                new InputAction("Plant or fertilize left", InputActionType.Button, "<XRController>{LeftHand}/triggerPressed"),
+                new InputAction("Plant or fertilize right", InputActionType.Button, "<XRController>{RightHand}/triggerPressed"),
+            };
+            foreach (var t in triggers) t.Enable();
         }
 
         void Start()
@@ -53,11 +60,17 @@ namespace Reefkeeper.Corals
             sockets.AddRange(FindObjectsByType<RackSocket>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Where(s => s.moss));
             hands = workshop.xrGroup.GetComponentsInChildren<Transform>(true)
                 .Where(t => t.name == "Left Controller" || t.name == "Right Controller").ToArray();
+            foreach (var hand in hands)
+            {
+                // Aim along the controller's visible ray when there is one.
+                var nearFar = hand.GetComponentInChildren<UnityEngine.XR.Interaction.Toolkit.Interactors.NearFarInteractor>(true);
+                rayOrigins[hand.name.StartsWith("Left") ? 0 : 1] = nearFar ? nearFar.transform : hand;
+            }
         }
 
         void OnDestroy()
         {
-            trigger?.Dispose();
+            if (triggers != null) foreach (var t in triggers) t.Dispose();
             if (corals) corals.PlantOnRelease = null;
         }
 
@@ -67,47 +80,62 @@ namespace Reefkeeper.Corals
             TrackTutorial();
             bool canAct = Automated || corals.Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             if (!canAct) return;
-            if (corals.CenterAimMode) AimFromView();
+            if (corals.CenterAimMode)
+            {
+                var view = corals.View;
+                if (view) AimAlong(new Ray(view.transform.position, view.transform.forward), reach,
+                    Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame,
+                    Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame, false);
+            }
             else if (workshop.xrGroup.activeSelf) ReachWithHands();
         }
 
-        // ---------------------------------------------------------------- desktop / simulator aim
+        // ---------------------------------------------------------------- aiming (view or controller ray)
 
-        void AimFromView()
+        /// <summary>Prompts for (and acts on) what the ray points at. Returns true if it pointed at something relevant.</summary>
+        bool AimAlong(Ray ray, float distance, bool plantPressed, bool carePressed, bool controller)
         {
-            var view = corals.View;
-            if (!view) return;
-            var hit = Nearest(new Ray(view.transform.position, view.transform.forward));
-            if (!hit.collider) return;
+            var hit = Nearest(ray, distance);
+            if (!hit.collider) return false;
             // The moss pad around a planted coral is often hit first; it still means that coral.
             var nurture = hit.collider.GetComponentInParent<CoralNurture>();
             var socket = SocketAt(hit.collider, hit.point);
             if (!nurture && socket && socket.occupant) nurture = socket.occupant.GetComponent<CoralNurture>();
-            Hovered = nurture;
+            if (nurture) Hovered = nurture;
 
-            if (corals.Held) { CarryPrompt(socket); return; }
-            if (nurture) { CarePrompt(nurture, Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame); return; }
-            if (socket && socket.IsFree && socket.Mossy && !brushes.Carrying) Prompt = "Clear the moss with the brush";
+            if (corals.Held)
+            {
+                if (!socket) return nurture;
+                CarryPrompt(socket, plantPressed, controller);
+                return true;
+            }
+            if (nurture) { CarePrompt(nurture, carePressed, controller); return true; }
+            if (socket && socket.IsFree && socket.Mossy && !BrushInHand) { Prompt = "Clear the moss with the brush"; return true; }
+            return false;
         }
 
-        void CarryPrompt(RackSocket socket)
+        void CarryPrompt(RackSocket socket, bool pressed, bool controller)
         {
-            if (!socket) return;
             string species = CoralRules.Species(corals.Held.gameObject), name = CoralRules.DisplayName(species);
             if (!socket.IsFree) { Prompt = "This spot is taken"; return; }
             if (!CoralRules.CanPlant(species, socket.grade)) { Prompt = $"Needs a {Where(species)}"; return; }
             if (socket.Mossy) { Prompt = "Brush the moss off first"; return; }
-            Prompt = $"Plant {name}"; PromptKey = "keyboard_g";
-            if (Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame) Plant(socket);
+            Prompt = controller ? $"Pull the trigger to plant {name}" : $"Plant {name}";
+            PromptKey = controller ? "" : "keyboard_g";
+            if (pressed) Plant(socket);
         }
 
-        void CarePrompt(CoralNurture nurture, bool clicked)
+        void CarePrompt(CoralNurture nurture, bool pressed, bool controller)
         {
-            if (nurture.Paused) { if (!brushes.Carrying) Prompt = "Clear the moss with the brush"; return; }
+            if (nurture.Paused) { if (!BrushInHand) Prompt = "Clear the moss with the brush"; return; }
             if (!nurture.Ready) return;
-            Prompt = "Fertilize"; PromptKey = "mouse_left";
-            if (clicked) Fertilize(nurture);
+            Prompt = controller ? "Pull the trigger to fertilize" : "Fertilize";
+            PromptKey = controller ? "" : "mouse_left";
+            if (pressed) Fertilize(nurture);
         }
+
+        // Carrying covers the desktop hand; Held covers a real controller's grip.
+        bool BrushInHand => brushes.Carrying || workshop.brush.Held;
 
         static string Where(string species) => species == CoralRules.Disc ? "cairn or flat cradle"
             : species == CoralRules.Finger ? "hanging hook" : "flat cradle";
@@ -125,9 +153,9 @@ namespace Reefkeeper.Corals
             return top ? top : socket;
         }
 
-        RaycastHit Nearest(Ray ray)
+        RaycastHit Nearest(Ray ray, float distance)
         {
-            int count = Physics.RaycastNonAlloc(ray, hits, reach, ~0, QueryTriggerInteraction.Collide);
+            int count = Physics.RaycastNonAlloc(ray, hits, distance, ~0, QueryTriggerInteraction.Collide);
             var best = new RaycastHit(); float nearest = float.PositiveInfinity;
             for (int i = 0; i < count; i++)
             {
@@ -145,6 +173,15 @@ namespace Reefkeeper.Corals
 
         void ReachWithHands()
         {
+            // Point a controller ray and pull that hand's trigger.
+            for (int i = 0; i < rayOrigins.Length; i++)
+            {
+                var origin = rayOrigins[i];
+                if (!origin || !origin.gameObject.activeInHierarchy) continue;
+                bool pressed = triggers[i].WasPressedThisFrame();
+                if (AimAlong(new Ray(origin.position, origin.forward), rayReach, pressed, pressed, true)) return;
+            }
+            // Or reach: let go of a coral near a socket, or bring a hand up to a coral.
             if (corals.Held)
             {
                 var socket = NearestPlantable(corals.Held);
@@ -166,7 +203,7 @@ namespace Reefkeeper.Corals
             else if (Hovered.Ready)
             {
                 Prompt = "Pull the trigger to fertilize";
-                if (trigger.WasPressedThisFrame()) Fertilize(Hovered);
+                if (triggers[0].WasPressedThisFrame() || triggers[1].WasPressedThisFrame()) Fertilize(Hovered);
             }
         }
 
