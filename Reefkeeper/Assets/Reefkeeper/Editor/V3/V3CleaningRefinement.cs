@@ -10,14 +10,14 @@ using Object = UnityEngine.Object;
 
 namespace Reefkeeper.Editor
 {
-    /// <summary>Authored V3 feedback pass: spiny fire coral, a hand file, and two clear teaching stations.</summary>
+    /// <summary>Authored V3 feedback pass: branching fire coral, a hand file, and two clear teaching stations.</summary>
     public static class V3CleaningRefinement
     {
         const string Folder = "Assets/Reefkeeper/Generated/V3";
         const string PracticeFire = "Practice spot / fire coral";
         const string Samples = "Fire coral / tree samples";
 
-        [MenuItem("Reefkeeper/V3/Apply spiny coral and file feedback")]
+        [MenuItem("Reefkeeper/V3/Apply coral and file feedback")]
         public static void Apply()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
@@ -27,7 +27,7 @@ namespace Reefkeeper.Editor
             var pickup = w.GetComponent<ReefBrushPickup>();
             Undo.RegisterFullObjectHierarchyUndo(w.gameObject, "Refine V3 cleaning stations");
             Directory.CreateDirectory(Folder);
-            var pad = BuildSpinyCoral();
+            var pad = BuildBranchingCoral();
             BuildFile(w, pickup);
             ArrangeToolTable(w);
             var practiceFire = ArrangePractice(w, pickup, pad);
@@ -38,34 +38,53 @@ namespace Reefkeeper.Editor
             EditorSceneManager.MarkSceneDirty(scene);
             Validate();
             EditorSceneManager.SaveScene(scene);
-            Debug.Log("V3_FEEDBACK_READY: spiny fire coral, file, paired practice targets, widened tool table, four attached tree samples.");
+            Debug.Log("V3_FEEDBACK_READY: branching fire coral, file, paired practice targets, widened tool table, attached tree samples.");
         }
 
-        public static RackDirtPatch BuildSpinyCoral()
+        [MenuItem("Reefkeeper/V3/Update fire coral shape and tree targets")]
+        public static void UpdateFireCoral()
         {
-            var orange = Mat("FireCoralCoating", new Color(0.93f, 0.32f, 0.045f), 0, 0.2f);
-            var amber = Mat("FireCoralAmber", new Color(1f, 0.58f, 0.09f), 0, 0.23f);
-            var tips = Mat("FireCoralTips", new Color(1f, 0.88f, 0.40f), 0, 0.28f);
-            var spineMeshes = Enumerable.Range(0, 3).Select(i => SaveMesh("FireCoralSpine" + i, Spine(i))).ToArray();
+            if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+            var scene = EditorSceneManager.GetActiveScene();
+            if (scene.path != V3CleaningSetup.ScenePath) throw new InvalidOperationException("Open ShallowReef_V3 first.");
+            var w = Object.FindFirstObjectByType<ReefWorkshop>();
+            Undo.RegisterFullObjectHierarchyUndo(w.gameObject, "Reshape fire coral and tree targets");
+            var prefab = BuildBranchingCoral();
+            var practice = w.patches.First(p => p.name == PracticeFire);
+            var samples = AttachTreeSamples(w, prefab);
+            w.patches = new[] { w.GetComponent<ReefBrushPickup>().practiceSpot, practice }.Concat(samples).ToArray();
+            EditorUtility.SetDirty(w);
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.MarkSceneDirty(scene);
+            Validate();
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("V3_CORAL_UPDATED: pale curved branches, narrow irregular footprint, larger cleanable targets on planting trees.");
+        }
+
+        public static RackDirtPatch BuildBranchingCoral()
+        {
+            var orange = Mat("FireCoralCoating", new Color(1f, 0.77f, 0.40f), 0, 0.24f);
+            var amber = Mat("FireCoralAmber", Color.white, 0, 0.25f);
+            amber.SetTexture("_BaseMap", BranchGradient());
+            var branchMeshes = Enumerable.Range(0, 3).Select(i => SaveMesh("FireCoralSpine" + i, Branches(i))).ToArray();
             var crust = SaveMesh("FireCoralAttachedCrust", Crust());
             var root = new GameObject("Fire coral on planting surface");
             var patch = root.AddComponent<RackDirtPatch>();
             patch.surfaceKind = ReefSurfaceKind.FireCoral; patch.requiredTravel = 1.8f;
             var contact = root.AddComponent<BoxCollider>();
-            contact.isTrigger = true; contact.center = new Vector3(0, 0.10f, 0); contact.size = new Vector3(1.02f, 0.24f, 1.02f);
+            contact.isTrigger = true; contact.center = new Vector3(0, 0.16f, 0); contact.size = new Vector3(1.04f, 0.36f, 0.24f);
             patch.dirtVisual = MeshObject("Fire coral crust", root.transform, crust, new[] { orange }).GetComponent<Renderer>();
             var random = new System.Random(3419);
             var growth = new List<Transform>();
-            for (int i = 0; i < 27; i++)
+            for (int i = 0; i < 9; i++)
             {
-                float a = i * 2.39996f, r = 0.39f * Mathf.Sqrt((i + 0.3f) / 27f);
-                var spine = MeshObject("Fire coral spine " + i, root.transform, spineMeshes[i % 3], new[] { orange, amber, tips }).transform;
-                spine.localPosition = new Vector3(Mathf.Cos(a) * r, 0.008f, Mathf.Sin(a) * r);
-                float height = 0.10f + (float)random.NextDouble() * 0.19f;
-                float width = 0.017f + (float)random.NextDouble() * 0.021f;
-                spine.localScale = new Vector3(width, height, width * (0.68f + (float)random.NextDouble() * 0.3f));
-                spine.localRotation = Quaternion.Euler(Mathf.Sin(a) * 19, i * 53, Mathf.Cos(a) * 19);
-                growth.Add(spine);
+                float x = -0.37f + i * 0.092f;
+                var branch = MeshObject("Fire coral branch " + i, root.transform, branchMeshes[i % 3], new[] { amber }).transform;
+                branch.localPosition = new Vector3(x, 0.006f, Mathf.Sin(i * 1.7f) * 0.022f);
+                float height = 0.18f + (float)random.NextDouble() * 0.16f;
+                branch.localScale = new Vector3(height * 0.85f, height, height * 0.70f);
+                branch.localRotation = Quaternion.Euler(Mathf.Sin(i * 2.1f) * 7, Mathf.Sin(i * 1.9f) * 13, Mathf.Cos(i * 1.5f) * 9);
+                growth.Add(branch);
             }
             patch.growth = growth.ToArray();
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, Folder + "/FireCoralPad.prefab");
@@ -146,30 +165,35 @@ namespace Reefkeeper.Editor
 
         static RackDirtPatch[] AttachTreeSamples(ReefWorkshop w, RackDirtPatch prefab)
         {
-            var tree = w.GetComponentsInChildren<MeshCollider>(true).First(c => c.name.StartsWith("RackBase_Tree"));
+            // Select the actual nursery tree with planting sockets, not background tree scenery.
+            var tree = w.GetComponentsInChildren<MeshCollider>(true).First(c => c.name.StartsWith("RackBase_Tree")
+                && c.GetComponentsInChildren<Reefkeeper.Corals.RackSocket>(true).Length > 0);
             var old = tree.transform.Cast<Transform>().FirstOrDefault(t => t.name == Samples); if (old) Object.DestroyImmediate(old.gameObject);
             var group = new GameObject(Samples).transform; group.SetParent(tree.transform, false);
             Physics.SyncTransforms();
-            var candidates = new List<Vector2> { new Vector2(0, 0.30f), new Vector2(0.20f, 0.48f), new Vector2(-0.06f, 0.86f), new Vector2(-0.035f, 1.20f), new Vector2(0, 1.42f) };
-            for (int i = 0; i < 15; i++) candidates.Add(new Vector2(0, 0.24f + i * 0.085f));
+            var candidates = new List<Vector2> { new Vector2(0, 0.62f), new Vector2(0.20f, 0.48f), new Vector2(-0.06f, 0.95f), new Vector2(-0.035f, 1.31f), new Vector2(0, 1.46f) };
+            for (int i = 0; i < 12; i++)
+                foreach (float x in new[] { 0f, -0.10f, 0.10f, -0.20f, 0.20f })
+                    candidates.Add(new Vector2(x, 0.46f + i * 0.085f));
             var result = new List<RackDirtPatch>();
             foreach (var candidate in candidates)
             {
                 var ray = new Ray(tree.transform.TransformPoint(new Vector3(candidate.x, candidate.y, -1)), tree.transform.forward);
-                if (!tree.Raycast(ray, out var hit, 5) || result.Any(p => Vector3.Distance(p.transform.position, hit.point) < 0.32f)) continue;
+                if (!tree.Raycast(ray, out var hit, 5) || result.Any(p => Vector3.Distance(p.transform.position, hit.point) < 0.43f)) continue;
                 var pad = (RackDirtPatch)PrefabUtility.InstantiatePrefab(prefab, group);
                 pad.name = "Attached fire coral sample " + (result.Count + 1);
                 var along = Vector3.ProjectOnPlane(Vector3.up, hit.normal).normalized;
                 if (along.sqrMagnitude < 0.01f) along = tree.transform.forward;
-                pad.transform.SetPositionAndRotation(hit.point + hit.normal * 0.004f, Quaternion.LookRotation(along, hit.normal));
+                // The narrow colony runs lengthwise up the bark instead of spreading into a disc.
+                pad.transform.SetPositionAndRotation(hit.point + hit.normal * 0.004f, Quaternion.LookRotation(Vector3.Cross(along, hit.normal), hit.normal));
                 var parentScale = group.lossyScale;
-                float size = 0.24f + result.Count * 0.025f;
+                float size = 0.50f + result.Count * 0.035f;
                 pad.transform.localScale = new Vector3(size / parentScale.x, size / parentScale.y, size / parentScale.z);
                 ConformToTree(pad, tree, result.Count + 1);
                 result.Add(pad);
                 if (result.Count == 4) break;
             }
-            if (result.Count < 3) throw new InvalidOperationException("Could not seat enough fire coral samples on actual tree surfaces.");
+            if (result.Count < 4) throw new InvalidOperationException("Could not seat four fire coral samples on actual tree surfaces.");
             return result.ToArray();
         }
 
@@ -191,8 +215,14 @@ namespace Reefkeeper.Editor
             foreach (var spine in pad.growth)
             {
                 var hit = SeatOnTree(tree, pad.transform, spine.position);
+                var localBend = spine.localRotation;
+                // On vertical bark, branches reach upward and outward so their forks remain
+                // readable from the player's approach, rather than pointing straight at the camera.
+                var growthDirection = (Vector3.up * 0.80f + hit.normal * 0.45f).normalized;
+                var fanNormal = Vector3.ProjectOnPlane(hit.normal, growthDirection).normalized;
+                if (fanNormal.sqrMagnitude < 0.01f) fanNormal = pad.transform.forward;
                 spine.SetPositionAndRotation(hit.point + pad.transform.up * 0.002f,
-                    Quaternion.FromToRotation(pad.transform.up, hit.normal) * spine.rotation);
+                    Quaternion.LookRotation(fanNormal, growthDirection) * localBend);
                 PrefabUtility.RecordPrefabInstancePropertyModifications(spine);
             }
         }
@@ -216,7 +246,7 @@ namespace Reefkeeper.Editor
             var fire = w.GetComponentsInChildren<RackDirtPatch>(true).FirstOrDefault(p => p.name == PracticeFire);
             if (!fire || fire.surfaceKind != ReefSurfaceKind.FireCoral || !w.patches.Contains(fire)) throw new InvalidOperationException("Practice fire coral must be clearable and resettable.");
             var samples = w.GetComponentsInChildren<RackDirtPatch>(true).Where(p => p.name.StartsWith("Attached fire coral sample")).ToArray();
-            if (samples.Length < 3 || samples.Any(p => !w.patches.Contains(p))) throw new InvalidOperationException("Tree samples are missing reset wiring.");
+            if (samples.Length < 4 || samples.Any(p => !w.patches.Contains(p))) throw new InvalidOperationException("Tree samples are missing reset wiring.");
             foreach (var p in samples)
             {
                 var collider = p.GetComponentInParent<MeshCollider>();
@@ -272,42 +302,111 @@ namespace Reefkeeper.Editor
         {
             string path = Folder + "/" + name + ".asset"; mesh.name = name;
             var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
-            if (existing) { EditorUtility.CopySerialized(mesh, existing); Object.DestroyImmediate(mesh); EditorUtility.SetDirty(existing); return existing; }
+            if (existing)
+            {
+                // Explicit mesh setters invalidate the live GPU buffers as well as serialized data.
+                // CopySerialized alone can leave the previous shape visible until an asset reload.
+                existing.Clear(); existing.indexFormat = mesh.indexFormat;
+                existing.vertices = mesh.vertices; existing.normals = mesh.normals; existing.uv = mesh.uv;
+                existing.subMeshCount = mesh.subMeshCount;
+                for (int i = 0; i < mesh.subMeshCount; i++) existing.SetIndices(mesh.GetIndices(i), mesh.GetTopology(i), i);
+                existing.bounds = mesh.bounds; existing.UploadMeshData(false);
+                Object.DestroyImmediate(mesh); EditorUtility.SetDirty(existing); return existing;
+            }
             AssetDatabase.CreateAsset(mesh, path); return mesh;
         }
 
-        static Mesh Spine(int variant)
+        static Texture2D BranchGradient()
         {
-            const int sides = 7;
-            float[] heights = { 0, 0.10f, 0.26f, 0.47f, 0.68f, 0.85f, 1f };
-            float[] radii = { 0.72f, 1f, 0.82f, 0.61f, 0.40f, 0.19f, 0.005f };
-            var vertices = new List<Vector3>(); var triangles = new[] { new List<int>(), new List<int>(), new List<int>() };
-            for (int ring = 0; ring < heights.Length; ring++)
+            string path = Folder + "/FireCoralBranchGradient.asset";
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            bool create = !texture;
+            if (create) texture = new Texture2D(4, 64, TextureFormat.RGBA32, false) { name = "Fire coral cream-gold gradient" };
+            texture.wrapMode = TextureWrapMode.Clamp; texture.filterMode = FilterMode.Bilinear;
+            var colors = new Color[4 * 64];
+            for (int y = 0; y < 64; y++)
             {
-                float h = heights[ring];
+                float t = y / 63f;
+                var color = Color.Lerp(new Color(1f, 0.76f, 0.38f), new Color(1f, 0.95f, 0.74f), Mathf.SmoothStep(0, 1, t));
+                for (int x = 0; x < 4; x++) colors[y * 4 + x] = color;
+            }
+            texture.SetPixels(colors); texture.Apply();
+            if (create) AssetDatabase.CreateAsset(texture, path); else EditorUtility.SetDirty(texture);
+            return texture;
+        }
+
+        static Mesh Branches(int variant)
+        {
+            var vertices = new List<Vector3>(); var uv = new List<Vector2>(); var triangles = new List<int>();
+            float bend = variant == 1 ? -1 : 1;
+            var a = Vector3.zero;
+            var b = new Vector3(-0.24f * bend, 0.30f, 0.015f);
+            var c = new Vector3(0.24f * bend, 0.72f, -0.02f);
+            var d = new Vector3(0.07f * bend, 1f, 0.01f);
+            AddBranch(vertices, uv, triangles, a, b, c, d, 0.065f, 0);
+            var fork = Bezier(a, b, c, d, 0.38f);
+            AddBranch(vertices, uv, triangles, fork, fork + new Vector3(0.28f * bend, 0.09f, 0),
+                new Vector3(0.43f * bend, 0.68f, 0.015f), new Vector3(0.31f * bend, 0.84f, 0), 0.044f, 0.38f);
+            if (variant != 2)
+            {
+                fork = Bezier(a, b, c, d, 0.64f);
+                AddBranch(vertices, uv, triangles, fork, fork + new Vector3(-0.23f * bend, 0.05f, 0),
+                    new Vector3(-0.31f * bend, 0.90f, -0.01f), new Vector3(-0.23f * bend, 1.04f, 0), 0.036f, 0.64f);
+            }
+            var mesh = Make(vertices, new[] { triangles }); mesh.SetUVs(0, uv); return mesh;
+        }
+
+        static Vector3 Bezier(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        {
+            float s = 1 - t;
+            return s * s * s * a + 3 * s * s * t * b + 3 * s * t * t * c + t * t * t * d;
+        }
+
+        static void AddBranch(List<Vector3> vertices, List<Vector2> uv, List<int> triangles,
+            Vector3 a, Vector3 b, Vector3 c, Vector3 d, float radius, float colorStart)
+        {
+            const int sides = 8, rings = 15;
+            int start = vertices.Count;
+            for (int ring = 0; ring < rings; ring++)
+            {
+                float t = ring / (float)(rings - 1), s = 1 - t;
+                var center = Bezier(a, b, c, d, t);
+                var tangent = (3 * s * s * (b - a) + 6 * s * t * (c - b) + 3 * t * t * (d - c)).normalized;
+                var across = Vector3.Cross(tangent, Vector3.forward).normalized;
+                var depth = Vector3.Cross(across, tangent).normalized;
+                float cap = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0.84f, 1f, t));
+                float width = radius * Mathf.Lerp(1, 0.48f, t) * Mathf.Sqrt(1 - cap * cap);
                 for (int side = 0; side < sides; side++)
                 {
                     float angle = side * Mathf.PI * 2 / sides;
-                    vertices.Add(new Vector3(Mathf.Cos(angle) * radii[ring] + (variant - 1) * h * h * 0.65f,
-                        h, Mathf.Sin(angle) * radii[ring] + Mathf.Sin(h * 2.8f + variant) * h * 0.22f));
-                }
-                if (ring == 0) continue;
-                var indices = triangles[ring <= 2 ? 0 : ring <= 4 ? 1 : 2];
-                for (int side = 0; side < sides; side++)
-                {
-                    int a = (ring - 1) * sides + side, b = (ring - 1) * sides + (side + 1) % sides;
-                    int c = ring * sides + side, d = ring * sides + (side + 1) % sides;
-                    indices.AddRange(new[] { a, c, b, b, c, d });
+                    vertices.Add(center + across * (Mathf.Cos(angle) * width) + depth * (Mathf.Sin(angle) * width * 0.65f));
+                    uv.Add(new Vector2(side / (float)sides, Mathf.Lerp(colorStart, 1, t)));
+                    if (ring == 0) continue;
+                    int previous = start + (ring - 1) * sides + side;
+                    int next = start + (ring - 1) * sides + (side + 1) % sides;
+                    triangles.AddRange(new[] { previous, previous + sides, next, next, previous + sides, next + sides });
                 }
             }
-            return Make(vertices, triangles);
         }
         static Mesh Crust()
         {
-            var vertices = new List<Vector3> { new Vector3(0, 0.012f, 0) }; var triangles = new List<int>();
-            for (int i = 0; i < 32; i++)
-            { float a = i * Mathf.PI * 2 / 32, r = 0.47f + Mathf.Sin(i * 3.1f) * 0.018f; vertices.Add(new Vector3(Mathf.Cos(a) * r, 0.003f, Mathf.Sin(a) * r)); }
-            for (int i = 0; i < 32; i++) triangles.AddRange(new[] { 0, (i + 1) % 32 + 1, i + 1 });
+            var vertices = new List<Vector3>(); var triangles = new List<int>();
+            const int rows = 21, columns = 5;
+            for (int row = 0; row < rows; row++)
+            {
+                float t = row / (float)(rows - 1), x = Mathf.Lerp(-0.47f, 0.47f, t);
+                float width = (0.032f + 0.025f * Mathf.Sin(t * Mathf.PI)) * (1 + Mathf.Sin(row * 2.3f) * 0.21f);
+                float middle = Mathf.Sin(t * 8) * 0.019f;
+                for (int column = 0; column < columns; column++)
+                {
+                    float across = column / (float)(columns - 1);
+                    vertices.Add(new Vector3(x, 0.003f + Mathf.Sin(across * Mathf.PI) * 0.004f,
+                        middle + Mathf.Lerp(-width, width, across)));
+                    if (row == 0 || column == 0) continue;
+                    int index = row * columns + column;
+                    triangles.AddRange(new[] { index - columns - 1, index, index - 1, index - columns - 1, index - columns, index });
+                }
+            }
             return Make(vertices, new[] { triangles });
         }
         static Mesh Handle()

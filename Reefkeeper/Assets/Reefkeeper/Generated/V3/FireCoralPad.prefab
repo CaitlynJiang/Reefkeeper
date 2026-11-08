@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &273773865263656941
+--- !u!1 &1863637141461612409
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,506 +8,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5104983253392801191}
-  - component: {fileID: 6701024968333488833}
-  - component: {fileID: 435063708935789504}
+  - component: {fileID: 4325257291550547865}
+  - component: {fileID: 6335410753845965816}
+  - component: {fileID: 3355264822643174600}
   m_Layer: 0
-  m_Name: Fire coral spine 10
+  m_Name: Fire coral branch 0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5104983253392801191
+--- !u!4 &4325257291550547865
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 273773865263656941}
+  m_GameObject: {fileID: 1863637141461612409}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.056151498, y: -0.9834665, z: -0.1547283, w: -0.075497024}
-  m_LocalPosition: {x: 0.102089, y: 0.008, z: -0.21817692}
-  m_LocalScale: {x: 0.017866293, y: 0.17710641, z: 0.013001372}
+  m_LocalRotation: {x: 0, y: 0, z: 0.07845911, w: 0.99691737}
+  m_LocalPosition: {x: -0.37, y: 0.006, z: 0}
+  m_LocalScale: {x: 0.27518138, y: 0.3237428, z: 0.22661996}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817030941231832278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6701024968333488833
+--- !u!33 &6335410753845965816
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 273773865263656941}
-  m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &435063708935789504
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 273773865263656941}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &824987032912646519
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5479165657238024510}
-  - component: {fileID: 3843124180833693344}
-  - component: {fileID: 2992020947514275836}
-  m_Layer: 0
-  m_Name: Fire coral spine 26
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5479165657238024510
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 824987032912646519}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.13593933, y: -0.49905178, z: 0.09282609, w: 0.8507944}
-  m_LocalPosition: {x: 0.34940544, y: 0.008, z: -0.16146973}
-  m_LocalScale: {x: 0.018654143, y: 0.27466345, z: 0.012769288}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &3843124180833693344
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 824987032912646519}
-  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &2992020947514275836
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 824987032912646519}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &1051052713324888812
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8114064206807161744}
-  - component: {fileID: 6155585953299519276}
-  - component: {fileID: 3883095569219544239}
-  m_Layer: 0
-  m_Name: Fire coral spine 22
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8114064206807161744
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1051052713324888812}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.023595832, y: -0.68204725, z: 0.16268027, w: -0.71259385}
-  m_LocalPosition: {x: -0.29092595, y: 0.008, z: 0.20244856}
-  m_LocalScale: {x: 0.0237793, y: 0.20848803, z: 0.021433705}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6155585953299519276
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1051052713324888812}
-  m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &3883095569219544239
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1051052713324888812}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &1094246962153187891
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1027251084164829456}
-  - component: {fileID: 7873954695748806394}
-  - component: {fileID: 7771205775979289856}
-  m_Layer: 0
-  m_Name: Fire coral spine 25
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1027251084164829456
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1094246962153187891}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.10578418, y: -0.83609045, z: -0.12636018, w: 0.5232549}
-  m_LocalPosition: {x: -0.35967225, y: 0.008, z: -0.11471348}
-  m_LocalScale: {x: 0.02467971, y: 0.19606492, z: 0.021512285}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &7873954695748806394
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1094246962153187891}
-  m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &7771205775979289856
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1094246962153187891}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &1376677180270962647
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 23967912656341554}
-  - component: {fileID: 4843969322741869184}
-  - component: {fileID: 7611897609930359191}
-  m_Layer: 0
-  m_Name: Fire coral spine 19
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &23967912656341554
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1376677180270962647}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.13701811, y: 0.5856514, z: -0.09200348, w: -0.793583}
-  m_LocalPosition: {x: -0.01521038, y: 0.008, z: 0.3293812}
-  m_LocalScale: {x: 0.028299354, y: 0.13073735, z: 0.021508476}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &4843969322741869184
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1376677180270962647}
-  m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &7611897609930359191
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1376677180270962647}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &2220083812187432258
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6265648111232709887}
-  - component: {fileID: 4694966158062325579}
-  - component: {fileID: 8441321223123841594}
-  m_Layer: 0
-  m_Name: Fire coral spine 6
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6265648111232709887
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2220083812187432258}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.16393386, y: 0.34705132, z: -0.017429002, w: -0.92324287}
-  m_LocalPosition: {x: -0.04890283, y: 0.008, z: 0.18192998}
-  m_LocalScale: {x: 0.02052978, y: 0.14385809, z: 0.014584016}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &4694966158062325579
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2220083812187432258}
+  m_GameObject: {fileID: 1863637141461612409}
   m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &8441321223123841594
+--- !u!23 &3355264822643174600
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2220083812187432258}
+  m_GameObject: {fileID: 1863637141461612409}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -526,9 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
   - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -552,7 +90,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &2247582961758443335
+--- !u!1 &1891263399533364008
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -560,46 +98,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8254353995010186498}
-  - component: {fileID: 966239582906057741}
-  - component: {fileID: 1965051333414997281}
+  - component: {fileID: 2454744874768508721}
+  - component: {fileID: 5828819192747180571}
+  - component: {fileID: 5268223870637423503}
   m_Layer: 0
-  m_Name: Fire coral spine 21
+  m_Name: Fire coral branch 6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8254353995010186498
+--- !u!4 &2454744874768508721
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2247582961758443335}
+  m_GameObject: {fileID: 1891263399533364008}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.06735206, y: -0.27665472, z: -0.15062213, w: -0.94669896}
-  m_LocalPosition: {x: 0.3433052, y: 0.008, z: 0.046168324}
-  m_LocalScale: {x: 0.030185567, y: 0.1682856, z: 0.021724517}
+  m_LocalRotation: {x: 0.009480912, y: -0.10369285, z: -0.07089702, w: 0.992034}
+  m_LocalPosition: {x: 0.182, y: 0.006, z: -0.015397255}
+  m_LocalScale: {x: 0.26341516, y: 0.3099002, z: 0.21693014}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817030941231832278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &966239582906057741
+--- !u!33 &5828819192747180571
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2247582961758443335}
+  m_GameObject: {fileID: 1891263399533364008}
   m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &1965051333414997281
+--- !u!23 &5268223870637423503
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2247582961758443335}
+  m_GameObject: {fileID: 1891263399533364008}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -618,9 +156,97 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
   - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &2054500326030899183
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1528807234795743085}
+  - component: {fileID: 352010847597315836}
+  - component: {fileID: 1609733547462006473}
+  m_Layer: 0
+  m_Name: Fire coral branch 3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1528807234795743085
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2054500326030899183}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.00205852, y: -0.06240712, z: -0.016458688, w: 0.99791294}
+  m_LocalPosition: {x: -0.094000004, y: 0.006, z: -0.020367919}
+  m_LocalScale: {x: 0.19645756, y: 0.23112655, z: 0.16178858}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1817030941231832278}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &352010847597315836
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2054500326030899183}
+  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
+--- !u!23 &1609733547462006473
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2054500326030899183}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -734,7 +360,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &2917421625846614375
+--- !u!1 &3609623567768965368
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -742,46 +368,136 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3288464368231611559}
-  - component: {fileID: 3627579583353802037}
-  - component: {fileID: 8546849087498471366}
+  - component: {fileID: 4381992244234882108}
+  - component: {fileID: 4293413273232407429}
+  - component: {fileID: 2580486750466146734}
   m_Layer: 0
-  m_Name: Fire coral spine 16
+  m_Name: Fire coral branch 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3288464368231611559
+--- !u!4 &4381992244234882108
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2917421625846614375}
+  m_GameObject: {fileID: 3609623567768965368}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.15937832, y: 0.88058364, z: -0.039965585, w: 0.44449276}
-  m_LocalPosition: {x: 0.23171668, y: 0.008, z: 0.19527085}
-  m_LocalScale: {x: 0.019276284, y: 0.13070722, z: 0.016735638}
+  m_LocalRotation: {x: -0.047548097, y: -0.07317347, z: -0.08105846, w: 0.9928819}
+  m_LocalPosition: {x: -0.186, y: 0.006, z: -0.0056219064}
+  m_LocalScale: {x: 0.23568286, y: 0.27727395, z: 0.19409177}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817030941231832278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &3627579583353802037
+--- !u!33 &4293413273232407429
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2917421625846614375}
+  m_GameObject: {fileID: 3609623567768965368}
+  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
+--- !u!23 &2580486750466146734
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3609623567768965368}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &4707814761191660852
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2399147492889585635}
+  - component: {fileID: 1184347697767417904}
+  - component: {fileID: 4437188207535897476}
+  m_Layer: 0
+  m_Name: Fire coral branch 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2399147492889585635
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4707814761191660852}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.052996248, y: 0.10670654, z: -0.00013127459, w: 0.9928772}
+  m_LocalPosition: {x: -0.278, y: 0.006, z: 0.021816626}
+  m_LocalScale: {x: 0.15511873, y: 0.18249263, z: 0.12774484}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1817030941231832278}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &1184347697767417904
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4707814761191660852}
   m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &8546849087498471366
+--- !u!23 &4437188207535897476
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2917421625846614375}
+  m_GameObject: {fileID: 4707814761191660852}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -800,9 +516,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
   - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -826,7 +540,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &4571283387824166255
+--- !u!1 &5154097306206643904
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -834,322 +548,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7035353217163795507}
-  - component: {fileID: 6813838649000191157}
-  - component: {fileID: 1436605760569597337}
+  - component: {fileID: 7558644191526466440}
+  - component: {fileID: 4339355995798492328}
+  - component: {fileID: 5670529401971192671}
   m_Layer: 0
-  m_Name: Fire coral spine 14
+  m_Name: Fire coral branch 7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7035353217163795507
+--- !u!4 &7558644191526466440
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4571283387824166255}
+  m_GameObject: {fileID: 5154097306206643904}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.114140935, y: 0.20083602, z: -0.11828754, w: 0.9657354}
-  m_LocalPosition: {x: -0.163226, y: 0.008, z: 0.23219374}
-  m_LocalScale: {x: 0.020804571, y: 0.15481888, z: 0.01743572}
+  m_LocalRotation: {x: 0.04862613, y: 0.07765586, z: -0.041098695, w: 0.9949452}
+  m_LocalPosition: {x: 0.274, y: 0.006, z: -0.013599006}
+  m_LocalScale: {x: 0.24835655, y: 0.29218417, z: 0.20452891}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817030941231832278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6813838649000191157
+--- !u!33 &4339355995798492328
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4571283387824166255}
-  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &1436605760569597337
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4571283387824166255}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &5000643370171322718
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6203023547237427530}
-  - component: {fileID: 8188441638454258818}
-  - component: {fileID: 5688625722992168025}
-  m_Layer: 0
-  m_Name: Fire coral spine 3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6203023547237427530
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5000643370171322718}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.1219591, y: 0.9673909, z: -0.11015583, w: 0.19273427}
-  m_LocalPosition: {x: 0.08295873, y: 0.008, z: 0.10820282}
-  m_LocalScale: {x: 0.020645209, y: 0.10640439, z: 0.01856006}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8188441638454258818
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5000643370171322718}
-  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &5688625722992168025
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5000643370171322718}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &5406868491863224805
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6287459313727741405}
-  - component: {fileID: 8470441706168195031}
-  - component: {fileID: 2378732499289771282}
-  m_Layer: 0
-  m_Name: Fire coral spine 11
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6287459313727741405
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5406868491863224805}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.012089544, y: -0.9205315, z: 0.16435713, w: 0.3542067}
-  m_LocalPosition: {x: 0.07551846, y: 0.008, z: 0.24073558}
-  m_LocalScale: {x: 0.027172642, y: 0.23395105, z: 0.02610456}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8470441706168195031
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5406868491863224805}
-  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &2378732499289771282
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5406868491863224805}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &5420698323098138159
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8503964082297639552}
-  - component: {fileID: 9127599552987811354}
-  - component: {fileID: 4087988291293669940}
-  m_Layer: 0
-  m_Name: Fire coral spine 13
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8503964082297639552
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5420698323098138159}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.07691719, y: -0.25804383, z: 0.14587873, w: 0.95195407}
-  m_LocalPosition: {x: 0.26733443, y: 0.008, z: -0.058784477}
-  m_LocalScale: {x: 0.02240891, y: 0.15247437, z: 0.019242575}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &9127599552987811354
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5420698323098138159}
+  m_GameObject: {fileID: 5154097306206643904}
   m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &4087988291293669940
+--- !u!23 &5670529401971192671
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5420698323098138159}
+  m_GameObject: {fileID: 5154097306206643904}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -1168,193 +606,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
   - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &5465980379447692211
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2302590545518169236}
-  - component: {fileID: 6557618345790844516}
-  - component: {fileID: 8481859116494816227}
-  m_Layer: 0
-  m_Name: Fire coral spine 15
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2302590545518169236
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5465980379447692211}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.14263506, y: 0.5976458, z: 0.08294428, w: 0.78459865}
-  m_LocalPosition: {x: -0.037742123, y: 0.008, z: -0.29114518}
-  m_LocalScale: {x: 0.028631957, y: 0.23351446, z: 0.019632103}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6557618345790844516
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5465980379447692211}
-  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &8481859116494816227
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5465980379447692211}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &5579699358805513596
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 689742172431616986}
-  - component: {fileID: 4874716740306332721}
-  - component: {fileID: 6644336152580789888}
-  m_Layer: 0
-  m_Name: Fire coral spine 17
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &689742172431616986
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5579699358805513596}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.16495648, y: 0.9862384, z: -0.005326579, w: -0.009737857}
-  m_LocalPosition: {x: -0.3119132, y: 0.008, z: 0.0129156755}
-  m_LocalScale: {x: 0.025480233, y: 0.22608012, z: 0.017558023}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &4874716740306332721
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5579699358805513596}
-  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &6644336152580789888
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5579699358805513596}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1410,33 +662,15 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3310253747846140387}
-  - {fileID: 3537347356076848845}
-  - {fileID: 2376980513970642230}
-  - {fileID: 2364116924165452840}
-  - {fileID: 6203023547237427530}
-  - {fileID: 4532154850074548883}
-  - {fileID: 5543024361471762819}
-  - {fileID: 6265648111232709887}
-  - {fileID: 5093017000885497847}
-  - {fileID: 7984779838786616619}
-  - {fileID: 2769935366835846885}
-  - {fileID: 5104983253392801191}
-  - {fileID: 6287459313727741405}
-  - {fileID: 5351811165655029537}
-  - {fileID: 8503964082297639552}
-  - {fileID: 7035353217163795507}
-  - {fileID: 2302590545518169236}
-  - {fileID: 3288464368231611559}
-  - {fileID: 689742172431616986}
-  - {fileID: 1154866424553510258}
-  - {fileID: 23967912656341554}
-  - {fileID: 2235312929810022602}
-  - {fileID: 8254353995010186498}
-  - {fileID: 8114064206807161744}
-  - {fileID: 3197529910453792187}
-  - {fileID: 7360361844887916739}
-  - {fileID: 1027251084164829456}
-  - {fileID: 5479165657238024510}
+  - {fileID: 4325257291550547865}
+  - {fileID: 2399147492889585635}
+  - {fileID: 4381992244234882108}
+  - {fileID: 1528807234795743085}
+  - {fileID: 310316695573733373}
+  - {fileID: 1080913471515835423}
+  - {fileID: 2454744874768508721}
+  - {fileID: 7558644191526466440}
+  - {fileID: 1048813246464853202}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8282199217849817097
@@ -1455,33 +689,15 @@ MonoBehaviour:
   requiredTravel: 1.8
   dirtVisual: {fileID: 808501656123039285}
   growth:
-  - {fileID: 3537347356076848845}
-  - {fileID: 2376980513970642230}
-  - {fileID: 2364116924165452840}
-  - {fileID: 6203023547237427530}
-  - {fileID: 4532154850074548883}
-  - {fileID: 5543024361471762819}
-  - {fileID: 6265648111232709887}
-  - {fileID: 5093017000885497847}
-  - {fileID: 7984779838786616619}
-  - {fileID: 2769935366835846885}
-  - {fileID: 5104983253392801191}
-  - {fileID: 6287459313727741405}
-  - {fileID: 5351811165655029537}
-  - {fileID: 8503964082297639552}
-  - {fileID: 7035353217163795507}
-  - {fileID: 2302590545518169236}
-  - {fileID: 3288464368231611559}
-  - {fileID: 689742172431616986}
-  - {fileID: 1154866424553510258}
-  - {fileID: 23967912656341554}
-  - {fileID: 2235312929810022602}
-  - {fileID: 8254353995010186498}
-  - {fileID: 8114064206807161744}
-  - {fileID: 3197529910453792187}
-  - {fileID: 7360361844887916739}
-  - {fileID: 1027251084164829456}
-  - {fileID: 5479165657238024510}
+  - {fileID: 4325257291550547865}
+  - {fileID: 2399147492889585635}
+  - {fileID: 4381992244234882108}
+  - {fileID: 1528807234795743085}
+  - {fileID: 310316695573733373}
+  - {fileID: 1080913471515835423}
+  - {fileID: 2454744874768508721}
+  - {fileID: 7558644191526466440}
+  - {fileID: 1048813246464853202}
 --- !u!65 &6936013092972636442
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1501,9 +717,9 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.02, y: 0.24, z: 1.02}
-  m_Center: {x: 0, y: 0.1, z: 0}
---- !u!1 &6119803191549040149
+  m_Size: {x: 1.04, y: 0.36, z: 0.24}
+  m_Center: {x: 0, y: 0.16, z: 0}
+--- !u!1 &7436061604595675165
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1511,46 +727,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5093017000885497847}
-  - component: {fileID: 5754686296627757794}
-  - component: {fileID: 5650060155964699755}
+  - component: {fileID: 310316695573733373}
+  - component: {fileID: 133450575468698857}
+  - component: {fileID: 1612441334394620831}
   m_Layer: 0
-  m_Name: Fire coral spine 7
+  m_Name: Fire coral branch 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5093017000885497847
+--- !u!4 &310316695573733373
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6119803191549040149}
+  m_GameObject: {fileID: 7436061604595675165}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.15275025, y: -0.08339098, z: 0.06116622, w: -0.98283875}
-  m_LocalPosition: {x: -0.09347075, y: 0.008, z: -0.17996262}
-  m_LocalScale: {x: 0.034220684, y: 0.22430193, z: 0.02785071}
+  m_LocalRotation: {x: 0.059964113, y: 0.10521851, z: 0.06908231, w: 0.9902328}
+  m_LocalPosition: {x: -0.002000004, y: 0.006, z: 0.010870497}
+  m_LocalScale: {x: 0.26666576, y: 0.3137244, z: 0.21960707}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817030941231832278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &5754686296627757794
+--- !u!33 &133450575468698857
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6119803191549040149}
+  m_GameObject: {fileID: 7436061604595675165}
   m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &5650060155964699755
+--- !u!23 &1612441334394620831
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6119803191549040149}
+  m_GameObject: {fileID: 7436061604595675165}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -1569,9 +785,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
   - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1595,7 +809,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &7074491952858575623
+--- !u!1 &7804744867755874860
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1603,46 +817,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7984779838786616619}
-  - component: {fileID: 4834203531834425233}
-  - component: {fileID: 5559190932941549785}
+  - component: {fileID: 1080913471515835423}
+  - component: {fileID: 2462918203624706141}
+  - component: {fileID: 1405719327350131308}
   m_Layer: 0
-  m_Name: Fire coral spine 8
+  m_Name: Fire coral branch 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7984779838786616619
+--- !u!4 &1080913471515835423
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7074491952858575623}
+  m_GameObject: {fileID: 7804744867755874860}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.12968946, y: -0.51518106, z: -0.10157698, w: -0.8411012}
-  m_LocalPosition: {x: 0.20311405, y: 0.008, z: 0.07417105}
-  m_LocalScale: {x: 0.028948937, y: 0.24848051, z: 0.023770811}
+  m_LocalRotation: {x: -0.053921577, y: -0.00704801, z: 0.026723279, w: 0.9981626}
+  m_LocalPosition: {x: 0.089999996, y: 0.006, z: 0.017566716}
+  m_LocalScale: {x: 0.20950608, y: 0.24647774, z: 0.17253442}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817030941231832278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &4834203531834425233
+--- !u!33 &2462918203624706141
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7074491952858575623}
+  m_GameObject: {fileID: 7804744867755874860}
   m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &5559190932941549785
+--- !u!23 &1405719327350131308
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7074491952858575623}
+  m_GameObject: {fileID: 7804744867755874860}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -1661,9 +875,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
   - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1687,7 +899,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &7126541570824150247
+--- !u!1 &8920299077529042426
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1695,46 +907,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2364116924165452840}
-  - component: {fileID: 8507448131116227841}
-  - component: {fileID: 6924042913408054214}
+  - component: {fileID: 1048813246464853202}
+  - component: {fileID: 2201223624056556607}
+  - component: {fileID: 5221869139965322776}
   m_Layer: 0
-  m_Name: Fire coral spine 2
+  m_Name: Fire coral branch 8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2364116924165452840
+--- !u!4 &1048813246464853202
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7126541570824150247}
+  m_GameObject: {fileID: 8920299077529042426}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.08752291, y: 0.78911763, z: 0.13990316, w: 0.5916588}
-  m_LocalPosition: {x: 0.009950715, y: 0.008, z: -0.11339158}
-  m_LocalScale: {x: 0.031724174, y: 0.25425646, z: 0.030756097}
+  m_LocalRotation: {x: -0.050343294, y: 0.05853378, z: 0.06901189, w: 0.9946239}
+  m_LocalPosition: {x: 0.366, y: 0.006, z: 0.018901564}
+  m_LocalScale: {x: 0.284233, y: 0.33439177, z: 0.23407423}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1817030941231832278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8507448131116227841
+--- !u!33 &2201223624056556607
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7126541570824150247}
+  m_GameObject: {fileID: 8920299077529042426}
   m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &6924042913408054214
+--- !u!23 &5221869139965322776
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7126541570824150247}
+  m_GameObject: {fileID: 8920299077529042426}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -1753,929 +965,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
   - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &7705267553892463876
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3537347356076848845}
-  - component: {fileID: 2319375460809105638}
-  - component: {fileID: 7071435662461734163}
-  m_Layer: 0
-  m_Name: Fire coral spine 0
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3537347356076848845
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7705267553892463876}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0.1650476, w: 0.9862856}
-  m_LocalPosition: {x: 0.04110961, y: 0.008, z: 0}
-  m_LocalScale: {x: 0.017327158, y: 0.27069458, z: 0.014942744}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2319375460809105638
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7705267553892463876}
-  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &7071435662461734163
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7705267553892463876}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &7764069718157160404
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2769935366835846885}
-  - component: {fileID: 4611833275227616118}
-  - component: {fileID: 5032784460364867845}
-  m_Layer: 0
-  m_Name: Fire coral spine 9
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2769935366835846885
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7764069718157160404}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.09725594, y: -0.84600323, z: 0.13288341, w: -0.5071113}
-  m_LocalPosition: {x: -0.21156962, y: 0.008, z: 0.08734009}
-  m_LocalScale: {x: 0.036300026, y: 0.12417456, z: 0.03127847}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &4611833275227616118
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7764069718157160404}
-  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &5032784460364867845
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7764069718157160404}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &7866934442747414434
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5543024361471762819}
-  - component: {fileID: 6071855150032838379}
-  - component: {fileID: 7721737152484391832}
-  m_Layer: 0
-  m_Name: Fire coral spine 5
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5543024361471762819
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7866934442747414434}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.16185932, y: 0.71881217, z: -0.028945865, w: -0.6754797}
-  m_LocalPosition: {x: 0.14579163, y: 0.008, z: -0.09274407}
-  m_LocalScale: {x: 0.01847065, y: 0.15078917, z: 0.016843643}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6071855150032838379
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7866934442747414434}
-  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &7721737152484391832
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7866934442747414434}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &8259386223425305610
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7360361844887916739}
-  - component: {fileID: 6167213708998921189}
-  - component: {fileID: 2789268790890664242}
-  m_Layer: 0
-  m_Name: Fire coral spine 24
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7360361844887916739
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8259386223425305610}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.06612198, y: -0.98213995, z: 0.15060906, w: 0.09135598}
-  m_LocalPosition: {x: 0.18397476, y: 0.008, z: 0.32100353}
-  m_LocalScale: {x: 0.037047677, y: 0.27472928, z: 0.03531219}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6167213708998921189
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8259386223425305610}
-  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &2789268790890664242
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8259386223425305610}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &8672738734874905420
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2235312929810022602}
-  - component: {fileID: 1250025334027613479}
-  - component: {fileID: 3327971493041945903}
-  m_Layer: 0
-  m_Name: Fire coral spine 20
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2235312929810022602
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8672738734874905420}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.1060542, y: 0.18452975, z: 0.12550703, w: -0.96899396}
-  m_LocalPosition: {x: -0.2166835, y: 0.008, z: -0.2596246}
-  m_LocalScale: {x: 0.031377476, y: 0.27956063, z: 0.028698804}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &1250025334027613479
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8672738734874905420}
-  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &3327971493041945903
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8672738734874905420}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &8755736654072782878
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2376980513970642230}
-  - component: {fileID: 7588635643092472333}
-  - component: {fileID: 8720643905267254806}
-  m_Layer: 0
-  m_Name: Fire coral spine 1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2376980513970642230
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8755736654072782878}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.045202013, y: 0.4522909, z: -0.15795639, w: 0.8766068}
-  m_LocalPosition: {x: -0.06310124, y: 0.008, z: 0.057806276}
-  m_LocalScale: {x: 0.034551326, y: 0.16071276, z: 0.027801579}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &7588635643092472333
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8755736654072782878}
-  m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &8720643905267254806
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8755736654072782878}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &9056500357636778937
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3197529910453792187}
-  - component: {fileID: 2583907140821006523}
-  - component: {fileID: 7994949744780040511}
-  m_Layer: 0
-  m_Name: Fire coral spine 23
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3197529910453792187
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9056500357636778937}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.022744065, y: -0.92588335, z: -0.16333325, w: -0.33991915}
-  m_LocalPosition: {x: 0.079490945, y: 0.008, z: -0.35346547}
-  m_LocalScale: {x: 0.019323427, y: 0.14756037, z: 0.01687651}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2583907140821006523
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9056500357636778937}
-  m_Mesh: {fileID: 4300000, guid: 7c75b326a34fd824b92528fa6bd9858b, type: 2}
---- !u!23 &7994949744780040511
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9056500357636778937}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &9090005051620323026
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5351811165655029537}
-  - component: {fileID: 2757425813383287118}
-  - component: {fileID: 1481568061214143650}
-  m_Layer: 0
-  m_Name: Fire coral spine 12
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5351811165655029537
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9090005051620323026}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.034261227, y: -0.6687919, z: -0.1608705, w: 0.7250271}
-  m_LocalPosition: {x: -0.22775453, y: 0.008, z: -0.13197677}
-  m_LocalScale: {x: 0.025934726, y: 0.1297677, z: 0.024275567}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2757425813383287118
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9090005051620323026}
-  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &1481568061214143650
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9090005051620323026}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &9098221562072457683
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1154866424553510258}
-  - component: {fileID: 1382001442770095922}
-  - component: {fileID: 6054254563792070021}
-  m_Layer: 0
-  m_Name: Fire coral spine 18
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1154866424553510258
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9098221562072457683}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.15637158, y: 0.87260324, z: 0.050393216, w: -0.4599697}
-  m_LocalPosition: {x: 0.22757512, y: 0.008, z: -0.22649407}
-  m_LocalScale: {x: 0.022127608, y: 0.24822496, z: 0.016344866}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &1382001442770095922
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9098221562072457683}
-  m_Mesh: {fileID: 4300000, guid: 979d1ba664804dc40b101544ef97469f, type: 2}
---- !u!23 &6054254563792070021
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9098221562072457683}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &9173911104902813087
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4532154850074548883}
-  - component: {fileID: 2076358710645496215}
-  - component: {fileID: 1996934587981024714}
-  m_Layer: 0
-  m_Name: Fire coral spine 4
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4532154850074548883
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9173911104902813087}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.14833264, y: 0.94937587, z: 0.072172195, w: -0.26734653}
-  m_LocalPosition: {x: -0.15325965, y: 0.008, z: -0.027107459}
-  m_LocalScale: {x: 0.021667829, y: 0.10528757, z: 0.01594293}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1817030941231832278}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &2076358710645496215
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9173911104902813087}
-  m_Mesh: {fileID: 4300000, guid: 4df7a190425c0d749b793691e7e6262e, type: 2}
---- !u!23 &1996934587981024714
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9173911104902813087}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 0b2b7e192f82c714987dfd87ba97dbe1, type: 2}
-  - {fileID: 2100000, guid: 9e0d05a566222c5439d8cb5b748a1d22, type: 2}
-  - {fileID: 2100000, guid: 33c0211cc241c1a42bca5089097ea37a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
