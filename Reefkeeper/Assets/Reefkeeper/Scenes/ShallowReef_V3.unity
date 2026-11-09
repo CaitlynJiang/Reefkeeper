@@ -27544,6 +27544,8 @@ MonoBehaviour:
   touchReach: 0.35
   lineSeconds: 3.5
   rayReach: 8
+  purrMeow: {fileID: 8300000, guid: 0ca9acc9f3e6469e981e09cdf07a5b00, type: 3}
+  shortMeow: {fileID: 8300000, guid: 79f3b05073c44323b6e04b8b0a5db51a, type: 3}
 --- !u!1 &497538846
 GameObject:
   m_ObjectHideFlags: 0
@@ -60051,6 +60053,7 @@ GameObject:
   - component: {fileID: 1068167696}
   - component: {fileID: 1068167700}
   - component: {fileID: 1068167699}
+  - component: {fileID: 1068167701}
   m_Layer: 0
   m_Name: Scraping tool
   m_TagString: Untagged
@@ -60277,6 +60280,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.047, y: 0.016, z: 0.34}
   m_Center: {x: 0, y: 0, z: 0.285}
+--- !u!114 &1068167701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1068167694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fae729b2fe9656d40b50fc3fe7d69709, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Reefkeeper.ReefBrushAudio
+  pickup: {fileID: 659147663}
+  scrubClip: {fileID: 8300000, guid: 0f4834fcb7fc4f4fa5ec5c321702264b, type: 3}
+  volume: 0.44
+  lowPassCutoff: 5800
 --- !u!65 &1068167700
 BoxCollider:
   m_ObjectHideFlags: 0

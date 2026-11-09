@@ -27,6 +27,7 @@ namespace Reefkeeper.Corals
         public float lineSeconds = 3.5f;
         [Tooltip("With real controllers: how far a controller ray reaches the cat (m).")]
         public float rayReach = 8f;
+        [SerializeField] AudioClip purrMeow, shortMeow;
 
         public bool AimingCat { get; private set; }
         public string Prompt => AimingCat ? (corals.Held ? "Plant your coral first" : "Talk to Lucky Cat") : "";
@@ -45,9 +46,17 @@ namespace Reefkeeper.Corals
         string line = "";
         float lineUntil, nextTouch;
         Coroutine mood;
+        AudioSource meowSource;
 
         void Awake()
         {
+            if (cat && (purrMeow || shortMeow))
+            {
+                meowSource = cat.gameObject.AddComponent<AudioSource>();
+                meowSource.playOnAwake = false;
+                meowSource.spatialBlend = 1f;
+                meowSource.dopplerLevel = 0f;
+            }
             grips = new[]
             {
                 new InputAction("Talk left", InputActionType.Button, "<XRController>{LeftHand}/{GripButton}"),
@@ -141,6 +150,13 @@ namespace Reefkeeper.Corals
         {
             line = text; lineUntil = Time.time + lineSeconds;
             if (!cat) return;
+            if (meowSource)
+            {
+                bool playPurr = purrMeow && (!shortMeow || Random.value < 0.5f);
+                meowSource.clip = playPurr ? purrMeow : shortMeow;
+                meowSource.volume = playPurr ? 0.8f : 0.55f;
+                meowSource.Play();
+            }
             if (mood != null) StopCoroutine(mood);
             mood = StartCoroutine(Mood(face));
         }

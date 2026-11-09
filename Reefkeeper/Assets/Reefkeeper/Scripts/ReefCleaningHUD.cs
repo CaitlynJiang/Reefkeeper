@@ -26,6 +26,8 @@ namespace Reefkeeper
         Text progressLabel, promptLabel, helpHint, objectiveBody;
         Image promptIcon;
         XRInteractionSimulator simulator;
+        ReefSoundscape soundscape;
+        AudioSource MusicSource => soundscape ? soundscape.MusicSource : null;
         readonly Dictionary<string, Sprite> glyphs = new Dictionary<string, Sprite>();
         readonly List<Image> helpIcons = new List<Image>(), helpSecondaryIcons = new List<Image>();
         readonly List<Text> helpLabels = new List<Text>();
@@ -46,6 +48,7 @@ namespace Reefkeeper
 
         void Awake()
         {
+            soundscape = GetComponent<ReefSoundscape>();
             foreach (var sprite in inputGlyphs) if (sprite) glyphs[sprite.name] = sprite;
             simulator = pickup.workshop.xrGroup.GetComponentInChildren<XRInteractionSimulator>(true);
             var go = new GameObject("Reef HUD", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -89,7 +92,7 @@ namespace Reefkeeper
             var helpTitle = Label(helpPanel, "Controls title", new Vector2(0, 184), new Vector2(344, 28), 21, true);
             helpTitle.text = "Controls"; helpTitle.alignment = TextAnchor.MiddleLeft;
             SetIcon(Icon(helpPanel, "Close controls key", new Vector2(150, 184), new Vector2(32, 28)), "keyboard_f1");
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 13; i++)
             {
                 var row = Rect("Control " + i, helpPanel, Vector2.one * 0.5f, new Vector2(0, 144 - i * 28), new Vector2(344, 26));
                 helpIcons.Add(Icon(row, "Input", new Vector2(-150, 0), new Vector2(48, 24)));
@@ -112,6 +115,11 @@ namespace Reefkeeper
             var keyboard = Keyboard.current; if (keyboard == null) return;
             if (keyboard.f1Key.wasPressedThisFrame) HelpVisible = !HelpVisible;
             if (keyboard.oKey.wasPressedThisFrame) ObjectivesExpanded = !ObjectivesExpanded;
+            if (keyboard.mKey.wasPressedThisFrame)
+            {
+                var music = MusicSource;
+                if (music) music.mute = !music.mute;
+            }
         }
         void LateUpdate()
         {
@@ -175,6 +183,9 @@ namespace Reefkeeper
         }
         void UpdateHelp()
         {
+            var music = MusicSource;
+            HelpRow(12, "", music && music.mute ? "M   Unmute BGM" : "M   Mute BGM");
+            helpLabels[12].transform.parent.gameObject.SetActive(music && music.clip);
             bool xr = pickup.workshop.xrGroup.activeSelf;
             if (UsesQuestPrompts)
             {
