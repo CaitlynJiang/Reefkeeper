@@ -50,6 +50,7 @@ namespace Reefkeeper.Quest
             EditorUserBuildSettings.androidBuildSubtarget = MobileTextureSubtarget.ASTC;
 
             EnableOpenXR();
+            ConfigureRendering();
             AssetDatabase.SaveAssets();
             Debug.Log("[Quest] Project configured for Meta Quest 3 (OpenXR).");
         }
@@ -87,10 +88,49 @@ namespace Reefkeeper.Quest
             FeatureHelpers.RefreshFeatures(BuildTargetGroup.Android);
             var openxr = OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Android);
             openxr.renderMode = OpenXRSettings.RenderMode.SinglePassInstanced;
+            // Fixed foveated rendering; QuestPerformance sets the strength at runtime.
+            // Foveation off for now: SRP Foveation doubled GPU frame time on device (47 ms -> 95 ms).
+            // MetaQuestFeature keeps its own copy of the API choice and applies it at build time.
+            SetFoveationApi(openxr, OpenXRSettings.BackendFovationApi.Legacy);
+            SetFoveationApi(openxr.GetFeature<MetaQuestFeature>(), OpenXRSettings.BackendFovationApi.Legacy);
+            var foveation = openxr.GetFeature<UnityEngine.XR.OpenXR.Features.FoveatedRenderingFeature>();
+            if (foveation) { foveation.enabled = false; EditorUtility.SetDirty(foveation); }
             Enable<MetaQuestFeature>(openxr);
             Enable<MetaQuestTouchPlusControllerProfile>(openxr); // Quest 3 controllers
             Enable<OculusTouchControllerProfile>(openxr);        // fallback / Quest 2 controllers
             EditorUtility.SetDirty(openxr);
+        }
+
+        // Clarity: full eye-buffer resolution and 4x MSAA (cheap on Quest's tiled GPU).
+        // The shared mobile pipeline asset used to render at 0.8 with MSAA off.
+        static void ConfigureRendering()
+        {
+            var assets = new System.Collections.Generic.List<RenderPipelineAsset>();
+            QualitySettings.GetAllRenderPipelineAssetsForPlatform("Android", ref assets);
+            foreach (var urp in assets.OfType<UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset>().Distinct())
+            {
+                urp.renderScale = 1f;
+                urp.msaaSampleCount = 4;
+                urp.supportsHDR = false;
+                // GPU budget: ~980 shadow casters were redrawn out to 50 m. Keep shadows near the
+                // player only, and light the small task light per vertex instead of per pixel.
+                var so = new SerializedObject(urp);
+                so.FindProperty("m_ShadowDistance").floatValue = 15f;
+                so.FindProperty("m_AdditionalLightsRenderingMode").intValue = 2; // per vertex
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(urp);
+            }
+        }
+
+        static void SetFoveationApi(Object target, OpenXRSettings.BackendFovationApi value)
+        {
+            if (!target) return;
+            var so = new SerializedObject(target);
+            var api = so.FindProperty("m_foveatedRenderingApi");
+            if (api == null) { Debug.LogError($"[Quest] No foveation API field on {target.name}"); return; }
+            api.intValue = (int)value;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(target);
         }
 
         static void Enable<T>(OpenXRSettings settings) where T : UnityEngine.XR.OpenXR.Features.OpenXRFeature
