@@ -32,14 +32,8 @@ namespace Reefkeeper
         readonly GameObject[] displays = new GameObject[2];
         readonly Dictionary<Renderer, bool> hidden = new Dictionary<Renderer, bool>();
         readonly Vector2[] positions = { new Vector2(143,185), new Vector2(235,80), new Vector2(250,-50), new Vector2(200,-142), new Vector2(110,-195) };
-        // Figma "V2 · Coral gameplay HUD" tokens, shared with ReefCleaningHUD and CoralGameplayHUD.
-        static readonly Color Navy = new Color(.149f,.220f,.278f,.94f);   // hud/panel-navy #263847
-        static readonly Color Cream = new Color(.969f,.929f,.812f);       // hud/cream #F7EDCF
-        static readonly Color Green = new Color(.678f,.788f,.361f);       // hud/progress-green #ADC95C
-        static readonly Color Ink = new Color(.122f,.180f,.220f);         // hud/ink-on-green #1F2E38
-        static readonly Color Hover = Color.Lerp(Navy, Green, .28f);
-        readonly Text[] dots = new Text[3];
-        Font semiBold;
+        readonly Color cream = new Color(.973f,.941f,.843f), ink = new Color(.161f,.306f,.322f);
+        readonly Color yellow = new Color(.953f,.808f,.388f), blue = new Color(.40f,.741f,.714f);
         ReefWorkshop workshop;
         ReefBrushPickup pickup;
         XRInteractionSimulator simulator;
@@ -69,7 +63,7 @@ namespace Reefkeeper
         {
             Instance = this;
             workshop = GetComponent<ReefWorkshop>(); pickup = GetComponent<ReefBrushPickup>();
-            var hud = GetComponent<ReefCleaningHUD>(); font = hud.boldFont ? hud.boldFont : hud.font; semiBold = hud.font ? hud.font : font;
+            var hud = GetComponent<ReefCleaningHUD>(); font = hud.boldFont ? hud.boldFont : hud.font;
             tabGlyph = hud.inputGlyphs.FirstOrDefault(s => s && s.name == "keyboard_tab");
             escapeGlyph = hud.inputGlyphs.FirstOrDefault(s => s && s.name == "keyboard_escape");
             toolIcons = new[] { Resources.Load<Sprite>("ToolMenu/Brush"), Resources.Load<Sprite>("ToolMenu/Scraper") };
@@ -140,13 +134,12 @@ namespace Reefkeeper
                 groups[i].alpha = t;
                 if (IsOpen && pointerValid && Contains(slots[i],pointerScreen)) HoveredSlot = i;
                 bool selected = i < 2 && pickup.ToolHeld && (int)pickup.ActiveTool.toolKind == i;
-                backgrounds[i].Tint(selected ? Green : Navy);
+                backgrounds[i].Tint(selected ? cream : blue);
                 if (i < 2)
                 {
                     icons[i].color = new Color(1,1,1,owned[i] ? 1 : .35f);
                     names[i].text = owned[i] ? i == 0 ? "Brush" : "Scraper" : "Pick up first";
-                    names[i].color = selected ? Ink : new Color(Cream.r,Cream.g,Cream.b,owned[i] ? 1 : .6f);
-                    if (HoveredSlot == i && owned[i] && !selected) backgrounds[i].Tint(Hover);
+                    if (HoveredSlot == i && owned[i] && !selected) backgrounds[i].Tint(Color.Lerp(blue,cream,.35f));
                 }
             }
             if (XRSettings.isDeviceActive) HandlePointer();
@@ -274,33 +267,35 @@ namespace Reefkeeper
             var menu=Rect("Tool arc",go.transform,new Vector2(0,.5f),new Vector2(32,-40),Vector2.zero);
             toggle=Rect("Tools",menu,Vector2.one*.5f,new Vector2(65,0),new Vector2(116,82));
             toggle.localEulerAngles=new Vector3(0,0,7);
-            var mainPebble=Pebble(toggle,Navy,.8f); mainPebble.softShadow=true;
-            Label(toggle,"Tools",Vector2.zero,new Vector2(100,45),22);
+            var mainPebble=Pebble(toggle,yellow,.8f); mainPebble.softShadow=true; mainPebble.highlight=true;
+            Label(toggle,"Tools",Vector2.zero,new Vector2(100,45),24);
             toggleGroup=toggle.gameObject.AddComponent<CanvasGroup>(); toggleGroup.alpha=0;
             toggle.gameObject.SetActive(false);
             for(int i=0;i<slots.Length;i++)
             {
                 slots[i]=Rect("Tool slot "+i,menu,Vector2.one*.5f,positions[i],i<2?new Vector2(100,90):new Vector2(52,48));
                 slots[i].localEulerAngles=new Vector3(0,0,i%2==0?7:-9);
-                backgrounds[i]=Pebble(slots[i],Navy,i*1.7f); backgrounds[i].softShadow=i<2;
+                backgrounds[i]=Pebble(slots[i],blue,i*1.7f);
                 groups[i]=slots[i].gameObject.AddComponent<CanvasGroup>(); groups[i].alpha=0;
                 if(i<2)
                 {
                     var icon=Rect("Actual model screenshot",slots[i],Vector2.one*.5f,new Vector2(0,9),new Vector2(76,57));
                     icons[i]=icon.gameObject.AddComponent<Image>(); icons[i].sprite=toolIcons[i]; icons[i].preserveAspect=true; icons[i].raycastTarget=false;
-                    names[i]=Label(slots[i],i==0?"Brush":"Scraper",new Vector2(0,-29),new Vector2(92,22),14);
-                    names[i].font=semiBold;
+                    names[i]=Label(slots[i],i==0?"Brush":"Scraper",new Vector2(0,-29),new Vector2(92,22),13);
                     names[i].rectTransform.localEulerAngles=-slots[i].localEulerAngles;
                 }
-                else { dots[i-2]=Label(slots[i],"·",Vector2.zero,new Vector2(40,42),22); dots[i-2].color=new Color(Cream.r,Cream.g,Cream.b,.4f); }
+                else Label(slots[i],"·",Vector2.zero,new Vector2(40,42),22);
             }
             toolHint=KeyHint(go.transform,"Tools",new Vector2(82,65),tabGlyph,out openGlyph,out openKeyText);
             closeHint=KeyHint(go.transform,"Close",new Vector2(202,65),escapeGlyph,out closeGlyph,out closeKeyText);
             closeHint.gameObject.SetActive(false);
-            pointer=Rect("Controller pointer",go.transform,Vector2.one*.5f,Vector2.zero,new Vector2(8,8)); Pebble(pointer,Cream,0); pointer.gameObject.SetActive(false);
+            pointer=Rect("Controller pointer",go.transform,Vector2.one*.5f,Vector2.zero,new Vector2(8,8)); Pebble(pointer,cream,0); pointer.gameObject.SetActive(false);
             var line=new GameObject("Tool menu pointer ray"); line.transform.SetParent(go.transform,false);
             rayLine=line.AddComponent<LineRenderer>(); rayLine.positionCount=2; rayLine.startWidth=.0015f; rayLine.endWidth=.0015f;
-            rayMaterial=new Material(Shader.Find("Universal Render Pipeline/Unlit")); rayMaterial.color=Cream; rayLine.sharedMaterial=rayMaterial; rayLine.enabled=false;
+            // URP/Unlit is stripped from player builds when no material references it, and a null
+            // shader threw here and aborted Awake on device. Sprites/Default always ships.
+            var rayShader=Shader.Find("Universal Render Pipeline/Unlit"); if(!rayShader) rayShader=Shader.Find("Sprites/Default");
+            rayMaterial=new Material(rayShader); rayMaterial.color=cream; rayLine.sharedMaterial=rayMaterial; rayLine.enabled=false;
         }
         static RectTransform Rect(string name,Transform parent,Vector2 anchor,Vector2 position,Vector2 size)
         {
@@ -315,7 +310,7 @@ namespace Reefkeeper
             glyph=Rect("Key icon",root,Vector2.one*.5f,new Vector2(-42,0),new Vector2(32,28)).gameObject.AddComponent<Image>();
             if (sprite == tabGlyph) glyph.rectTransform.sizeDelta=new Vector2(36,36);
             glyph.sprite=sprite; glyph.preserveAspect=true; glyph.raycastTarget=false;
-            glyph.color=Cream;
+            glyph.color=new Color(.97f,.93f,.81f);
             keyText=Label(root,"",new Vector2(-42,0),new Vector2(36,28),14); keyText.color=glyph.color;
             var label=Label(root,value,new Vector2(14,0),new Vector2(64,24),14);
             label.font=GetComponent<ReefCleaningHUD>().font; label.color=glyph.color; label.alignment=TextAnchor.MiddleLeft;
@@ -325,9 +320,7 @@ namespace Reefkeeper
         Text Label(Transform parent,string value,Vector2 position,Vector2 size,int pixels,Vector2? anchor=null)
         {
             var text=Rect(value,parent,anchor??Vector2.one*.5f,position,size).gameObject.AddComponent<Text>();
-            text.text=value;text.font=font;text.fontSize=pixels;text.color=Cream;text.alignment=TextAnchor.MiddleCenter;text.raycastTarget=false;
-            text.horizontalOverflow=HorizontalWrapMode.Overflow;text.verticalOverflow=VerticalWrapMode.Overflow;   // Nunito line height exceeds the font size
-            return text;
+            text.text=value;text.font=font;text.fontSize=pixels;text.color=ink;text.alignment=TextAnchor.MiddleCenter;text.raycastTarget=false;return text;
         }
     }
 }
