@@ -33,6 +33,7 @@ namespace Reefkeeper
         Quaternion spawnRotation;
         float pitch;
         bool controlling;
+        bool readingLook;
 
         void Awake()
         {
@@ -56,6 +57,21 @@ namespace Reefkeeper
 
         void Update()
         {
+            if (DiveCardMock.BlocksControls)
+            {
+                Velocity=Vector3.zero; Braking=false; Sprinting=false;
+#if ENABLE_INPUT_SYSTEM
+                bool looking=!Automated && DiveCardMock.Instance.MouseLookActive;
+                if(looking)
+                {
+                    if(!readingLook) pitch=Mathf.DeltaAngle(0,view.transform.localEulerAngles.x);
+                    else ApplyLook(Mouse.current.delta.ReadValue());
+                }
+                readingLook=looking;
+#endif
+                return;
+            }
+            readingLook=false;
             if (Automated) return;
             bool escape, click, reset, boost, brake;
             Vector2 look;
@@ -92,15 +108,21 @@ namespace Reefkeeper
                 return;
             }
             if (reset) { ResetDive(); return; }
-            transform.Rotate(0, look.x * mouseSensitivity, 0, Space.World);
-            pitch = Mathf.Clamp(pitch - look.y * mouseSensitivity, -pitchLimit, pitchLimit);
-            view.transform.localRotation = Quaternion.Euler(pitch, 0, 0);
+            ApplyLook(look);
             Tick(axes, boost, brake, Time.deltaTime);
+        }
+
+        void ApplyLook(Vector2 delta)
+        {
+            transform.Rotate(0, delta.x * mouseSensitivity, 0, Space.World);
+            pitch = Mathf.Clamp(pitch - delta.y * mouseSensitivity, -pitchLimit, pitchLimit);
+            view.transform.localRotation = Quaternion.Euler(pitch, 0, 0);
         }
 
         // Separate input from motion so a later glove/XR adapter can supply the same commands.
         public void Tick(Vector3 localInput, bool boost, bool brake, float deltaTime)
         {
+            if (DiveCardMock.BlocksControls) { Velocity=Vector3.zero; return; }
             float dt = Mathf.Clamp(deltaTime, 0, 0.05f);
             Vector3 direction = view.transform.right * localInput.x
                 + Vector3.up * localInput.y + view.transform.forward * localInput.z;
