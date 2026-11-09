@@ -26,6 +26,8 @@ namespace Reefkeeper
         Text progressLabel, promptLabel, helpHint, objectiveBody;
         Image promptIcon;
         XRInteractionSimulator simulator;
+        ReefSoundscape soundscape;
+        AudioSource MusicSource => soundscape ? soundscape.MusicSource : null;
         readonly Dictionary<string, Sprite> glyphs = new Dictionary<string, Sprite>();
         readonly List<Image> helpIcons = new List<Image>(), helpSecondaryIcons = new List<Image>();
         readonly List<Text> helpLabels = new List<Text>();
@@ -46,6 +48,7 @@ namespace Reefkeeper
 
         void Awake()
         {
+            soundscape = GetComponent<ReefSoundscape>();
             foreach (var sprite in inputGlyphs) if (sprite) glyphs[sprite.name] = sprite;
             simulator = pickup.workshop.xrGroup.GetComponentInChildren<XRInteractionSimulator>(true);
             var go = new GameObject("Reef HUD", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -89,7 +92,7 @@ namespace Reefkeeper
             var helpTitle = Label(helpPanel, "Controls title", new Vector2(0, 184), new Vector2(344, 28), 21, true);
             helpTitle.text = "Controls"; helpTitle.alignment = TextAnchor.MiddleLeft;
             SetIcon(Icon(helpPanel, "Close controls key", new Vector2(150, 184), new Vector2(32, 28)), "keyboard_f1");
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 13; i++)
             {
                 var row = Rect("Control " + i, helpPanel, Vector2.one * 0.5f, new Vector2(0, 144 - i * 28), new Vector2(344, 26));
                 helpIcons.Add(Icon(row, "Input", new Vector2(-150, 0), new Vector2(48, 24)));
@@ -112,10 +115,17 @@ namespace Reefkeeper
             var keyboard = Keyboard.current; if (keyboard == null) return;
             if (keyboard.f1Key.wasPressedThisFrame) HelpVisible = !HelpVisible;
             if (keyboard.oKey.wasPressedThisFrame) ObjectivesExpanded = !ObjectivesExpanded;
+            if (keyboard.mKey.wasPressedThisFrame)
+            {
+                var music = MusicSource;
+                if (music) music.mute = !music.mute;
+            }
         }
         void LateUpdate()
         {
             if (!pickup.View) return;
+            if (ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
+            { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
             helpHint.text = HelpVisible ? "Close controls" : "Controls";
             if (HelpVisible) UpdateHelp();
@@ -144,7 +154,7 @@ namespace Reefkeeper
             if (UsesQuestPrompts)
             {
                 key = ControllerGripGlyph;
-                if (pickup.ToolHeld) context = pickup.ActiveTool.Scrubbing ? "" : "Release to let go of " + pickup.ActiveTool.ToolName;
+                if (pickup.ToolHeld) { context = pickup.ActiveTool.Scrubbing ? "" : pickup.Carrying ? "A: switch tools" : "Release to let go of " + pickup.ActiveTool.ToolName; if (pickup.Carrying) key = ""; }
                 else if (pickup.ActiveInteractable.isHovered) context = "Hold to grab " + pickup.ActiveTool.ToolName;
                 else if (pickup.corals.HasPrompt) context = pickup.corals.Held ? "Hold to replace coral" : "Hold to pick up coral";
             }
@@ -173,6 +183,9 @@ namespace Reefkeeper
         }
         void UpdateHelp()
         {
+            var music = MusicSource;
+            HelpRow(12, "", music && music.mute ? "M   Unmute BGM" : "M   Mute BGM");
+            helpLabels[12].transform.parent.gameObject.SetActive(music && music.clip);
             bool xr = pickup.workshop.xrGroup.activeSelf;
             if (UsesQuestPrompts)
             {
@@ -181,7 +194,7 @@ namespace Reefkeeper
                 HelpRow(2, "", "Brush algae; scrape fire coral"); HelpRow(3, "", "Scraper: push and pull");
                 HelpRow(4, "keyboard_g", "Simulator: hold for Grip");
                 HelpRow(5, "keyboard_w", "WASD  Move controller"); HelpRow(6, "keyboard_q", "Down / up", "keyboard_e");
-                HelpRow(7, "keyboard_tab", "Body / device mode"); HelpRow(8, "", "[ / ]  Select left / right hand");
+                HelpRow(7, "keyboard_tab", ReefToolMenu.Instance ? "Tools; ` cycles device mode" : "Body / device mode"); HelpRow(8, "", "[ / ]  Select left / right hand");
                 HelpRow(9, "mouse_right", "Toggle mouse look"); HelpRow(10, "keyboard_f2", "Desktop / XR simulator");
                 HelpRow(11, "keyboard_f5", "Reset nursery"); return;
             }
@@ -190,7 +203,7 @@ namespace Reefkeeper
             HelpRow(2, "keyboard_shift", "Boost"); HelpRow(3, xr ? "keyboard_b" : "mouse_right", "Brake", xr ? "" : "keyboard_x");
             HelpRow(4, "keyboard_g", "Talk / plant / pick up a tool"); HelpRow(5, "mouse_left", "Hold: clean  Click: fertilize");
             HelpRow(6, "keyboard_h", "Return tools to tray");
-            HelpRow(7, xr ? "keyboard_tab" : "keyboard_escape", xr ? "Body / device mode" : "Cursor; click to resume");
+            HelpRow(7, ReefToolMenu.Instance ? "keyboard_tab" : xr ? "keyboard_tab" : "keyboard_escape", ReefToolMenu.Instance ? "Tools; ` cycles simulator mode" : xr ? "Body / device mode" : "Cursor; click to resume");
             HelpRow(8, xr ? "mouse_right" : "keyboard_r", xr ? "Toggle mouse look" : "Return to start");
             HelpRow(9, "keyboard_f2", "Desktop / XR simulator"); HelpRow(10, "keyboard_f5", "Reset nursery");
             HelpRow(11, "keyboard_f11", "Fullscreen");

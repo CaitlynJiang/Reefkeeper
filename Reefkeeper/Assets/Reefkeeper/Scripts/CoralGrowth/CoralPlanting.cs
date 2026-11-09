@@ -28,6 +28,7 @@ namespace Reefkeeper.Corals
         public float rayReach = 4f;
         [Min(1)] public float secondsPerStage = 30f;
         public Vector2 mossReturnSeconds = new Vector2(25f, 50f);
+        [SerializeField] bool showCareEmotes;
 
         public string Prompt { get; private set; } = "";
         public string PromptKey { get; private set; } = "";
@@ -78,6 +79,7 @@ namespace Reefkeeper.Corals
         {
             Prompt = ""; PromptKey = ""; Hovered = null;
             TrackTutorial();
+            if (ReefToolMenu.BlocksWorldInput) return;
             bool canAct = Automated || corals.Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             if (!canAct) return;
             if (corals.CenterAimMode)
@@ -210,7 +212,7 @@ namespace Reefkeeper.Corals
 
         bool TryPlantNear(ReefCoralFragment fragment)
         {
-            if (corals.CenterAimMode) return false;
+            if (ReefToolMenu.BlocksWorldInput || corals.CenterAimMode) return false;
             var socket = NearestPlantable(fragment);
             if (!socket) return false;
             Plant(socket);
@@ -252,6 +254,7 @@ namespace Reefkeeper.Corals
             nurture.secondsPerStage = secondsPerStage;
             nurture.mossReturnSeconds = mossReturnSeconds;
             nurture.Begin(socket, coral, species);
+            if (showCareEmotes) coral.gameObject.AddComponent<CoralCareEmote>().Bind(nurture);
             planted.Add(nurture);
             coral.Poke();
             return nurture;
