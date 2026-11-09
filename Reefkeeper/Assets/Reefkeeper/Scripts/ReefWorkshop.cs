@@ -23,6 +23,7 @@ namespace Reefkeeper
             var args = System.Environment.GetCommandLineArgs();
             bool desktopSmoke = System.Array.IndexOf(args, "-reef-smoke") >= 0 || System.Array.IndexOf(args, "-reef-pickup-smoke") >= 0 || System.Array.IndexOf(args, "-reef-cleaning-smoke") >= 0 || System.Array.IndexOf(args, "-reef-v3-smoke") >= 0;
             xrGroup.SetActive(!desktopSmoke); desktopPlayer.SetActive(desktopSmoke);
+            if (scraper && !GetComponent<ReefToolMenu>()) gameObject.AddComponent<ReefToolMenu>();
         }
         void Update()
         {

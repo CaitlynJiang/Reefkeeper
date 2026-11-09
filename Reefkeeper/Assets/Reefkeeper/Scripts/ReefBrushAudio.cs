@@ -26,8 +26,8 @@ namespace Reefkeeper
             var brush = tool;
             if (brush.Scrubbing) activeUntil = Time.unscaledTime + 0.08f;
             // Bridge tiny gaps at a stroke's turning point, but stop on release, lost contact or completion.
-            bool active = brush.Held && brush.InContact && Time.unscaledTime < activeUntil
-                && brush.ContactPatch && !brush.ContactPatch.Complete && (!pickup.Carrying || pickup.IsScrubbing);
+            bool active = !ReefToolMenu.BlocksWorldInput && brush.Held && brush.InContact && Time.unscaledTime < activeUntil
+                && brush.ContactPatch && !brush.ContactPatch.Complete && (!pickup.AssistedMotion || pickup.IsScrubbing);
             Source.volume = volume;
             if (active && scrubClip) { if (!Source.isPlaying) Source.Play(); }
             else if (Source.isPlaying) Source.Stop();

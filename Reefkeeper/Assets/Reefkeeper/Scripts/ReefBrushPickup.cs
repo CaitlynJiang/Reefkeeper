@@ -21,6 +21,8 @@ namespace Reefkeeper
         public ReefBrush ActiveTool => ActiveInteractable.GetComponent<ReefBrush>();
         public bool ToolHeld => ActiveInteractable.isSelected;
         public bool Carrying => hand && hand.isPerformingManualInteraction && ToolHeld;
+        public bool AssistedMotion => Carrying && CenterMode;
+        public bool MenuEquipping { get; private set; }
         public bool CorrectTool => Target && Target.Accepts(ActiveTool.toolKind);
         public bool CenterMode => corals.CenterAimMode;
         public bool AimingBrush { get; private set; }
@@ -38,13 +40,19 @@ namespace Reefkeeper
         readonly RaycastHit[] hits = new RaycastHit[64];
         Vector3 tipLocal;
         float strokePhase;
-        bool posed, quitting;
+        bool posed, quitting, equippedFromMenu;
 
         void Update()
         {
             if (!View) return;
             // Native controller mode retains real tracked brush motion.
-            if (Carrying && !CenterMode) workshop.ReturnBrush();
+            if (Carrying && !CenterMode && !equippedFromMenu) workshop.ReturnBrush();
+            if (ReefToolMenu.BlocksWorldInput)
+            {
+                AimingBrush = false; aimedTool = null; IsScrubbing = false; SpotInReach = false; Target = null;
+                brush.SetAim(false); if (scraper) scraper.SetAim(false);
+                if (Carrying) Pose(); return;
+            }
             bool canAct = CenterMode && (Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked);
             var hit = FindVisible(grabReach);
             var aimed = hit.collider ? hit.collider.GetComponentInParent<ReefBrushInteractable>() : null;
@@ -90,25 +98,40 @@ namespace Reefkeeper
         {
             if (!AimingBrush || !aimedTool || aimedTool.isSelected) return;
             var selected = aimedTool;
+            BeginHold(selected, false);
+        }
+        public bool EquipFromMenu(ReefBrushInteractable selected)
+        {
+            if (!selected || (selected != brush && selected != scraper) || !View) return false;
+            if (!ReefToolMenu.Instance || !ReefToolMenu.Instance.Owns(selected.GetComponent<ReefBrush>().toolKind)) return false;
+            BeginHold(selected, true);
+            return selected.isSelected;
+        }
+        void BeginHold(ReefBrushInteractable selected, bool fromMenu)
+        {
             workshop.ReturnBrush();
             corals.ClearHeld();
+            equippedFromMenu = fromMenu;
             var tool = selected.GetComponent<ReefBrush>();
             tipLocal = selected.transform.InverseTransformPoint(tool.bristles.position);
             hand.transform.SetParent(transform, true);
             SetIdlePose(); posed = true;
             hand.Requested = selected;
-            hand.StartManualInteraction((IXRSelectInteractable)selected);
+            MenuEquipping = fromMenu;
+            try { hand.StartManualInteraction((IXRSelectInteractable)selected); }
+            finally { MenuEquipping = false; }
             AimingBrush = false; selected.SetAim(false); aimedTool = null;
         }
         public void OnToolSelected(ReefBrushInteractable selected)
         {
+            if (ReefToolMenu.Instance) ReefToolMenu.Instance.RecordPickup(selected.GetComponent<ReefBrush>().toolKind);
             corals.ClearHeld();
             var other = selected == brush ? scraper : brush;
             if (other && other.isSelected) workshop.ReturnTool(other.GetComponent<ReefBrush>());
         }
         public void Release()
         {
-            IsScrubbing = false; posed = false;
+            IsScrubbing = false; posed = false; equippedFromMenu = false;
             if (hand && hand.isPerformingManualInteraction) hand.EndManualInteraction();
             if (hand) hand.Requested = null;
         }
@@ -119,6 +142,12 @@ namespace Reefkeeper
         }
         void Pose()
         {
+            if (equippedFromMenu && !CenterMode && ReefToolMenu.Instance && ReefToolMenu.Instance.RightHand)
+            {
+                var tracked = ReefToolMenu.Instance.RightHand;
+                hand.transform.SetPositionAndRotation(tracked.TransformPoint(new Vector3(0, -.03f, .10f)), tracked.rotation);
+                posed = true; return;
+            }
             Vector3 targetPosition;
             Quaternion targetRotation;
             if (IsScrubbing)

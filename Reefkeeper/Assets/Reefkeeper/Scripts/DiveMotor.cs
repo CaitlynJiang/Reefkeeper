@@ -84,6 +84,7 @@ namespace Reefkeeper
                 (Input.GetKey(KeyCode.Space) ? 1 : 0) - (Input.GetKey(KeyCode.C) ? 1 : 0),
                 Input.GetAxisRaw("Vertical"));
 #endif
+            if (ReefToolMenu.BlocksWorldInput) { Tick(axes, boost, brake, Time.deltaTime); return; }
             if (escape) { SetControl(false); return; }
             if (!controlling)
             {

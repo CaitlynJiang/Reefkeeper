@@ -73,6 +73,7 @@ namespace Reefkeeper.Corals
         void Update()
         {
             AimingCat = false; aimingHand = -1;
+            if (ReefToolMenu.BlocksWorldInput) return;
             bool canAct = Automated || corals.Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             if (!canAct || !corals.View) return;
             if (corals.CenterAimMode)

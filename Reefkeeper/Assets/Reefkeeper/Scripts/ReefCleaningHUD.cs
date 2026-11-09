@@ -116,6 +116,8 @@ namespace Reefkeeper
         void LateUpdate()
         {
             if (!pickup.View) return;
+            if (ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
+            { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
             helpHint.text = HelpVisible ? "Close controls" : "Controls";
             if (HelpVisible) UpdateHelp();
@@ -144,7 +146,7 @@ namespace Reefkeeper
             if (UsesQuestPrompts)
             {
                 key = ControllerGripGlyph;
-                if (pickup.ToolHeld) context = pickup.ActiveTool.Scrubbing ? "" : "Release to let go of " + pickup.ActiveTool.ToolName;
+                if (pickup.ToolHeld) { context = pickup.ActiveTool.Scrubbing ? "" : pickup.Carrying ? "A: switch tools" : "Release to let go of " + pickup.ActiveTool.ToolName; if (pickup.Carrying) key = ""; }
                 else if (pickup.ActiveInteractable.isHovered) context = "Hold to grab " + pickup.ActiveTool.ToolName;
                 else if (pickup.corals.HasPrompt) context = pickup.corals.Held ? "Hold to replace coral" : "Hold to pick up coral";
             }
@@ -181,7 +183,7 @@ namespace Reefkeeper
                 HelpRow(2, "", "Brush algae; scrape fire coral"); HelpRow(3, "", "Scraper: push and pull");
                 HelpRow(4, "keyboard_g", "Simulator: hold for Grip");
                 HelpRow(5, "keyboard_w", "WASD  Move controller"); HelpRow(6, "keyboard_q", "Down / up", "keyboard_e");
-                HelpRow(7, "keyboard_tab", "Body / device mode"); HelpRow(8, "", "[ / ]  Select left / right hand");
+                HelpRow(7, "keyboard_tab", ReefToolMenu.Instance ? "Tools; ` cycles device mode" : "Body / device mode"); HelpRow(8, "", "[ / ]  Select left / right hand");
                 HelpRow(9, "mouse_right", "Toggle mouse look"); HelpRow(10, "keyboard_f2", "Desktop / XR simulator");
                 HelpRow(11, "keyboard_f5", "Reset nursery"); return;
             }
@@ -190,7 +192,7 @@ namespace Reefkeeper
             HelpRow(2, "keyboard_shift", "Boost"); HelpRow(3, xr ? "keyboard_b" : "mouse_right", "Brake", xr ? "" : "keyboard_x");
             HelpRow(4, "keyboard_g", "Talk / plant / pick up a tool"); HelpRow(5, "mouse_left", "Hold: clean  Click: fertilize");
             HelpRow(6, "keyboard_h", "Return tools to tray");
-            HelpRow(7, xr ? "keyboard_tab" : "keyboard_escape", xr ? "Body / device mode" : "Cursor; click to resume");
+            HelpRow(7, ReefToolMenu.Instance ? "keyboard_tab" : xr ? "keyboard_tab" : "keyboard_escape", ReefToolMenu.Instance ? "Tools; ` cycles simulator mode" : xr ? "Body / device mode" : "Cursor; click to resume");
             HelpRow(8, xr ? "mouse_right" : "keyboard_r", xr ? "Toggle mouse look" : "Return to start");
             HelpRow(9, "keyboard_f2", "Desktop / XR simulator"); HelpRow(10, "keyboard_f5", "Reset nursery");
             HelpRow(11, "keyboard_f11", "Fullscreen");

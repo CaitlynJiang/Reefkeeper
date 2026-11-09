@@ -41,8 +41,10 @@ namespace Reefkeeper
         // G also drives the simulator's right grip in FPS mode. Give center aim
         // exclusive ownership there so one key press cannot grab two fragments.
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
+            (!ReefToolMenu.BlocksWorldInput || isSelected) &&
             (isSelected || !owner || !owner.CenterAimMode || ReferenceEquals(interactor, owner.hand)) && base.IsSelectableBy(interactor);
         public override bool IsHoverableBy(IXRHoverInteractor interactor) =>
+            !ReefToolMenu.BlocksWorldInput &&
             (!owner || !owner.CenterAimMode || ReferenceEquals(interactor, owner.hand)) && base.IsHoverableBy(interactor);
         void RefreshOutline()
         {

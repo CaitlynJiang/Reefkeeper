@@ -22,6 +22,38 @@ aim at a tool and press **G**, then aim at a nearby patch and hold **left mouse*
 with tracked controllers, use Grip to hold the tool and move it against the
 surface. The mouse animation uses the same contact sweep as tracked motion.
 
+## Pebble tool shortcut menu
+
+The left-side **Tools** button opens a separate five-slot arc, using warm yellow,
+lake blue and irregular pebble shapes. Two slots show actual captures of the
+current brush and file models; three smaller slots are reserved for future tools.
+
+| Input | Action |
+| --- | --- |
+| Tap **Tab** / click **Tools** | Toggle the tool menu. |
+| Click an acquired tool | Equip it and close the menu. |
+| **Esc** | Close and restore the previously held tool. |
+| Right controller **A** / **B** | Open or toggle / close the menu. |
+| Right controller pointer + trigger | Choose a tool; it follows the right controller without requiring held Grip. |
+| **Backquote** (the key below Esc) | Cycle simulator devices; replaces the simulator's former Tab binding. |
+
+Pick up each tool once at the tutorial table to unlock it for the current Play
+session. The table retains a visual display while its working tool is away.
+Unacquired slots say **Pick up first** and cannot equip; future slots are inactive.
+F5 resets the nursery but retains tools acquired in that session. Leaving Play
+Mode starts a fresh inventory; no save-game persistence is added yet.
+
+Opening the menu hides the held tool and captures world interaction while
+swimming continues. Closing restores it; choosing another returns the old one.
+The selection click is consumed until release to avoid immediately cleaning or
+planting behind the UI. Desktop and simulator use the mouse. A running headset
+uses the existing floating world-space HUD and a right-controller pointer.
+The dive-card / journal UI and B/J/left-Y shortcuts remain future work.
+
+`ReefToolMenu` is attached at runtime only when the workshop has a scraper, so the
+authored V2 scene is unchanged. Tool sprites live in `Resources/ToolMenu`; its
+README records their in-game screenshot sources. Re-capture them when models change.
+
 The wrong tool does not advance progress; the HUD names the required tool.
 Stationary contact, pickup snapping and motion beneath the surface do not clean.
 The file also rejects sideways motion across its width. Cleared planting surfaces open
@@ -63,6 +95,8 @@ the existing PICO Unity Integration SDK 3.4.0; this change does not update SDKs.
   coral prefab and tree targets while preserving the current tool/table layout.
 - `Reefkeeper > V3 > Set up scraping debris VFX` creates/configures the bounded
   emitter and wires it to the scraper. Its assets are referenced by the scene for builds.
+- `Reefkeeper > V3 > Import tool screenshot icons` configures the two captured
+  tool images as uncompressed UI sprites without changing the scene.
 - The existing PICO build menu targets **V2**. V3 is currently an Editor prototype;
   select the V3 scene explicitly if preparing a separate build.
 - The opt-in integration runner starts only with `-reef-v3-smoke <output-folder>`.
@@ -80,11 +114,16 @@ tracked-style directional scraping, planting gates, regrowth and reset, plus
 wrong-tool rejection and angled tracked contact on every added fire coral sample.
 VFX checks exercise actual desktop/tracked emissions, world-space placement,
 opacity decay, idle/wrong-tool rejection, release/return, and reset cleanup.
+Tool-menu checks cover pickup-based unlocking, retained table displays, actual
+mouse/Tab/Escape selection, hidden-tool restoration, world-input suppression,
+continued swimming, simulator key remapping, and simulated right-controller
+A/B/trigger selection and tracked following.
 Editor tests do not establish PICO hardware compatibility or rendering performance.
 
-Validated in Unity 6000.3.19f1 on 2026-11-09: compilation, scene validation,
-tabletop tool fit, attachment of all four samples and their branch roots, and
-all 61 Play Mode integration assertions passed. Scene renders were inspected
-for the practice bench, file, fire coral and coral tree; a tracked-contact clip
-is recorded separately for the scraping VFX.
-Local report: `artifacts/v3-scrape-vfx-check/result.txt` (ignored by Git).
+Validated in Unity 6000.3.19f1 on 2026-11-09: compilation and all 85 Play Mode
+integration assertions passed, including the existing cleaning/VFX regressions
+and the new menu checks. Earlier scene validation checked tabletop tool fit and
+attachment of all four fire-coral samples and their branch roots. Actual Game
+View captures were inspected for the open and closed tool menu.
+Local report: `artifacts/v3-tool-menu-check/result.txt`; previews:
+`artifacts/v3-tool-menu-preview/` (both ignored by Git).

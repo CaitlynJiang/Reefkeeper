@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation;
 
 namespace Reefkeeper
 {
@@ -16,6 +17,7 @@ namespace Reefkeeper
     {
         Keyboard keyboard;
         Mouse mouse;
+        XRSimulatedController rightController;
         ReefWorkshop workshop;
         ReefBrushPickup pickup;
         string output;
@@ -87,6 +89,10 @@ namespace Reefkeeper
             keyboard = InputSystem.AddDevice<Keyboard>("V3 test keyboard");
             mouse = InputSystem.AddDevice<Mouse>("V3 test mouse");
             Require(workshop.scraper && pickup.scraper, "Scene contains a wired scraper");
+            var menu = workshop.GetComponent<ReefToolMenu>();
+            Require(menu && !menu.Owns(CleaningToolKind.Brush) && !menu.Owns(CleaningToolKind.Scraper), "Tools start locked until their first pickup");
+            Require(Resources.Load<Sprite>("ToolMenu/Brush") && Resources.Load<Sprite>("ToolMenu/Scraper"), "Both tool icons load from actual model capture sprites");
+            Require(!menu.TryEquip(0) && !menu.TryEquip(1) && !menu.TryEquip(4), "Locked and future slots cannot equip tools");
             var debris = workshop.scraper.scrapeDebris;
             Require(debris && debris.Particles && debris.AliveCount == 0, "Scraper VFX is wired and starts empty");
             var sockets = FindObjectsByType<RackSocket>(FindObjectsSortMode.None).Where(s => s.moss).ToArray();
@@ -127,6 +133,8 @@ namespace Reefkeeper
             Require(pickup.AimingBrush && pickup.brush.Highlighted, "Brush can be aimed at");
             Keys(Key.G); yield return new WaitForSeconds(0.15f); Keys(); yield return new WaitForSeconds(0.2f);
             Require(pickup.Carrying && pickup.ActiveTool == workshop.brush, "G picks up brush");
+            Require(menu.Owns(CleaningToolKind.Brush) && !menu.Owns(CleaningToolKind.Scraper), "First pickup unlocks only the brush");
+            Require(workshop.brushHome.GetComponentInChildren<MeshRenderer>(), "Tutorial table keeps a brush display while its working tool is carried");
             Aim(f); Click(true); yield return new WaitForSeconds(0.6f); Click(false);
             Require(f.Cleaned == 0 && !pickup.IsScrubbing && hud.Status.Contains("scraper"), "Brush cannot scrape fire coral; HUD names correct tool");
             Require(debris.EmittedCount == 0, "Wrong brush contact emits no coral chips");
@@ -244,6 +252,70 @@ namespace Reefkeeper
             workshop.ResetWorkshop(); yield return null;
             Require(!pickup.ToolHeld && fire.Cleaned == 0 && algae.Cleaned == 0 && fire.dirtVisual.enabled, "Reset restores both surface types and tools");
             Require(debris.AliveCount == 0, "Nursery reset clears remaining debris");
+            Require(menu.Owns(CleaningToolKind.Brush) && menu.Owns(CleaningToolKind.Scraper), "Reset retains tools acquired this session");
+            Keys(Key.Tab); yield return null; Keys(); yield return new WaitForSeconds(.35f);
+            Require(menu.IsOpen && Cursor.lockState == CursorLockMode.None, "Tab opens the menu and releases the mouse");
+            var slotScreen = RectTransformUtility.WorldToScreenPoint(null, menu.SlotRect(0).position);
+            mouse.MakeCurrent(); InputSystem.QueueStateEvent(mouse,new MouseState { position=slotScreen }); yield return null;
+            InputSystem.QueueStateEvent(mouse,new MouseState { position=slotScreen, buttons=1 }); yield return new WaitForSeconds(.1f);
+            Require(!menu.IsOpen && pickup.Carrying && pickup.ActiveTool == workshop.brush, "Clicking a pebble equips the brush and closes the menu");
+            Require(ReefToolMenu.BlocksWorldInput, "The selection click remains consumed until released");
+            Click(false); yield return new WaitForSeconds(.1f);
+            Require(!ReefToolMenu.BlocksWorldInput, "Releasing the selection click restores world input");
+            menu.SetOpen(true); yield return new WaitForSeconds(.3f);
+            Require(workshop.brush.GetComponentsInChildren<Renderer>().All(r=>r.forceRenderingOff), "Opening the menu hides the held tool without dropping it");
+            Aim(algae); var beforeMenuClean=algae.Cleaned;
+            Click(true); yield return new WaitForSeconds(.4f); Click(false); yield return null;
+            Require(algae.Cleaned == beforeMenuClean && !pickup.IsScrubbing, "Mouse clicks while the menu is open do not scrub the world");
+            Require(menu.TryEquip(1), "An acquired scraper can be selected from the menu");
+            yield return new WaitForSeconds(.2f);
+            Require(pickup.ActiveTool == workshop.scraper && pickup.Carrying && !workshop.brush.Held, "Menu swapping retains exactly one held tool");
+            Require(workshop.brush.GetComponentsInChildren<Renderer>().All(r=>!r.forceRenderingOff), "Swapping restores the old tool's rendering state");
+            menu.SetOpen(true); yield return null;
+            Keys(Key.Escape); yield return null; Keys(); yield return new WaitForSeconds(.1f);
+            Require(!menu.IsOpen && workshop.scraper.GetComponentsInChildren<Renderer>().All(r=>!r.forceRenderingOff), "Escape closes the menu and restores the selected tool");
+            menu.SetOpen(true); yield return null;
+            var motor=workshop.desktopPlayer.GetComponent<DiveMotor>(); motor.Automated=false;
+            var beforeSwim=motor.transform.position;
+            Keys(Key.W); yield return new WaitForSeconds(.4f); Keys(); motor.Automated=true;
+            Require(Vector3.Distance(beforeSwim,motor.transform.position)>.01f && menu.IsOpen, "Swimming continues while the tool menu is open");
+            menu.SetOpen(false); yield return new WaitForSeconds(.1f);
+            var simulator=workshop.xrGroup.GetComponentInChildren<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRInteractionSimulator>(true);
+            Require(simulator.cycleDevicesInput.inputActionPerformed.bindings.Any(b=>b.effectivePath=="<Keyboard>/backquote"), "Simulator device cycling uses backquote instead of Tab");
+            workshop.ReturnBrush();
+
+            // Exercise the real action bindings and tracked-pose driver without physical hardware.
+            workshop.desktopPlayer.SetActive(false); workshop.xrGroup.SetActive(true);
+            yield return null;
+            simulator.enabled=false;
+            rightController=InputSystem.AddDevice<XRSimulatedController>("Tool menu test right hand");
+            InputSystem.SetDeviceUsage(rightController,UnityEngine.InputSystem.CommonUsages.RightHand);
+            var controllerState=new XRSimulatedControllerState { isTracked=true,trackingState=3,
+                devicePosition=new Vector3(.2f,1.1f,.4f),deviceRotation=Quaternion.identity };
+            InputSystem.QueueStateEvent(rightController,controllerState); yield return new WaitForSeconds(.2f);
+            Require(!pickup.CenterMode,"Controller quick selection uses tracked mode");
+            InputSystem.QueueStateEvent(rightController,controllerState.WithButton(ControllerButton.PrimaryButton));
+            yield return new WaitForSeconds(.3f);
+            Require(menu.IsOpen,"Right A opens the tool menu through its XR action binding");
+            controllerState.buttons=0;InputSystem.QueueStateEvent(rightController,controllerState);yield return null;
+            slotScreen=RectTransformUtility.WorldToScreenPoint(null,menu.SlotRect(1).position);
+            InputSystem.QueueStateEvent(mouse,new MouseState {position=slotScreen});yield return null;
+            InputSystem.QueueStateEvent(rightController,controllerState.WithButton(ControllerButton.TriggerButton));
+            yield return new WaitForSeconds(.2f);
+            Require(!menu.IsOpen && pickup.Carrying && pickup.ActiveTool==workshop.scraper,"Controller trigger selects a pointed slot and equips its tool");
+            controllerState.buttons=0;InputSystem.QueueStateEvent(rightController,controllerState);yield return new WaitForSeconds(.15f);
+            var toolBefore=workshop.scraper.transform.position;
+            controllerState.devicePosition+=Vector3.right*.15f;
+            InputSystem.QueueStateEvent(rightController,controllerState);yield return new WaitForSeconds(.2f);
+            Require(pickup.Carrying && Vector3.Distance(toolBefore,workshop.scraper.transform.position)>.1f,
+                "Quick-equipped tool follows tracked controller motion without holding Grip");
+            InputSystem.QueueStateEvent(rightController,controllerState.WithButton(ControllerButton.PrimaryButton));yield return new WaitForSeconds(.2f);
+            Require(menu.IsOpen && workshop.scraper.GetComponentsInChildren<Renderer>().All(r=>r.forceRenderingOff),"Controller menu hides the tracked tool");
+            controllerState.buttons=0;InputSystem.QueueStateEvent(rightController,controllerState);yield return null;
+            InputSystem.QueueStateEvent(rightController,controllerState.WithButton(ControllerButton.SecondaryButton));yield return new WaitForSeconds(.2f);
+            Require(!menu.IsOpen && pickup.Carrying && workshop.scraper.GetComponentsInChildren<Renderer>().All(r=>!r.forceRenderingOff),"Right B closes the menu and restores the tracked tool");
+            controllerState.buttons=0;InputSystem.QueueStateEvent(rightController,controllerState);yield return null;
+            workshop.ReturnBrush();
             Destroy(fixture);
         }
 
@@ -272,6 +344,7 @@ namespace Reefkeeper
             settingsCaptured = false;
             if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
             if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);
+            if (rightController != null && rightController.added) InputSystem.RemoveDevice(rightController);
             InputSystem.settings = originalInputSettings;
             Time.captureDeltaTime = originalCaptureDeltaTime;
             if (testInputSettings) Destroy(testInputSettings);

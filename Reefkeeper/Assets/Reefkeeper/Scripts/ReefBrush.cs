@@ -32,7 +32,7 @@ namespace Reefkeeper
             InContact = false;
             Scrubbing = false;
             ContactPatch = null;
-            if (Held && wasHeld && (!assisted || !assisted.Carrying || assisted.IsScrubbing)) Sweep(lastTip, tip);
+            if (!ReefToolMenu.BlocksWorldInput && Held && wasHeld && (!assisted || !assisted.AssistedMotion || assisted.IsScrubbing)) Sweep(lastTip, tip);
             lastTip = tip;
             wasHeld = Held;
         }

@@ -57,6 +57,7 @@ namespace Reefkeeper
                 holdParent = null; previousView = view;
             }
             UpdateHand(view);
+            if (ReefToolMenu.BlocksWorldInput) { SetAim(null); return; }
             bool centerAim = CenterAimMode;
             bool canAim = Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             ReefCoralFragment target = null;

@@ -79,6 +79,7 @@ namespace Reefkeeper.Corals
         {
             Prompt = ""; PromptKey = ""; Hovered = null;
             TrackTutorial();
+            if (ReefToolMenu.BlocksWorldInput) return;
             bool canAct = Automated || corals.Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             if (!canAct) return;
             if (corals.CenterAimMode)
@@ -211,7 +212,7 @@ namespace Reefkeeper.Corals
 
         bool TryPlantNear(ReefCoralFragment fragment)
         {
-            if (corals.CenterAimMode) return false;
+            if (ReefToolMenu.BlocksWorldInput || corals.CenterAimMode) return false;
             var socket = NearestPlantable(fragment);
             if (!socket) return false;
             Plant(socket);

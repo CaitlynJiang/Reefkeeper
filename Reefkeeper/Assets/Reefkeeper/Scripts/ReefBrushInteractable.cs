@@ -36,8 +36,10 @@ namespace Reefkeeper
             foreach (var shell in outlines) shell.enabled = Highlighted;
         }
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
+            (!ReefToolMenu.BlocksWorldInput || isSelected || owner && owner.MenuEquipping && ReferenceEquals(interactor, owner.hand)) &&
             (isSelected || !owner || !owner.CenterMode || ReferenceEquals(interactor, owner.hand)) && base.IsSelectableBy(interactor);
         public override bool IsHoverableBy(IXRHoverInteractor interactor) =>
+            !ReefToolMenu.BlocksWorldInput &&
             (!owner || !owner.CenterMode || ReferenceEquals(interactor, owner.hand)) && base.IsHoverableBy(interactor);
         protected override void OnHoverEntered(HoverEnterEventArgs args) { base.OnHoverEntered(args); Refresh(); }
         protected override void OnHoverExited(HoverExitEventArgs args) { base.OnHoverExited(args); Refresh(); }
