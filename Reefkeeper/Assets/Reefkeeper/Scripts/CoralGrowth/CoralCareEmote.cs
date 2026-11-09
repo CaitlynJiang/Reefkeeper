@@ -19,11 +19,12 @@ namespace Reefkeeper.Corals
         float blockedTime, lastCleaned, smileLeft, heartLeft, opacity, popAge;
         bool wasBlocked;
         Transform stage;
-        float stageTopOffset;
+        float stageTopOffset, stageRadius, side;
 
         public void Bind(CoralNurture care)
         {
             nurture = care;
+            side = (GetInstanceID() & 2) == 0 ? -1f : 1f;
             icons ??= new[]
             {
                 null, Load("Blocked"), Load("Crying"), Load("Fertilize"), Load("Smile"), Load("Heart"),
@@ -90,10 +91,17 @@ namespace Reefkeeper.Corals
             {
                 stage = current;
                 stageTopOffset = 0f;
+                stageRadius = 0f;
                 if (stage)
                 {
                     foreach (var mesh in stage.GetComponentsInChildren<MeshRenderer>())
+                    {
                         stageTopOffset = Mathf.Max(stageTopOffset, mesh.bounds.max.y - transform.position.y);
+                        Vector3 extent = mesh.bounds.extents;
+                        Vector3 offset = mesh.bounds.center - transform.position;
+                        stageRadius = Mathf.Max(stageRadius,
+                            new Vector2(Mathf.Abs(offset.x) + extent.x, Mathf.Abs(offset.z) + extent.z).magnitude);
+                    }
                 }
             }
 
@@ -101,7 +109,10 @@ namespace Reefkeeper.Corals
             float drift = Mathf.Sin(phase) * 0.014f;
             float rise = shown == Mood.Heart ? Mathf.Clamp01(popAge / HeartSeconds) * 0.09f : 0f;
             var visual = bubble.transform;
-            visual.position = transform.position + Vector3.up * (stageTopOffset + 0.13f + drift + rise);
+            Vector3 lateral = Vector3.ProjectOnPlane(viewer.right, Vector3.up).normalized;
+            float sideOffset = Mathf.Clamp(stageRadius * 0.65f, 0.13f, 0.34f);
+            visual.position = transform.position + Vector3.up * (stageTopOffset + 0.13f + drift + rise)
+                + lateral * (side * sideOffset);
             var forward = visual.position - viewer.position;
             if (forward.sqrMagnitude > 0.0001f)
                 visual.rotation = Quaternion.LookRotation(forward, viewer.up)
