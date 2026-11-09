@@ -8,3 +8,6 @@ Reefkeeper/*.csproj
 Reefkeeper/*.sln*
 Reefkeeper/.vs/
 artifacts/
+
+# Blender auto-backups
+*.blend1
