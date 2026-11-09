@@ -29,6 +29,15 @@ their planting sockets. Algae keeps the existing timed regrowth behavior;
 fire coral stays cleared until nursery reset. Existing RedCoral shop stock is a
 separate asset and is not a cleaning target.
 
+Accepted file strokes shed small, faceted coral chips at the working face. Their
+initial velocity follows the stroke and the surface normal, with a little outward
+scatter and rotation. They drift in world space and fade/shrink over 0.65–1.05 s,
+so returning the file does not drag the chips back to the table. Emission scales
+with actual removed travel; idle contact, wrong tools, rejected sideways motion,
+and already-cleared patches emit nothing. Nursery reset clears any remaining chips.
+The effect uses one scene particle system with a maximum of 96 particles, a shared
+mesh/material, no particle physics collisions, and the existing underwater fog.
+
 Fire coral uses curved, irregularly forked branches rising from a narrow, wavy
 strip, with rounded tips and a pale gold-to-cream color gradient. The prototype
 takes its branching silhouette and pale tips from the
@@ -52,6 +61,8 @@ the existing PICO Unity Integration SDK 3.4.0; this change does not update SDKs.
   This is an intentional layout reset; it also validates tool fit and tree attachment.
 - `Reefkeeper > V3 > Update fire coral shape and tree targets` rebuilds the fire
   coral prefab and tree targets while preserving the current tool/table layout.
+- `Reefkeeper > V3 > Set up scraping debris VFX` creates/configures the bounded
+  emitter and wires it to the scraper. Its assets are referenced by the scene for builds.
 - The existing PICO build menu targets **V2**. V3 is currently an Editor prototype;
   select the V3 scene explicitly if preparing a separate build.
 - The opt-in integration runner starts only with `-reef-v3-smoke <output-folder>`.
@@ -67,10 +78,13 @@ Tests cover tool/surface matching, keyboard pickup, wrong-tool prompts, occlusio
 partial progress and pause/resume, complete visual removal, tool switching,
 tracked-style directional scraping, planting gates, regrowth and reset, plus
 wrong-tool rejection and angled tracked contact on every added fire coral sample.
+VFX checks exercise actual desktop/tracked emissions, world-space placement,
+opacity decay, idle/wrong-tool rejection, release/return, and reset cleanup.
 Editor tests do not establish PICO hardware compatibility or rendering performance.
 
 Validated in Unity 6000.3.19f1 on 2026-11-09: compilation, scene validation,
 tabletop tool fit, attachment of all four samples and their branch roots, and
-all 43 Play Mode integration assertions passed. Scene renders were inspected
-for the practice bench, file, fire coral and coral tree.
-Local report: `artifacts/v3-coral-shape-check/result.txt` (ignored by Git).
+all 61 Play Mode integration assertions passed. Scene renders were inspected
+for the practice bench, file, fire coral and coral tree; a tracked-contact clip
+is recorded separately for the scraping VFX.
+Local report: `artifacts/v3-scrape-vfx-check/result.txt` (ignored by Git).

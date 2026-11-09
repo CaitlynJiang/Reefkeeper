@@ -12,6 +12,7 @@ namespace Reefkeeper
         public Transform bristles;
         public CleaningToolKind toolKind;
         public float contactRadius = 0.075f;
+        public ReefScrapeDebris scrapeDebris;
         public string ToolName => toolKind == CleaningToolKind.Scraper ? "scraper" : "brush";
         public RackDirtPatch ContactPatch { get; private set; }
         public bool InContact { get; private set; }
@@ -61,7 +62,15 @@ namespace Reefkeeper
                     float travel = toolKind == CleaningToolKind.Scraper
                         ? Mathf.Abs(Vector3.Dot(tangent, Vector3.ProjectOnPlane(bristles.forward, normal).normalized))
                         : tangent.magnitude;
-                    if (travel > 0.0005f) { patch.ApplyStroke(travel, toolKind); Scrubbing = !patch.Complete; }
+                    if (travel > 0.0005f)
+                    {
+                        float before = patch.Cleaned;
+                        patch.ApplyStroke(travel, toolKind);
+                        float removed = patch.Cleaned - before;
+                        if (removed > 0 && toolKind == CleaningToolKind.Scraper && scrapeDebris)
+                            scrapeDebris.EmitScrape(patch, point, tangent, removed * Mathf.Max(0.05f, patch.requiredTravel));
+                        Scrubbing = !patch.Complete;
+                    }
                 }
             }
         }

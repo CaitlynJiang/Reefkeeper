@@ -40,6 +40,7 @@ namespace Reefkeeper
         }
         public void ResetWorkshop()
         {
+            if (scraper && scraper.scrapeDebris) scraper.scrapeDebris.Clear();
             foreach (var patch in patches) patch.ResetDirt();
             ReturnBrush();
             var corals = GetComponent<ReefCoralPickup>();

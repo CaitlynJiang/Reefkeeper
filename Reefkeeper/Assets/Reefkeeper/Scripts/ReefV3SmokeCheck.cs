@@ -87,6 +87,8 @@ namespace Reefkeeper
             keyboard = InputSystem.AddDevice<Keyboard>("V3 test keyboard");
             mouse = InputSystem.AddDevice<Mouse>("V3 test mouse");
             Require(workshop.scraper && pickup.scraper, "Scene contains a wired scraper");
+            var debris = workshop.scraper.scrapeDebris;
+            Require(debris && debris.Particles && debris.AliveCount == 0, "Scraper VFX is wired and starts empty");
             var sockets = FindObjectsByType<RackSocket>(FindObjectsSortMode.None).Where(s => s.moss).ToArray();
             var fireSocket = sockets.First(s => s.moss.surfaceKind == ReefSurfaceKind.FireCoral);
             var algaeSocket = sockets.First(s => s.moss.surfaceKind == ReefSurfaceKind.Algae);
@@ -127,6 +129,7 @@ namespace Reefkeeper
             Require(pickup.Carrying && pickup.ActiveTool == workshop.brush, "G picks up brush");
             Aim(f); Click(true); yield return new WaitForSeconds(0.6f); Click(false);
             Require(f.Cleaned == 0 && !pickup.IsScrubbing && hud.Status.Contains("scraper"), "Brush cannot scrape fire coral; HUD names correct tool");
+            Require(debris.EmittedCount == 0, "Wrong brush contact emits no coral chips");
             Aim(a); yield return new WaitForSeconds(0.3f);
             Require(a.Cleaned == 0, "Idle brush does not clean");
             var blocker = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -144,14 +147,26 @@ namespace Reefkeeper
             for (int frame = 0; frame < 900 && !a.Complete; frame++) yield return null;
             Click(false); yield return new WaitForSeconds(0.1f);
             Require(a.Complete && !a.dirtVisual.enabled, "Brush completes algae removal");
+            Require(debris.EmittedCount == 0, "Algae brushing emits no coral chips");
 
             AimTool(workshop.scraper); yield return new WaitForSeconds(0.3f);
             Keys(Key.G); yield return new WaitForSeconds(0.15f); Keys(); yield return new WaitForSeconds(0.2f);
             Require(pickup.Carrying && pickup.ActiveTool == workshop.scraper && !workshop.brush.Held, "Switching tools returns brush");
             a.ResetDirt(); Aim(a); Click(true); yield return new WaitForSeconds(0.5f); Click(false);
             Require(a.Cleaned == 0 && hud.Status.Contains("brush"), "Scraper cannot clear algae; HUD names brush");
+            Require(debris.EmittedCount == 0, "Scraping algae emits no coral chips");
             Aim(f); Click(true); yield return new WaitForSeconds(0.7f); Click(false); yield return new WaitForSeconds(0.2f);
             Require(f.Cleaned > 0 && !f.Complete, "Scraper produces real partial contact progress");
+            Require(debris.EmittedCount > 0 && debris.AliveCount > 0, "Actual desktop scraping emits coral chips");
+            var chips = new ParticleSystem.Particle[96];
+            int chipCount = debris.Particles.GetParticles(chips);
+            Require(chips.Take(chipCount).All(p => Vector3.Distance(p.position, f.transform.position) < 0.6f),
+                "World-space chips originate at the actual scraped fixture");
+            Require(chips.Take(chipCount).Any(p => p.GetCurrentColor(debris.Particles).a < 170),
+                "Living coral chips lose opacity over time");
+            int pausedEmission = debris.EmittedCount;
+            yield return new WaitForSeconds(0.25f);
+            Require(debris.EmittedCount == pausedEmission, "Releasing mouse stops chip emission immediately");
             Click(true);
             for (int frame = 0; frame < 900 && !f.Complete; frame++) yield return null;
             Click(false); yield return new WaitForSeconds(0.2f);
@@ -159,6 +174,9 @@ namespace Reefkeeper
             Require(hud.DisplayedProgress > 0.999f, "HUD follows the scraper's target");
             Keys(Key.H); yield return new WaitForSeconds(0.2f); Keys();
             Require(!pickup.ToolHeld && Vector3.Distance(workshop.scraper.transform.position, workshop.scraperHome.position) < 0.02f, "H returns scraper");
+            int returnedEmission = debris.EmittedCount;
+            yield return new WaitForSeconds(1.15f);
+            Require(debris.AliveCount == 0 && debris.EmittedCount == returnedEmission, "Returning file leaves no lingering or newly emitted debris");
 
             // Exercise the same XRI-selected contact sweep used by a tracked controller, with no mouse animation.
             f.ResetDirt(); f.requiredTravel = 2f;
@@ -172,14 +190,18 @@ namespace Reefkeeper
             tracked.transform.position = center - tipLocal;
             tracked.StartManualInteraction((IXRSelectInteractable)pickup.scraper);
             yield return new WaitForSeconds(0.4f);
+            int stationaryEmission = debris.EmittedCount;
             f.ResetDirt(); yield return new WaitForSeconds(0.3f);
             Require(f.Cleaned == 0, "Held stationary scraper does not clean");
+            Require(debris.EmittedCount == stationaryEmission, "Stationary tracked file emits no debris");
             for (int frame = 0; frame < 30; frame++)
             { tracked.transform.position = center - tipLocal + Vector3.right * (Mathf.Sin(frame * 0.2f) * 0.04f); yield return null; }
             Require(f.Cleaned < 0.001f, "Sideways movement along the blade does not scrape");
+            Require(debris.EmittedCount == stationaryEmission, "Rejected sideways strokes emit no debris");
             for (int frame = 0; frame < 40; frame++)
             { tracked.transform.position = center - tipLocal + Vector3.forward * (Mathf.Sin(frame * 0.2f) * 0.065f); yield return null; }
             Require(f.Cleaned > 0.03f, "Forward/backward tracked strokes scrape fire coral");
+            Require(debris.EmittedCount > stationaryEmission && debris.AliveCount > 0, "Tracked file strokes emit coral chips");
             foreach (var sample in workshop.patches.Where(p => p.surfaceKind == ReefSurfaceKind.FireCoral))
             {
                 var pose = sample.transform.rotation;
@@ -187,12 +209,14 @@ namespace Reefkeeper
                 tracked.transform.SetPositionAndRotation(contact - pose * tipLocal, pose);
                 yield return new WaitForSeconds(0.3f);
                 sample.ResetDirt();
+                int beforeSampleEmission = debris.EmittedCount;
                 for (int frame = 0; frame < 45; frame++)
                 {
                     tracked.transform.position = contact - pose * tipLocal + sample.transform.forward * (Mathf.Sin(frame * 0.2f) * 0.04f);
                     yield return null;
                 }
                 Require(sample.Cleaned > 0.01f, sample.name + " receives tracked file contact at its surface angle");
+                Require(debris.EmittedCount > beforeSampleEmission, sample.name + " emits debris during tracked contact");
             }
             tracked.EndManualInteraction(); tracked.Requested = null; Destroy(tracked.gameObject);
             pickup.scraper.owner = pickup;
@@ -219,6 +243,7 @@ namespace Reefkeeper
             Destroy(nurture.gameObject);
             workshop.ResetWorkshop(); yield return null;
             Require(!pickup.ToolHeld && fire.Cleaned == 0 && algae.Cleaned == 0 && fire.dirtVisual.enabled, "Reset restores both surface types and tools");
+            Require(debris.AliveCount == 0, "Nursery reset clears remaining debris");
             Destroy(fixture);
         }
 
