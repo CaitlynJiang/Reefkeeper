@@ -25,6 +25,13 @@ namespace Reefkeeper
         Material fillMaterial;
         Text progressLabel, promptLabel, helpHint, objectiveBody;
         Image promptIcon;
+        // Headset: no keyboard, so Y toggles Controls and X folds Objectives (left controller,
+        // both otherwise unused). Their key icons become button letters.
+        InputAction helpButton, objectivesButton;
+        bool helpWasDown, objectivesWasDown;
+        Image helpKeyIcon, closeHelpKeyIcon, objectiveKeyIcon;
+        Text closeHelpLetter, objectiveLetter;
+        static bool Headset => UnityEngine.XR.XRSettings.isDeviceActive;
         XRInteractionSimulator simulator;
         ReefSoundscape soundscape;
         AudioSource MusicSource => soundscape ? soundscape.MusicSource : null;
@@ -64,11 +71,15 @@ namespace Reefkeeper
             Background(objectives);
             var objectiveTitle = Label(objectives, "Objectives title", new Vector2(0, 19), new Vector2(260, 22), 16, true);
             objectiveTitle.text = "Objectives"; objectiveTitle.alignment = TextAnchor.MiddleLeft;
-            SetIcon(Icon(objectives, "Objective key", new Vector2(120, 19), new Vector2(28, 28)), "keyboard_o");
+            objectiveKeyIcon = Icon(objectives, "Objective key", new Vector2(120, 19), new Vector2(28, 28));
+            SetIcon(objectiveKeyIcon, "keyboard_o");
+            objectiveLetter = Label(objectiveKeyIcon.transform, "Controller button", Vector2.zero, new Vector2(28, 28), 16, true);
+            objectiveLetter.text = "X"; objectiveLetter.enabled = false;
             objectiveBody = Label(objectives, "Objective", new Vector2(0, -13), new Vector2(260, 28), 18);
             objectiveBody.alignment = TextAnchor.MiddleLeft;
 
-            SetIcon(Icon(go.transform, "Help key", new Vector2(40, 26), new Vector2(32, 28), Vector2.zero), "keyboard_f1");
+            helpKeyIcon = Icon(go.transform, "Help key", new Vector2(40, 26), new Vector2(32, 28), Vector2.zero);
+            SetIcon(helpKeyIcon, "keyboard_f1");
             helpHint = Label(go.transform, "Help hint", new Vector2(142, 26), new Vector2(156, 24), 14, false, Vector2.zero);
             helpHint.alignment = TextAnchor.MiddleLeft;
             var dot = Rect("Aim dot", go.transform, Vector2.one * 0.5f, Vector2.zero, new Vector2(3, 3));
@@ -91,7 +102,13 @@ namespace Reefkeeper
             Background(helpPanel);
             var helpTitle = Label(helpPanel, "Controls title", new Vector2(0, 184), new Vector2(344, 28), 21, true);
             helpTitle.text = "Controls"; helpTitle.alignment = TextAnchor.MiddleLeft;
-            SetIcon(Icon(helpPanel, "Close controls key", new Vector2(150, 184), new Vector2(32, 28)), "keyboard_f1");
+            closeHelpKeyIcon = Icon(helpPanel, "Close controls key", new Vector2(150, 184), new Vector2(32, 28));
+            SetIcon(closeHelpKeyIcon, "keyboard_f1");
+            closeHelpLetter = Label(helpPanel, "Close controls button", new Vector2(150, 184), new Vector2(32, 28), 18, true);
+            closeHelpLetter.text = "Y"; closeHelpLetter.enabled = false;
+            helpButton = new InputAction("Controls", InputActionType.Button, "<XRController>{LeftHand}/secondaryButton");
+            objectivesButton = new InputAction("Objectives", InputActionType.Button, "<XRController>{LeftHand}/primaryButton");
+            helpButton.Enable(); objectivesButton.Enable();
             for (int i = 0; i < 13; i++)
             {
                 var row = Rect("Control " + i, helpPanel, Vector2.one * 0.5f, new Vector2(0, 144 - i * 28), new Vector2(344, 26));
@@ -112,6 +129,12 @@ namespace Reefkeeper
         }
         void Update()
         {
+            // Rising edges, so a held button toggles once.
+            bool helpDown = helpButton.IsPressed(), objectivesDown = objectivesButton.IsPressed();
+            if (helpDown && !helpWasDown) HelpVisible = !HelpVisible;
+            if (objectivesDown && !objectivesWasDown) ObjectivesExpanded = !ObjectivesExpanded;
+            helpWasDown = helpDown; objectivesWasDown = objectivesDown;
+
             var keyboard = Keyboard.current; if (keyboard == null) return;
             if (keyboard.f1Key.wasPressedThisFrame) HelpVisible = !HelpVisible;
             if (keyboard.oKey.wasPressedThisFrame) ObjectivesExpanded = !ObjectivesExpanded;
@@ -127,7 +150,12 @@ namespace Reefkeeper
             if (ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
             { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
-            helpHint.text = HelpVisible ? "Close controls" : "Controls";
+            bool headset = Headset;
+            helpHint.text = (headset ? "Y   " : "") + (HelpVisible ? "Close controls" : "Controls");
+            helpHint.rectTransform.anchoredPosition = new Vector2(headset ? 106 : 142, 26);
+            helpKeyIcon.enabled = !headset && helpKeyIcon.sprite;
+            closeHelpKeyIcon.enabled = !headset && closeHelpKeyIcon.sprite; closeHelpLetter.enabled = headset;
+            objectiveKeyIcon.enabled = !headset && objectiveKeyIcon.sprite; objectiveLetter.enabled = headset;
             if (HelpVisible) UpdateHelp();
 
             displayedProgress = pickup.Progress;
@@ -187,6 +215,24 @@ namespace Reefkeeper
             HelpRow(12, "", music && music.mute ? "M   Unmute BGM" : "M   Mute BGM");
             helpLabels[12].transform.parent.gameObject.SetActive(music && music.clip);
             bool xr = pickup.workshop.xrGroup.activeSelf;
+            if (Headset)
+            {
+                // Real headset: controller bindings only (ReefXRSwim, CoralShop, CoralPlanting, ReefToolMenu).
+                string grip = ControllerGripGlyph;
+                HelpRow(0, "", "Left stick   Swim");
+                HelpRow(1, "", "Click left stick   Boost");
+                HelpRow(2, "", "Right stick   Turn / rise and sink");
+                HelpRow(3, grip, "Hold grip   Grab a tool or coral");
+                HelpRow(4, grip, "Grip at Lucky Cat   Talk");
+                HelpRow(5, "", "Trigger   Plant / fertilize");
+                HelpRow(6, "", "Brush algae; scrape fire coral");
+                HelpRow(7, "", "A   Tools menu     B   Close it");
+                HelpRow(8, "", "X   Fold objectives");
+                HelpRow(9, "", "Y   Show / hide controls");
+                for (int i = 10; i < helpLabels.Count; i++) HelpRow(i, "", "");
+                helpLabels[12].transform.parent.gameObject.SetActive(false);
+                return;
+            }
             if (UsesQuestPrompts)
             {
                 string grip = ControllerGripGlyph;
@@ -262,6 +308,6 @@ namespace Reefkeeper
             var shadow = text.gameObject.AddComponent<Shadow>(); shadow.effectColor = new Color(0, 0.04f, 0.05f, 0.35f); shadow.effectDistance = new Vector2(0, -1);
             return text;
         }
-        void OnDestroy() { if (fillMaterial) Destroy(fillMaterial); }
+        void OnDestroy() { if (fillMaterial) Destroy(fillMaterial); helpButton?.Dispose(); objectivesButton?.Dispose(); }
     }
 }
