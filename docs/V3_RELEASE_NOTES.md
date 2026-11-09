@@ -6,6 +6,8 @@
 - Two cleaning tools: brush for algae, file-shaped scraper for fire coral, with wrong-tool feedback.
 - Pale, curved fire coral on the practice bench and coral trees, plus contact-driven chips that fly off and fade while scraping.
 - A standalone five-slot pebble tool menu with actual in-game tool captures. First pickup unlocks each tool, the tutorial table keeps its display, and selecting a slot equips and closes the menu.
+- The menu stays hidden until summoned, with a short slide/pop/fade animation. The lower-left Tab Tools / Esc Close prompts reuse the existing key-icon style; Close appears only while open.
+- Tool slots have no outline; selection changes their fill color. The yellow Tools pebble has a curved highlight and a soft shadow.
 - Tap Tab / right-controller A to toggle; Esc / right-controller B to close. Swimming continues while the menu is open. Simulator device cycling moves to backquote.
 - Coral care cues indicate blocked growth, cleaning feedback, completed cleaning and readiness for fertilizer.
 
@@ -25,6 +27,8 @@
 - 双工具清理：刷子清海藻、锉刀形刮刀清火珊瑚，并提示工具用错。
 - 浅色、弯曲的火珊瑚已布置在练习台和珊瑚树上；有效刮削时会飞出并淡出珊瑚碎屑。
 - 独立五槽鹅卵石工具菜单，图标取自游戏实际模型截图。首次拾取解锁，教学桌保留展示，点击槽位直接装备并收起菜单。
+- 菜单默认隐藏，呼出时滑入、轻弹并淡入，关闭时收回。左下角 Tab Tools／Esc Close 沿用现有按键图标，Close 只在菜单打开时显示。
+- 工具槽去除描边，用底色区分选中状态；黄色 Tools 鹅卵石增加弧形高光与柔和阴影。
 - 点按 Tab／右手 A 开关菜单，Esc／右手 B 关闭。菜单打开时仍可游泳；模拟器切换设备改为反引号键。
 - 珊瑚养护表情提示生长受阻、清理反馈、清理完成和可施肥状态。
 

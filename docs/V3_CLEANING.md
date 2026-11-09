@@ -24,13 +24,18 @@ surface. The mouse animation uses the same contact sweep as tracked motion.
 
 ## Pebble tool shortcut menu
 
-The left-side **Tools** button opens a separate five-slot arc, using warm yellow,
-lake blue and irregular pebble shapes. Two slots show actual captures of the
-current brush and file models; three smaller slots are reserved for future tools.
+The separate five-slot arc uses warm yellow, lake blue and irregular pebble
+shapes. The yellow **Tools** pebble and all slots stay hidden until summoned;
+they slide, scale and fade into view over 0.26 seconds, then retract on close.
+The lower-left **Tab Tools** hint uses the same key-icon assets and typography
+as **F1 Controls**. **Esc Close** appears only while open. Two slots show actual
+captures of the current brush and file; three smaller slots reserve future tools.
+Tool slots use fill-color changes instead of outlines. The yellow Tools pebble
+has a small upper-left curved highlight and a soft downward shadow.
 
 | Input | Action |
 | --- | --- |
-| Tap **Tab** / click **Tools** | Toggle the tool menu. |
+| Tap **Tab** / click the **Tools** shortcut hint | Toggle the tool menu. |
 | Click an acquired tool | Equip it and close the menu. |
 | **Esc** | Close and restore the previously held tool. |
 | Right controller **A** / **B** | Open or toggle / close the menu. |
@@ -126,4 +131,4 @@ and the new menu checks. Earlier scene validation checked tabletop tool fit and
 attachment of all four fire-coral samples and their branch roots. Actual Game
 View captures were inspected for the open and closed tool menu.
 Local report: `artifacts/v3-tool-menu-check/result.txt`; previews:
-`artifacts/v3-tool-menu-preview/` (both ignored by Git).
+`artifacts/v3-tool-menu-reveal-preview/` (both ignored by Git).

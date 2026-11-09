@@ -41,9 +41,11 @@ namespace Reefkeeper
         XRInputValueReader<Vector2> originalMouseDelta;
         InputAction cycle, openAction, backAction, trigger;
         Canvas canvas;
-        RectTransform toggle, pointer, equippedBadge;
-        Image equippedIcon;
-        Text hint, equipped;
+        RectTransform toggle, pointer, toolHint, closeHint;
+        CanvasGroup toggleGroup;
+        Image openGlyph, closeGlyph;
+        Text openKeyText, closeKeyText;
+        Sprite tabGlyph, escapeGlyph;
         Font font;
         Sprite[] toolIcons;
         Transform rayOrigin;
@@ -62,6 +64,8 @@ namespace Reefkeeper
             Instance = this;
             workshop = GetComponent<ReefWorkshop>(); pickup = GetComponent<ReefBrushPickup>();
             var hud = GetComponent<ReefCleaningHUD>(); font = hud.boldFont ? hud.boldFont : hud.font;
+            tabGlyph = hud.inputGlyphs.FirstOrDefault(s => s && s.name == "keyboard_tab");
+            escapeGlyph = hud.inputGlyphs.FirstOrDefault(s => s && s.name == "keyboard_escape");
             toolIcons = new[] { Resources.Load<Sprite>("ToolMenu/Brush"), Resources.Load<Sprite>("ToolMenu/Scraper") };
             openAction = new InputAction("Open tools", InputActionType.Button, "<XRController>{RightHand}/primaryButton");
             backAction = new InputAction("Close tools", InputActionType.Button, "<XRController>{RightHand}/secondaryButton");
@@ -106,7 +110,14 @@ namespace Reefkeeper
 
         void LateUpdate()
         {
-            expansion = Mathf.MoveTowards(expansion, IsOpen ? 1 : 0, Time.unscaledDeltaTime / .22f);
+            expansion = Mathf.MoveTowards(expansion, IsOpen ? 1 : 0, Time.unscaledDeltaTime / .26f);
+            float reveal = Mathf.SmoothStep(0, 1, expansion);
+            float pop = 1 + 2.3f * Mathf.Pow(expansion - 1, 3) + 1.3f * Mathf.Pow(expansion - 1, 2);
+            toggle.gameObject.SetActive(expansion > 0);
+            toggleGroup.alpha = reveal;
+            toggle.anchoredPosition = Vector2.Lerp(new Vector2(-25, -35), new Vector2(65, 0), reveal);
+            toggle.localScale = Vector3.one * Mathf.LerpUnclamped(.65f, 1, pop);
+            toggle.localEulerAngles = new Vector3(0, 0, Mathf.Lerp(-16, 7, reveal));
             if (IsOpen)
             {
                 HideHeld();
@@ -123,19 +134,21 @@ namespace Reefkeeper
                 groups[i].alpha = t;
                 if (IsOpen && pointerValid && Contains(slots[i],pointerScreen)) HoveredSlot = i;
                 bool selected = i < 2 && pickup.ToolHeld && (int)pickup.ActiveTool.toolKind == i;
-                backgrounds[i].Tint(selected ? cream : blue, selected ? yellow : cream, i < 2 ? selected ? 3 : 2 : 0);
+                backgrounds[i].Tint(selected ? cream : blue);
                 if (i < 2)
                 {
                     icons[i].color = new Color(1,1,1,owned[i] ? 1 : .35f);
                     names[i].text = owned[i] ? i == 0 ? "Brush" : "Scraper" : "Pick up first";
-                    if (HoveredSlot == i && owned[i]) backgrounds[i].Tint(cream,yellow,3);
+                    if (HoveredSlot == i && owned[i] && !selected) backgrounds[i].Tint(Color.Lerp(blue,cream,.35f));
                 }
             }
             if (XRSettings.isDeviceActive) HandlePointer();
-            equippedBadge.gameObject.SetActive(!IsOpen && pickup.ToolHeld);
-            if (pickup.ToolHeld) { equipped.text=pickup.ActiveTool.toolKind==CleaningToolKind.Brush?"Brush":"Scraper"; equippedIcon.sprite=toolIcons[(int)pickup.ActiveTool.toolKind]; }
-            hint.text = workshop.xrGroup.activeSelf && !pickup.CenterMode ? "A  Tools" + (IsOpen ? "   B  Close" : "")
-                : "Tab  Tools" + (IsOpen ? "   Esc  Close" : "");
+            bool controller = workshop.xrGroup.activeSelf && !pickup.CenterMode;
+            openGlyph.enabled = !controller && tabGlyph;
+            closeGlyph.enabled = !controller && escapeGlyph;
+            openKeyText.text = controller ? "A" : tabGlyph ? "" : "Tab";
+            closeKeyText.text = controller ? "B" : escapeGlyph ? "" : "Esc";
+            closeHint.gameObject.SetActive(IsOpen);
             for (int i = 0; i < displays.Length; i++) if (displays[i])
             {
                 var tool = i == 0 ? workshop.brush : workshop.scraper;
@@ -149,8 +162,13 @@ namespace Reefkeeper
             bool click = Mouse.current?.leftButton.wasPressedThisFrame == true;
             if (workshop.xrGroup.activeSelf && !pickup.CenterMode) click |= triggerPressed;
             if (!pointerValid || !click) return;
-            if (Contains(toggle,pointerScreen)) SetOpen(!IsOpen);
-            else if (IsOpen) for (int i=0;i<slots.Length;i++) if (Contains(slots[i],pointerScreen)) { TryEquip(i); break; }
+            if (Contains(toolHint,pointerScreen)) SetOpen(!IsOpen);
+            else if (IsOpen && Contains(closeHint,pointerScreen)) SetOpen(false);
+            else if (IsOpen && expansion > .6f)
+            {
+                if (Contains(toggle,pointerScreen)) SetOpen(false);
+                else for (int i=0;i<slots.Length;i++) if (Contains(slots[i],pointerScreen)) { TryEquip(i); break; }
+            }
         }
         public void RecordPickup(CleaningToolKind kind) { owned[(int)kind] = true; }
         public bool TryEquip(int index)
@@ -248,13 +266,16 @@ namespace Reefkeeper
             go.AddComponent<XRWorldHud>();
             var menu=Rect("Tool arc",go.transform,new Vector2(0,.5f),new Vector2(32,-40),Vector2.zero);
             toggle=Rect("Tools",menu,Vector2.one*.5f,new Vector2(65,0),new Vector2(116,82));
-            toggle.localEulerAngles=new Vector3(0,0,7); Pebble(toggle,yellow,cream,0,.8f);
+            toggle.localEulerAngles=new Vector3(0,0,7);
+            var mainPebble=Pebble(toggle,yellow,.8f); mainPebble.softShadow=true; mainPebble.highlight=true;
             Label(toggle,"Tools",Vector2.zero,new Vector2(100,45),24);
+            toggleGroup=toggle.gameObject.AddComponent<CanvasGroup>(); toggleGroup.alpha=0;
+            toggle.gameObject.SetActive(false);
             for(int i=0;i<slots.Length;i++)
             {
                 slots[i]=Rect("Tool slot "+i,menu,Vector2.one*.5f,positions[i],i<2?new Vector2(100,90):new Vector2(52,48));
                 slots[i].localEulerAngles=new Vector3(0,0,i%2==0?7:-9);
-                backgrounds[i]=Pebble(slots[i],blue,cream,i<2?2:0,i*1.7f);
+                backgrounds[i]=Pebble(slots[i],blue,i*1.7f);
                 groups[i]=slots[i].gameObject.AddComponent<CanvasGroup>(); groups[i].alpha=0;
                 if(i<2)
                 {
@@ -265,13 +286,10 @@ namespace Reefkeeper
                 }
                 else Label(slots[i],"·",Vector2.zero,new Vector2(40,42),22);
             }
-            equippedBadge=Rect("Equipped tool",menu,Vector2.one*.5f,new Vector2(70,-66),new Vector2(125,43));
-            Pebble(equippedBadge,new Color(.13f,.26f,.26f,.90f),cream,0,2.1f);
-            var badgeIcon=Rect("Current model capture",equippedBadge,Vector2.one*.5f,new Vector2(-37,0),new Vector2(26,29));
-            equippedIcon=badgeIcon.gameObject.AddComponent<Image>();equippedIcon.preserveAspect=true;equippedIcon.raycastTarget=false;
-            equipped=Label(equippedBadge,"",new Vector2(15,0),new Vector2(75,28),14); equipped.color=cream;
-            hint=Label(go.transform,"Tab  Tools",new Vector2(110,65),new Vector2(190,30),15,new Vector2(0,0)); hint.color=cream;
-            pointer=Rect("Controller pointer",go.transform,Vector2.one*.5f,Vector2.zero,new Vector2(8,8)); Pebble(pointer,cream,yellow,1,0); pointer.gameObject.SetActive(false);
+            toolHint=KeyHint(go.transform,"Tools",new Vector2(82,65),tabGlyph,out openGlyph,out openKeyText);
+            closeHint=KeyHint(go.transform,"Close",new Vector2(202,65),escapeGlyph,out closeGlyph,out closeKeyText);
+            closeHint.gameObject.SetActive(false);
+            pointer=Rect("Controller pointer",go.transform,Vector2.one*.5f,Vector2.zero,new Vector2(8,8)); Pebble(pointer,cream,0); pointer.gameObject.SetActive(false);
             var line=new GameObject("Tool menu pointer ray"); line.transform.SetParent(go.transform,false);
             rayLine=line.AddComponent<LineRenderer>(); rayLine.positionCount=2; rayLine.startWidth=.0015f; rayLine.endWidth=.0015f;
             rayMaterial=new Material(Shader.Find("Universal Render Pipeline/Unlit")); rayMaterial.color=cream; rayLine.sharedMaterial=rayMaterial; rayLine.enabled=false;
@@ -281,8 +299,21 @@ namespace Reefkeeper
             var rect=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();rect.gameObject.layer=5;rect.SetParent(parent,false);
             rect.anchorMin=rect.anchorMax=anchor;rect.pivot=Vector2.one*.5f;rect.anchoredPosition=position;rect.sizeDelta=size;return rect;
         }
-        ReefPebbleGraphic Pebble(RectTransform rect,Color fill,Color rim,float width,float seed)
-        { var p=rect.gameObject.AddComponent<ReefPebbleGraphic>();p.seed=seed;p.raycastTarget=false;p.Tint(fill,rim,width);return p; }
+        ReefPebbleGraphic Pebble(RectTransform rect,Color fill,float seed)
+        { var p=rect.gameObject.AddComponent<ReefPebbleGraphic>();p.seed=seed;p.raycastTarget=false;p.Tint(fill);return p; }
+        RectTransform KeyHint(Transform parent,string value,Vector2 position,Sprite sprite,out Image glyph,out Text keyText)
+        {
+            var root=Rect(value+" shortcut",parent,Vector2.zero,position,new Vector2(116,32));
+            glyph=Rect("Key icon",root,Vector2.one*.5f,new Vector2(-42,0),new Vector2(32,28)).gameObject.AddComponent<Image>();
+            if (sprite == tabGlyph) glyph.rectTransform.sizeDelta=new Vector2(36,36);
+            glyph.sprite=sprite; glyph.preserveAspect=true; glyph.raycastTarget=false;
+            glyph.color=new Color(.97f,.93f,.81f);
+            keyText=Label(root,"",new Vector2(-42,0),new Vector2(36,28),14); keyText.color=glyph.color;
+            var label=Label(root,value,new Vector2(14,0),new Vector2(64,24),14);
+            label.font=GetComponent<ReefCleaningHUD>().font; label.color=glyph.color; label.alignment=TextAnchor.MiddleLeft;
+            var shadow=label.gameObject.AddComponent<Shadow>();shadow.effectColor=new Color(0,.04f,.05f,.35f);shadow.effectDistance=new Vector2(0,-1);
+            return root;
+        }
         Text Label(Transform parent,string value,Vector2 position,Vector2 size,int pixels,Vector2? anchor=null)
         {
             var text=Rect(value,parent,anchor??Vector2.one*.5f,position,size).gameObject.AddComponent<Text>();
