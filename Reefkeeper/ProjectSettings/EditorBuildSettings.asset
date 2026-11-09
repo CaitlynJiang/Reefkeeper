@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Reefkeeper/Scenes/ShallowReef_V2.unity
     guid: 3f4b0c2b54bfd8b499925a3c2d7c06e8
   m_configObjects:
-    Unity.XR.PXR.Settings: {fileID: 11400000, guid: 3bdae3ccaefdcea4392a84419379c722, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 767a05a1b263edc41be52fbcf9ea6d4c, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 36cac22df40e6ac43a0036c1b11b0f98, type: 2}
   m_UseUCBPForAssetBundles: 0

@@ -177,7 +177,7 @@
     },
     "com.unity.xr.legacyinputhelpers": {
       "version": "2.1.13",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.unity.modules.vr": "1.0.0",
@@ -197,16 +197,18 @@
       },
       "url": "https://packages.unity.com"
     },
-    "com.unity.xr.picoxr": {
-      "version": "https://github.com/Pico-Developer/PICO-Unity-Integration-SDK.git#release_3.4.0",
+    "com.unity.xr.openxr": {
+      "version": "1.16.1",
       "depth": 0,
-      "source": "git",
+      "source": "registry",
       "dependencies": {
-        "com.unity.xr.management": "4.0.0",
-        "com.unity.xr.interaction.toolkit": "2.0.0",
-        "com.unity.xr.core-utils": "2.3.0"
+        "com.unity.inputsystem": "1.6.3",
+        "com.unity.xr.core-utils": "2.3.0",
+        "com.unity.xr.management": "4.4.0",
+        "com.unity.modules.androidjni": "1.0.0",
+        "com.unity.xr.legacyinputhelpers": "2.1.2"
       },
-      "hash": "e0740bf309b26a0b9adae33c506514569bfe5d38"
+      "url": "https://packages.unity.com"
     },
     "com.unity.modules.androidjni": {
       "version": "1.0.0",
