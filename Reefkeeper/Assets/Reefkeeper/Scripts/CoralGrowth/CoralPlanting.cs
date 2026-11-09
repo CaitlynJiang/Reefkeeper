@@ -28,6 +28,7 @@ namespace Reefkeeper.Corals
         public float rayReach = 4f;
         [Min(1)] public float secondsPerStage = 30f;
         public Vector2 mossReturnSeconds = new Vector2(25f, 50f);
+        [SerializeField] bool showCareEmotes;
 
         public string Prompt { get; private set; } = "";
         public string PromptKey { get; private set; } = "";
@@ -252,6 +253,7 @@ namespace Reefkeeper.Corals
             nurture.secondsPerStage = secondsPerStage;
             nurture.mossReturnSeconds = mossReturnSeconds;
             nurture.Begin(socket, coral, species);
+            if (showCareEmotes) coral.gameObject.AddComponent<CoralCareEmote>().Bind(nurture);
             planted.Add(nurture);
             coral.Poke();
             return nurture;

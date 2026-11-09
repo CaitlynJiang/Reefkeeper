@@ -36251,6 +36251,7 @@ MonoBehaviour:
   rayReach: 4
   secondsPerStage: 30
   mossReturnSeconds: {x: 25, y: 50}
+  showCareEmotes: 1
 --- !u!114 &659147668
 MonoBehaviour:
   m_ObjectHideFlags: 0
