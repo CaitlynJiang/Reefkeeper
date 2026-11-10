@@ -34,9 +34,11 @@ namespace Reefkeeper.Corals
         public bool AwaitingJournal { get; private set; }
         /// <summary>Button that opens the journal on the current setup.</summary>
         public static string JournalKey => UnityEngine.XR.XRSettings.isDeviceActive ? "Y" : "J";
+        /// <summary>How to open the journal on the current setup, as an instruction.</summary>
+        static string OpenJournal => Hands.ReefInput.HandsMode ? "Turn your left palm up and tap Journal" : $"Press {JournalKey}";
         /// <summary>Screen hint while the handed-over journal is still unopened.</summary>
         public string JournalPrompt => AwaitingJournal && DiveCardMock.Instance && !DiveCardMock.Instance.IsOpen
-            ? $"Press {JournalKey} to open your dive journal" : "";
+            ? $"{OpenJournal} to open your dive journal" : "";
         public string Prompt => AimingCat ? (corals.Held ? "Plant your coral first"
             : aimingHand >= 0 && Hands.ReefInput.HandsMode ? "Pinch to talk to Lucky Cat" : "Talk to Lucky Cat") : "";
         public string PromptKey => !AimingCat || corals.Held || aimingHand >= 0 && Hands.ReefInput.HandsMode ? ""
@@ -147,12 +149,12 @@ namespace Reefkeeper.Corals
                     return null;
                 }
                 journal.Available = true; AwaitingJournal = true; journalSeenOpen = false;
-                Say($"Great cleaning! This dive journal is yours. Press {JournalKey} to open it.", LuckyCat.Mood.Happy, 6f);
+                Say($"Great cleaning! This dive journal is yours. {OpenJournal} to open it.", LuckyCat.Mood.Happy, 6f);
                 return null;
             }
             if (AwaitingJournal)
             {
-                Say($"Have a look in your journal first! Press {JournalKey}.", LuckyCat.Mood.Beckon);
+                Say($"Have a look in your journal first! {OpenJournal}.", LuckyCat.Mood.Beckon);
                 return null;
             }
             if (corals.Held)

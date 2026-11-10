@@ -154,6 +154,8 @@ namespace Reefkeeper
             }
             if (XRSettings.isDeviceActive) HandlePointer();
             bool controller = workshop.xrGroup.activeSelf && !pickup.CenterMode;
+            // Bare hands reach tools by hand; the A-button menu hint does not apply.
+            if (toolHint) toolHint.gameObject.SetActive(!Hands.ReefInput.HandsMode || IsOpen);
             openGlyph.enabled = !controller && tabGlyph;
             closeGlyph.enabled = !controller && escapeGlyph;
             openKeyText.text = controller ? "A" : tabGlyph ? "" : "Tab";
