@@ -7,6 +7,8 @@ namespace Reefkeeper
     // Swimming for the XR rig.
     // Headset: left stick swims where you look, left stick click boosts,
     // right stick left/right snap-turns, right stick up/down rises/sinks.
+    // Bare hands: sweep an open palm back to stroke forward (breaststroke), or hold an open
+    // hand out at arm's length to glide where the fingers point.
     // Editor simulator (FPS mode): WASD + Q/E, Shift boosts, B brakes.
     // Run before the simulator; it still owns head/hand tracking and grip input.
     [DefaultExecutionOrder(-32000)]
@@ -18,7 +20,23 @@ namespace Reefkeeper
         public bool Automated;
         [Tooltip("Degrees per snap turn.\n每次转身的角度")]
         public float snapTurnAngle = 45;
+        [Header("Bare hands")]
+        [Tooltip("Body acceleration per m/s of palm speed during a stroke.\n划水推力")]
+        public float strokeGain = 2.5f;
+        [Tooltip("Slower palm motion is reaching, not swimming (m/s).")]
+        public float strokeMinSpeed = 0.35f;
+        public float strokeMaxSpeed = 3f;
+        [Tooltip("Palm this far from the head counts as an outstretched arm (m).")]
+        public float glideReach = 0.42f;
+        public float glideHoldSeconds = 0.35f;
+        [Tooltip("Glide speed as a fraction of cruise speed.\n滑行速度")]
+        public float glideSpeed = 0.55f;
         public Vector3 Velocity { get; private set; }
+        /// <summary>True while an outstretched hand is gliding.</summary>
+        public bool Gliding { get; private set; }
+        readonly Vector3[] lastPalm = new Vector3[2], palmVelocity = new Vector3[2];
+        readonly bool[] hadPalm = new bool[2];
+        readonly float[] glideHeld = new float[2];
         CharacterController body;
         InputAction moveAction, lookAction, boostAction;
         bool turnArmed = true;
@@ -51,7 +69,51 @@ namespace Reefkeeper
                 if (swimming) { KeyboardSwim(); return; }
             }
             if (Automated) return;
-            ControllerSwim();
+            if (Hands.ReefInput.HandsMode) HandSwim();
+            else ControllerSwim();
+        }
+
+        void HandSwim()
+        {
+            float dt = Time.deltaTime;
+            Gliding = false;
+            if (dt <= 0) return;
+            // Hand joints and the camera's local pose share the camera offset's space.
+            var space = view.transform.parent;
+            Vector3 head = view.transform.localPosition, thrust = Vector3.zero, glide = Vector3.zero;
+            for (int i = 0; i < 2; i++)
+            {
+                var hand = Hands.ReefHands.Get(i);
+                // A hand that pinches, grips or holds something is working, not swimming.
+                if (!hand.Tracked || hand.Grab || Hands.ReefInput.HandBusy(i)) { hadPalm[i] = false; glideHeld[i] = 0; continue; }
+                Vector3 relative = hand.Palm.position - head;
+                palmVelocity[i] = hadPalm[i] ? Vector3.Lerp(palmVelocity[i], (relative - lastPalm[i]) / dt, 0.5f) : Vector3.zero;
+                lastPalm[i] = relative; hadPalm[i] = true;
+
+                Vector3 palmFacing = space.TransformDirection(hand.Palm.rotation * Vector3.down);
+                thrust += StrokeThrust(space.TransformVector(palmVelocity[i]), palmFacing, strokeMinSpeed) * strokeGain;
+
+                bool armOut = relative.magnitude > glideReach && palmVelocity[i].magnitude < 0.25f;
+                glideHeld[i] = armOut ? glideHeld[i] + dt : 0;
+                if (glideHeld[i] >= glideHoldSeconds) glide += space.TransformDirection(hand.Palm.rotation * Vector3.forward);
+            }
+            if (thrust.sqrMagnitude > 0) Velocity = Vector3.ClampMagnitude(Velocity + thrust * Mathf.Min(dt, 0.05f), strokeMaxSpeed);
+            Gliding = glide.sqrMagnitude > 0.01f;
+            Tick(Gliding ? glide.normalized * glideSpeed : Vector3.zero, false, false, dt);
+        }
+
+        /// <summary>
+        /// Push from one palm moving through the water: opposite the hand's motion, scaled by how
+        /// far it beats <paramref name="minSpeed"/> and by how squarely the palm faces that motion
+        /// (an edge-on recovery stroke pushes nothing).
+        /// </summary>
+        public static Vector3 StrokeThrust(Vector3 handVelocity, Vector3 palmFacing, float minSpeed)
+        {
+            float speed = handVelocity.magnitude;
+            if (speed <= minSpeed) return Vector3.zero;
+            float facing = Vector3.Dot(palmFacing, handVelocity / speed);
+            if (facing < 0.3f) return Vector3.zero;
+            return -handVelocity / speed * (speed - minSpeed) * facing;
         }
 
         void KeyboardSwim()
