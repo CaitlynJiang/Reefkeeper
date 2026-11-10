@@ -19,6 +19,7 @@ namespace Reefkeeper.Hands
         static XROrigin origin;
         static readonly Transform[] controllers = new Transform[2], hands = new Transform[2];
         static readonly Transform[] controllerRays = new Transform[2], handRays = new Transform[2];
+        static readonly NearFarInteractor[] handInteractors = new NearFarInteractor[2];
         static InputAction[] use, talk;
 
         /// <summary>True while the player uses tracked hands instead of controllers.</summary>
@@ -55,7 +56,8 @@ namespace Reefkeeper.Hands
                 hands[i] = modality ? (i == 0 ? modality.leftHand : modality.rightHand)?.transform : null;
                 controllerRays[i] = RayOf(controllers[i]);
                 handRays[i] = RayOf(hands[i]);
-                if (hands[i] && hands[i].GetComponentInChildren<NearFarInteractor>(true) is { } nearFar)
+                handInteractors[i] = hands[i] ? hands[i].GetComponentInChildren<NearFarInteractor>(true) : null;
+                if (handInteractors[i] is { } nearFar)
                 {
                     nearFar.selectInput.inputSourceMode = XRInputButtonReader.InputSourceMode.ObjectReference;
                     nearFar.selectInput.SetObjectReference(new ReefHands.Button(i, ReefHands.Button.Kind.Grab));
@@ -92,6 +94,9 @@ namespace Reefkeeper.Hands
             position = controllers[hand].position;
             return true;
         }
+
+        /// <summary>True while that bare hand is holding a tool or coral.</summary>
+        public static bool HandBusy(int hand) => handInteractors[hand] && handInteractors[hand].hasSelection;
 
         /// <summary>Trigger pulled, or pinch closed, this frame.</summary>
         public static bool UseDown(int hand) =>
