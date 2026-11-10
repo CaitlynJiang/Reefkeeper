@@ -288,7 +288,13 @@ namespace Reefkeeper
         // headset right trigger draws where the right controller points, B / Y close.
         void UpdateJournalHints()
         {
-            if (Headset)
+            if (Headset && Hands.ReefInput.HandsMode)
+            {
+                JournalHint(0, "", "Palm up, tap Journal to close");
+                JournalHint(1, "", "Touch the page with your finger to draw");
+                JournalHint(2, null, "");
+            }
+            else if (Headset)
             {
                 JournalHint(0, "", "B   Close journal   (or Y)");
                 JournalHint(1, "", "Hold right trigger on the page to draw");
