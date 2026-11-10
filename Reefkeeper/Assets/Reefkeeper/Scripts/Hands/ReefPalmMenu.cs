@@ -16,7 +16,8 @@ namespace Reefkeeper.Hands
         const float PalmUpOn = 0.75f, PalmUpOff = 0.5f, ShowAfter = 0.3f, HideAfter = 0.25f;
         // Canvas units are half millimetres.
         const float Scale = 0.0005f, ButtonWidth = 200, ButtonHeight = 62, Gap = 14;
-        const float Lift = 0.075f, PressDepth = 0.012f, ReleaseDepth = 0.03f;
+        // Lift = gap between the palm and the menu's bottom edge, so no button sits on the hand.
+        const float Lift = 0.07f, PressDepth = 0.012f, ReleaseDepth = 0.03f, Repeat = 0.4f;
 
         static readonly Color Navy = new Color(0.15f, 0.22f, 0.28f, 0.94f), Cream = new Color(.973f, .941f, .843f),
             Ink = new Color(.161f, .306f, .322f), Hover = new Color(0.27f, 0.42f, 0.47f, 0.96f);
@@ -41,6 +42,7 @@ namespace Reefkeeper.Hands
         Entry[] entries;
         float upTime, downTime;
         int pressed = -1;
+        float lastPress = -10;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
@@ -95,6 +97,8 @@ namespace Reefkeeper.Hands
             root.AddComponent<CanvasScaler>().dynamicPixelsPerUnit = 3;
             var rootRect = (RectTransform)root.transform;
             rootRect.sizeDelta = new Vector2(ButtonWidth, entries.Length * (ButtonHeight + Gap));
+            // Anchored at its bottom edge, which floats Lift above the palm.
+            rootRect.pivot = new Vector2(0.5f, 0);
             root.transform.localScale = Vector3.one * Scale;
             Font font = hud ? (hud.boldFont ? hud.boldFont : hud.font) : null;
             for (int i = 0; i < entries.Length; i++)
@@ -162,9 +166,9 @@ namespace Reefkeeper.Hands
                     float depth = -local.z * Scale;
                     if (!entries[i].rect.rect.Contains((Vector2)local) || depth > 0.05f || depth < -0.03f) continue;
                     hovered = i;
-                    if (pressed < 0 && depth < PressDepth && entries[i].available())
+                    if (pressed < 0 && depth < PressDepth && Time.time - lastPress > Repeat && entries[i].available())
                     {
-                        pressed = i;
+                        pressed = i; lastPress = Time.time;
                         entries[i].act();
                     }
                     break;
@@ -175,7 +179,8 @@ namespace Reefkeeper.Hands
                     if (!entries[pressed].rect.rect.Contains((Vector2)local) || -local.z * Scale > ReleaseDepth) pressed = -1;
                 }
             }
-            else pressed = -1;
+            // A finger that drops out of tracking mid-press (hands overlapping) keeps its press,
+            // so it cannot toggle the same button again when tracking returns.
 
             for (int i = 0; i < entries.Length; i++)
             {
