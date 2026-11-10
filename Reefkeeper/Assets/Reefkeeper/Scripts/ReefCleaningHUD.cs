@@ -175,13 +175,13 @@ namespace Reefkeeper
             if (DiveCardMock.BlocksControls || ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
             { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
-            bool headset = Headset;
-            helpHint.text = (headset ? "Menu   " : "") + (HelpVisible ? "Close controls" : "Controls");
+            bool headset = Headset, hands = Hands.ReefInput.HandsMode;
+            helpHint.text = hands ? "Palm up   Menu" : (headset ? "Menu   " : "") + (HelpVisible ? "Close controls" : "Controls");
             helpHint.rectTransform.anchoredPosition = new Vector2(headset ? 106 : 142, 26);
             helpHint.horizontalOverflow = HorizontalWrapMode.Overflow;
             helpKeyIcon.enabled = !headset && helpKeyIcon.sprite;
-            closeHelpKeyIcon.enabled = !headset && closeHelpKeyIcon.sprite; closeHelpLetter.enabled = headset;
-            objectiveKeyIcon.enabled = !headset && objectiveKeyIcon.sprite; objectiveLetter.enabled = headset;
+            closeHelpKeyIcon.enabled = !headset && closeHelpKeyIcon.sprite; closeHelpLetter.enabled = headset && !hands;
+            objectiveKeyIcon.enabled = !headset && objectiveKeyIcon.sprite; objectiveLetter.enabled = headset && !hands;
             if (HelpVisible) UpdateHelp();
 
             displayedProgress = pickup.Progress;
@@ -196,7 +196,7 @@ namespace Reefkeeper
                 : pickup.SpotInReach);
             if (!planting && complete && completionAge >= CompletionHold + CompletionFade && !collapsedOnComplete)
             { ObjectivesExpanded = false; collapsedOnComplete = true; }
-            objectiveBody.text = shop && shop.AwaitingJournal ? $"Open your dive journal ({Corals.CoralShop.JournalKey})" : planting ? planting.Objective : complete ? "Nursery restored" : "Clean the nursery frame";
+            objectiveBody.text = shop && shop.AwaitingJournal ? (hands ? "Open your dive journal (palm menu)" : $"Open your dive journal ({Corals.CoralShop.JournalKey})") : planting ? planting.Objective : complete ? "Nursery restored" : "Clean the nursery frame";
             objectiveBody.gameObject.SetActive(ObjectivesExpanded);
             objectives.sizeDelta = new Vector2(308, ObjectivesExpanded ? 86 : 48);
             objectives.anchoredPosition = new Vector2(178, ObjectivesExpanded ? -64 : -45);
@@ -205,7 +205,14 @@ namespace Reefkeeper
             ((RectTransform)objectives.Find("Objective key")).anchoredPosition = new Vector2(120, ObjectivesExpanded ? 19 : 0);
 
             string context = "", key = "";
-            if (UsesQuestPrompts)
+            if (UsesQuestPrompts && Hands.ReefInput.HandsMode)
+            {
+                // Bare hands: gestures in words, no controller glyph.
+                if (pickup.ToolHeld) context = pickup.ActiveTool.Scrubbing || pickup.Carrying ? "" : "Open your hand to let go of " + pickup.ActiveTool.ToolName;
+                else if (pickup.ActiveInteractable.isHovered) context = "Pinch or make a fist to grab " + pickup.ActiveTool.ToolName;
+                else if (pickup.corals.HasPrompt) context = pickup.corals.Held ? "Pinch to swap coral" : "Pinch to pick up coral";
+            }
+            else if (UsesQuestPrompts)
             {
                 key = ControllerGripGlyph;
                 if (pickup.ToolHeld) { context = pickup.ActiveTool.Scrubbing ? "" : pickup.Carrying ? "A: switch tools" : "Release to let go of " + pickup.ActiveTool.ToolName; if (pickup.Carrying) key = ""; }
@@ -242,6 +249,24 @@ namespace Reefkeeper
             HelpRow(MusicRow, "", music && music.mute ? "M   Unmute BGM" : "M   Mute BGM");
             helpLabels[MusicRow].transform.parent.gameObject.SetActive(music && music.clip);
             bool xr = pickup.workshop.xrGroup.activeSelf;
+            if (Headset && Hands.ReefInput.HandsMode)
+            {
+                // Bare hands: gestures (ReefXRSwim, ReefHands, ReefPalmMenu, DiveCardMock).
+                HelpRow(0, "", "Sweep open palms back   Swim");
+                HelpRow(1, "", "Push palms down / up   Rise / sink");
+                HelpRow(2, "", "Hold an open hand out   Glide");
+                HelpRow(3, "", "Turn your body   Turn");
+                HelpRow(4, "", "Pinch or fist   Grab a tool or coral");
+                HelpRow(5, "", "Open hand near a spot   Plant");
+                HelpRow(6, "", "Pinch at Lucky Cat   Talk (or touch)");
+                HelpRow(7, "", "Pinch at a coral   Fertilize");
+                HelpRow(8, "", "Brush algae; scrape fire coral");
+                HelpRow(9, "", "Left palm up   Menu (journal, controls)");
+                HelpRow(10, "", "Touch the page   Draw in the journal");
+                for (int i = 11; i < helpLabels.Count; i++) HelpRow(i, "", "");
+                helpLabels[MusicRow].transform.parent.gameObject.SetActive(false);
+                return;
+            }
             if (Headset)
             {
                 // Real headset: controller bindings only (ReefXRSwim, CoralShop, CoralPlanting, ReefToolMenu).
