@@ -157,6 +157,18 @@ namespace Reefkeeper.Corals
 
         void ReachWithHands()
         {
+            // Bare hands: a coral carried near a spot is planted by opening the hand that carries it
+            // (or keeping it open there a moment). This comes before the ray, which often lands on
+            // the same rack and would otherwise ask for a pinch instead.
+            if (Hands.ReefInput.HandsMode && corals.Held && NearestPlantable(corals.Held) is { } spot)
+            {
+                var carrier = Hands.ReefHands.Get(CarryingHand());
+                Prompt = $"Open your hand to plant {CoralRules.DisplayName(CoralRules.Species(corals.Held.gameObject))}";
+                openNearSpot = carrier.Grab ? 0f : openNearSpot + Time.deltaTime;
+                if (carrier.GrabUp || openNearSpot >= OpenToPlantSeconds) { openNearSpot = 0f; Plant(spot); }
+                return;
+            }
+            openNearSpot = 0f;
             // Point a controller or hand ray and pull that hand's trigger (or pinch). Both rays may
             // point at something; a hand that pressed this frame goes first so its press counts.
             bool rightFirst = Hands.ReefInput.UseDown(1) && !Hands.ReefInput.UseDown(0);
@@ -193,6 +205,12 @@ namespace Reefkeeper.Corals
                 if (Hands.ReefInput.UseDown(0) || Hands.ReefInput.UseDown(1)) Fertilize(Hovered);
             }
         }
+
+        const float OpenToPlantSeconds = 0.4f;
+        float openNearSpot;
+
+        /// <summary>The hand the carried coral follows (right unless it was let go from the left).</summary>
+        int CarryingHand() => corals.HoldParent && corals.HoldParent == Hands.ReefInput.RayOrigin(0) ? 0 : 1;
 
         bool TryPlantNear(ReefCoralFragment fragment)
         {
