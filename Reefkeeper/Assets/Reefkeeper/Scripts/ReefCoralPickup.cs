@@ -19,7 +19,7 @@ namespace Reefkeeper
         public ReefCoralFragment Aimed { get; private set; }
         public Camera View => Camera.main;
         public bool HasPrompt => Aimed && Aimed != Held;
-        public bool CenterAimMode => !workshop.xrGroup.activeSelf || (simulator && simulator.isActiveAndEnabled && simulator.manipulatingFPS);
+        public bool CenterAimMode => !workshop.xrGroup.activeSelf || (simulator && simulator.isActiveAndEnabled && simulator.manipulatingFPS && !Hands.ReefInput.HandsMode);
         readonly RaycastHit[] hits = new RaycastHit[64];
         readonly List<Home> homes = new List<Home>();
         XRInteractionSimulator simulator;

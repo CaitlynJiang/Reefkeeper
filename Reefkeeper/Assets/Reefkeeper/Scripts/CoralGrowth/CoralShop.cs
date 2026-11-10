@@ -37,18 +37,16 @@ namespace Reefkeeper.Corals
         /// <summary>Screen hint while the handed-over journal is still unopened.</summary>
         public string JournalPrompt => AwaitingJournal && DiveCardMock.Instance && !DiveCardMock.Instance.IsOpen
             ? $"Press {JournalKey} to open your dive journal" : "";
-        public string Prompt => AimingCat ? (corals.Held ? "Plant your coral first" : "Talk to Lucky Cat") : "";
-        public string PromptKey => !AimingCat || corals.Held ? ""
+        public string Prompt => AimingCat ? (corals.Held ? "Plant your coral first"
+            : aimingHand >= 0 && Hands.ReefInput.HandsMode ? "Pinch to talk to Lucky Cat" : "Talk to Lucky Cat") : "";
+        public string PromptKey => !AimingCat || corals.Held || aimingHand >= 0 && Hands.ReefInput.HandsMode ? ""
             : aimingHand == 0 ? "quest_grip_left" : aimingHand == 1 ? "quest_grip_right" : "keyboard_g";
         /// <summary>What the cat is saying, empty when quiet.</summary>
         public string Line => Time.time < lineUntil ? line : "";
         public bool Automated { get; set; }
 
         readonly RaycastHit[] hits = new RaycastHit[32];
-        Transform[] hands = new Transform[0];
         // Index 0 = left, 1 = right.
-        readonly Transform[] rayOrigins = new Transform[2];
-        InputAction[] grips;
         int aimingHand = -1;
         CoralPlanting planting;
         bool journalSeenOpen;
@@ -66,26 +64,10 @@ namespace Reefkeeper.Corals
                 meowSource.spatialBlend = 1f;
                 meowSource.dopplerLevel = 0f;
             }
-            grips = new[]
-            {
-                new InputAction("Talk left", InputActionType.Button, "<XRController>{LeftHand}/{GripButton}"),
-                new InputAction("Talk right", InputActionType.Button, "<XRController>{RightHand}/{GripButton}"),
-            };
         }
-        void OnEnable() { foreach (var g in grips) g.Enable(); }
-        void OnDisable() { foreach (var g in grips) g.Disable(); }
-        void OnDestroy() { foreach (var g in grips) g.Dispose(); }
 
         void Start()
         {
-            hands = workshop.xrGroup.GetComponentsInChildren<Transform>(true)
-                .Where(t => t.name == "Left Controller" || t.name == "Right Controller").ToArray();
-            foreach (var hand in hands)
-            {
-                // Aim along the controller's visible ray when there is one.
-                var nearFar = hand.GetComponentInChildren<UnityEngine.XR.Interaction.Toolkit.Interactors.NearFarInteractor>(true);
-                rayOrigins[hand.name.StartsWith("Left") ? 0 : 1] = nearFar ? nearFar.transform : hand;
-            }
             // With the tutorial running, the journal is the cat's to hand over (see Talk).
             planting = FindFirstObjectByType<CoralPlanting>();
             if (planting && DiveCardMock.Instance) DiveCardMock.Instance.Available = false;
@@ -115,21 +97,21 @@ namespace Reefkeeper.Corals
             }
             else if (workshop.xrGroup.activeSelf)
             {
-                // Point a controller ray at the cat and press that hand's Grip.
-                for (int i = 0; i < rayOrigins.Length; i++)
+                // Point a controller or hand ray at the cat and press Grip (controller) or pinch (hand).
+                // Both rays may be on the cat; the hand that presses is the one that talks.
+                for (int i = 0; i < 2; i++)
                 {
-                    var origin = rayOrigins[i];
-                    if (!origin || !origin.gameObject.activeInHierarchy) continue;
+                    var origin = Hands.ReefInput.RayOrigin(i);
+                    if (!origin) continue;
                     if (!RayHitsCat(new Ray(origin.position, origin.forward), rayReach)) continue;
-                    AimingCat = true; aimingHand = i;
-                    if (grips[i].WasPressedThisFrame()) { nextTouch = Time.time + 2f; Talk(); }
-                    break;
+                    if (!AimingCat) { AimingCat = true; aimingHand = i; }
+                    if (Hands.ReefInput.TalkDown(i)) { aimingHand = i; nextTouch = Time.time + 2f; Talk(); break; }
                 }
                 // Or reach out and touch the cat.
                 if (Time.time >= nextTouch)
-                    foreach (var hand in hands)
-                        if (hand && hand.gameObject.activeInHierarchy &&
-                            Vector3.Distance(catCollider.ClosestPoint(hand.position), hand.position) <= touchReach)
+                    for (int i = 0; i < 2; i++)
+                        if (Hands.ReefInput.TryGetPosition(i, out var at) &&
+                            Vector3.Distance(catCollider.ClosestPoint(at), at) <= touchReach)
                         { nextTouch = Time.time + 2f; Talk(); break; }
             }
         }
