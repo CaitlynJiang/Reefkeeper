@@ -6,8 +6,8 @@ namespace Reefkeeper.Hands
 {
     /// <summary>
     /// Bare-hands menu: turn the left palm up and a small panel floats above it; push the right
-    /// index fingertip through a button to use it. Holds what the controllers reach with buttons:
-    /// the two cleaning tools, the dive journal, Controls and Objectives.
+    /// index fingertip through a button to use it: the dive journal, Controls and Objectives.
+    /// Cleaning tools are picked up by hand from their rest.
     /// </summary>
     [DefaultExecutionOrder(120)]
     public sealed class ReefPalmMenu : MonoBehaviour
@@ -36,7 +36,6 @@ namespace Reefkeeper.Hands
         }
 
         ReefWorkshop workshop;
-        ReefBrushPickup pickup;
         ReefCleaningHUD hud;
         Canvas canvas;
         Entry[] entries;
@@ -56,12 +55,9 @@ namespace Reefkeeper.Hands
         void Start()
         {
             workshop = GetComponent<ReefWorkshop>();
-            pickup = GetComponent<ReefBrushPickup>();
             hud = GetComponent<ReefCleaningHUD>();
             entries = new[]
             {
-                ToolEntry("Brush", CleaningToolKind.Brush, () => workshop.brush),
-                ToolEntry("Scraper", CleaningToolKind.Scraper, () => workshop.scraper),
                 new Entry
                 {
                     label = "Journal",
@@ -75,18 +71,6 @@ namespace Reefkeeper.Hands
             Build();
             SetVisible(false);
         }
-
-        Entry ToolEntry(string label, CleaningToolKind kind, Func<ReefBrush> tool) => new Entry
-        {
-            label = label,
-            available = () => tool() && ReefToolMenu.Instance && ReefToolMenu.Instance.Owns(kind),
-            on = () => pickup.ToolHeld && pickup.ActiveTool && pickup.ActiveTool.toolKind == kind,
-            act = () =>
-            {
-                if (pickup.ToolHeld && pickup.ActiveTool.toolKind == kind) workshop.ReturnTool(pickup.ActiveTool);
-                else ReefToolMenu.Instance.TryEquip((int)kind);
-            },
-        };
 
         void Build()
         {
