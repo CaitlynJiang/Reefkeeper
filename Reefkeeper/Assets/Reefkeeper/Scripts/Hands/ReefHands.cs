@@ -16,6 +16,8 @@ namespace Reefkeeper.Hands
         const float PinchOn = 0.02f, PinchOff = 0.035f;
         // Average of middle, ring and little fingertips to the palm (m).
         const float FistOn = 0.08f, FistOff = 0.1f;
+        // Index tip to the palm (m). A fist curls the index too; pointing leaves it out.
+        const float IndexFistOn = 0.1f, IndexFistOff = 0.12f;
 
         public struct State
         {
@@ -60,7 +62,8 @@ namespace Reefkeeper.Hands
                 foreach (var id in new[] { XRHandJointID.MiddleTip, XRHandJointID.RingTip, XRHandJointID.LittleTip })
                     if (Pose(hand, id, out var tip)) { curl += Vector3.Distance(tip.position, palm.position); n++; }
                 curl = n > 0 ? curl / n : 1f;
-                s.Fist = wasFist ? curl < FistOff : curl < FistOn;
+                float indexCurl = Vector3.Distance(index.position, palm.position);
+                s.Fist = wasFist ? curl < FistOff && indexCurl < IndexFistOff : curl < FistOn && indexCurl < IndexFistOn;
             }
             else s.Pinch = s.Fist = false;
             s.Grab = s.Pinch || s.Fist;
