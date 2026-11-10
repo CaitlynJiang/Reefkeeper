@@ -40,6 +40,9 @@ namespace Reefkeeper
         DiveCardDoodles doodles;
         GameObject cornerStickers, growthStickers;
         bool tabPress;
+        // Bare hands: the journal opens within reach and smaller, and a fingertip draws on it.
+        bool handLayout, fingerOnPage;
+        const float HandScale=.5f, TouchFront=.012f, TouchBehind=.04f;
         readonly string[] titles={"FIELD GUIDE","CORAL LOG","MARINE LIFE","NOTES"};
         void Awake()
         {
@@ -105,7 +108,8 @@ namespace Reefkeeper
             if(value)
             {
                 var view=Camera.main.transform;
-                facing=view.rotation; anchor=view.TransformPoint(new Vector3(-.025f,-.015f,.86f));
+                handLayout=Hands.ReefInput.HandsMode;
+                facing=view.rotation; anchor=view.TransformPoint(handLayout?new Vector3(0,-.16f,.42f):new Vector3(-.025f,-.015f,.86f));
                 if(ReefToolMenu.Instance)ReefToolMenu.Instance.SetOpen(false);
                 if(!locked)
                 {
@@ -137,7 +141,8 @@ namespace Reefkeeper
                 if(xr?trigger&&!selectDown:Mouse.current?.leftButton.wasPressedThisFrame==true)
                     for(int i=0;i<4;i++)if(new Plane(tabs[i].forward,tabs[i].position).Raycast(ray,out float distance))
                     {var p=tabs[i].InverseTransformPoint(ray.GetPoint(distance));if(Mathf.Abs(p.x)<.041f&&Mathf.Abs(p.y)<.024f){SelectTab(i);tabPress=true;break;}}
-                if(doodles)doodles.Draw(ray,pressed&&!tabPress);
+                if(Hands.ReefInput.HandsMode)FingerDraw();
+                else if(doodles)doodles.Draw(ray,pressed&&!tabPress);
             }
             else if(doodles)doodles.EndStroke();
             if(waitForRelease&&!trigger&&!(Mouse.current?.leftButton.isPressed??false))waitForRelease=false;
@@ -153,7 +158,27 @@ namespace Reefkeeper
             float t=Mathf.SmoothStep(0,1,reveal);
             cards.SetPositionAndRotation(anchor+facing*Vector3.Lerp(new Vector3(-.55f,-.46f,.08f),Vector3.zero,t),
                 facing*Quaternion.Euler(Mathf.Lerp(32,-5,t),Mathf.Lerp(-60,-12,t),Mathf.Lerp(-32,-3,t)));
-            cards.localScale=Vector3.one*(previewScale*Mathf.Lerp(.7f,1,t));
+            cards.localScale=Vector3.one*(previewScale*(handLayout?HandScale:1)*Mathf.Lerp(.7f,1,t));
+        }
+        /// <summary>
+        /// Bare hands: the right index fingertip touching the page (within TouchFront in front of it)
+        /// draws, and touching a tab selects it. The tip is projected straight onto the page.
+        /// </summary>
+        void FingerDraw()
+        {
+            var view=Camera.main.transform;var hand=Hands.ReefHands.Get(1);
+            if(!doodles||!hand.Tracked){if(doodles)doodles.EndStroke();fingerOnPage=false;tabPress=false;return;}
+            Vector3 tip=view.parent.TransformPoint(hand.IndexTip.position),normal=doodles.transform.forward;
+            // The page faces the eyes, so its forward points away and a finger in front has depth < 0.
+            float depth=Vector3.Dot(tip-doodles.transform.position,normal);
+            bool touching=depth>-TouchFront&&depth<TouchBehind;
+            var ray=new Ray(tip-normal*.05f,normal);
+            if(touching&&!fingerOnPage)
+                for(int i=0;i<4;i++)if(new Plane(tabs[i].forward,tabs[i].position).Raycast(ray,out float distance))
+                {var p=tabs[i].InverseTransformPoint(ray.GetPoint(distance));if(Mathf.Abs(p.x)<.041f&&Mathf.Abs(p.y)<.024f){SelectTab(i);tabPress=true;break;}}
+            if(!touching)tabPress=false;
+            doodles.Draw(ray,touching&&!tabPress);
+            fingerOnPage=touching;
         }
         public void SelectTab(int index)
         {
