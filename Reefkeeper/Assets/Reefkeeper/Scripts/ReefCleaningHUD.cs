@@ -25,8 +25,8 @@ namespace Reefkeeper
         Material fillMaterial;
         Text progressLabel, promptLabel, helpHint, objectiveBody;
         Image promptIcon;
-        // Headset: no keyboard, so Y toggles Controls and X folds Objectives (left controller,
-        // both otherwise unused). Their key icons become button letters.
+        // Headset: no keyboard, so the left menu button toggles Controls and left X folds Objectives.
+        // Left Y belongs to the dive-card journal (DiveCardMock). Key icons become button labels.
         InputAction helpButton, objectivesButton;
         bool helpWasDown, objectivesWasDown;
         Image helpKeyIcon, closeHelpKeyIcon, objectiveKeyIcon;
@@ -105,8 +105,10 @@ namespace Reefkeeper
             closeHelpKeyIcon = Icon(helpPanel, "Close controls key", new Vector2(150, 184), new Vector2(32, 28));
             SetIcon(closeHelpKeyIcon, "keyboard_f1");
             closeHelpLetter = Label(helpPanel, "Close controls button", new Vector2(150, 184), new Vector2(32, 28), 18, true);
-            closeHelpLetter.text = "Y"; closeHelpLetter.enabled = false;
-            helpButton = new InputAction("Controls", InputActionType.Button, "<XRController>{LeftHand}/secondaryButton");
+            closeHelpLetter.text = "Menu"; closeHelpLetter.fontSize = 14; closeHelpLetter.enabled = false;
+            closeHelpLetter.horizontalOverflow = HorizontalWrapMode.Overflow;
+            // "menu" is the control name in both the OpenXR (Quest) and PICO controller layouts.
+            helpButton = new InputAction("Controls", InputActionType.Button, "<XRController>{LeftHand}/menu");
             objectivesButton = new InputAction("Objectives", InputActionType.Button, "<XRController>{LeftHand}/primaryButton");
             helpButton.Enable(); objectivesButton.Enable();
             for (int i = 0; i < 13; i++)
@@ -152,8 +154,9 @@ namespace Reefkeeper
             { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
             bool headset = Headset;
-            helpHint.text = (headset ? "Y   " : "") + (HelpVisible ? "Close controls" : "Controls");
+            helpHint.text = (headset ? "Menu   " : "") + (HelpVisible ? "Close controls" : "Controls");
             helpHint.rectTransform.anchoredPosition = new Vector2(headset ? 106 : 142, 26);
+            helpHint.horizontalOverflow = HorizontalWrapMode.Overflow;
             helpKeyIcon.enabled = !headset && helpKeyIcon.sprite;
             closeHelpKeyIcon.enabled = !headset && closeHelpKeyIcon.sprite; closeHelpLetter.enabled = headset;
             objectiveKeyIcon.enabled = !headset && objectiveKeyIcon.sprite; objectiveLetter.enabled = headset;
@@ -229,7 +232,7 @@ namespace Reefkeeper
                 HelpRow(6, "", "Brush algae; scrape fire coral");
                 HelpRow(7, "", "A   Tools menu     B   Close it");
                 HelpRow(8, "", "X   Fold objectives");
-                HelpRow(9, "", "Y   Show / hide controls");
+                HelpRow(9, "", "Y   Dive cards     Menu   Controls");
                 for (int i = 10; i < helpLabels.Count; i++) HelpRow(i, "", "");
                 helpLabels[12].transform.parent.gameObject.SetActive(false);
                 return;
