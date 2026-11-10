@@ -78,6 +78,13 @@ namespace Reefkeeper
             float dt = Time.deltaTime;
             Gliding = false;
             if (dt <= 0) return;
+            // Tapping the palm menu is not swimming; coast instead.
+            if (Hands.ReefPalmMenu.Instance && Hands.ReefPalmMenu.Instance.Visible)
+            {
+                hadPalm[0] = hadPalm[1] = false; glideHeld[0] = glideHeld[1] = 0;
+                Tick(Vector3.zero, false, false, dt);
+                return;
+            }
             // Hand joints and the camera's local pose share the camera offset's space.
             var space = view.transform.parent;
             Vector3 head = view.transform.localPosition, thrust = Vector3.zero, glide = Vector3.zero;

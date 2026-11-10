@@ -53,6 +53,8 @@ namespace Reefkeeper
         public bool ProgressVisible => progress && progress.gameObject.activeInHierarchy && progressGroup.alpha > 0;
         public bool HelpVisible { get; private set; }
         public bool ObjectivesExpanded { get; private set; } = true;
+        public void ToggleHelp() => HelpVisible = !HelpVisible;
+        public void ToggleObjectives() => ObjectivesExpanded = !ObjectivesExpanded;
         public bool UsesQuestPrompts => pickup.workshop.xrGroup.activeSelf && !pickup.CenterMode;
         public string CurrentPromptGlyph => promptIcon.enabled && promptIcon.sprite ? promptIcon.sprite.name : "";
         public string ControllerGripGlyph => GripGlyph(pickup.ActiveInteractable.isSelected || pickup.ActiveInteractable.isHovered

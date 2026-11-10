@@ -19,7 +19,16 @@ namespace Reefkeeper
         public bool Owns(CleaningToolKind kind) => owned[(int)kind];
         public RectTransform ToggleRect => toggle;
         public RectTransform SlotRect(int index) => slots[index];
-        public Transform RightHand { get; private set; }
+        /// <summary>The right controller, or with bare hands the right hand's pointer.</summary>
+        public Transform RightHand
+        {
+            get
+            {
+                var hand = Hands.ReefInput.HandsMode ? Hands.ReefInput.RayOrigin(1) : null;
+                return hand ? hand : rightController;
+            }
+        }
+        Transform rightController;
         public Canvas Canvas => canvas;
         public int HoveredSlot { get; private set; } = -1;
 
@@ -83,9 +92,9 @@ namespace Reefkeeper
                 cycle.Enable();
                 simulator.cycleDevicesInput = new XRInputButtonReader { inputSourceMode = XRInputButtonReader.InputSourceMode.InputAction, inputActionPerformed = cycle, inputActionValue = cycle };
             }
-            RightHand = workshop.xrGroup.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Right Controller");
-            var nearFar = RightHand ? RightHand.GetComponentInChildren<NearFarInteractor>(true) : null;
-            rayOrigin = nearFar ? nearFar.transform : RightHand;
+            rightController = workshop.xrGroup.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Right Controller");
+            var nearFar = rightController ? rightController.GetComponentInChildren<NearFarInteractor>(true) : null;
+            rayOrigin = nearFar ? nearFar.transform : rightController;
             displays[0] = MakeDisplay(workshop.brush, workshop.brushHome);
             displays[1] = MakeDisplay(workshop.scraper, workshop.scraperHome);
             wasXr = workshop.xrGroup.activeSelf; wasCenter = pickup.CenterMode;
