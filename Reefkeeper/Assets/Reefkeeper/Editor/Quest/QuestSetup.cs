@@ -98,6 +98,9 @@ namespace Reefkeeper.Quest
             Enable<MetaQuestFeature>(openxr);
             Enable<MetaQuestTouchPlusControllerProfile>(openxr); // Quest 3 controllers
             Enable<OculusTouchControllerProfile>(openxr);        // fallback / Quest 2 controllers
+            // Tracked hands (XR Hands): the rig switches to hands when the controllers are put down.
+            Enable<UnityEngine.XR.Hands.OpenXR.HandTracking>(openxr);
+            Enable<UnityEngine.XR.Hands.OpenXR.MetaHandTrackingAim>(openxr);
             EditorUtility.SetDirty(openxr);
         }
 
