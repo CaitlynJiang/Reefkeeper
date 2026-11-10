@@ -25,6 +25,10 @@ namespace Reefkeeper
         Material fillMaterial;
         Text progressLabel, promptLabel, helpHint, objectiveBody;
         Image promptIcon;
+        // Shown while the dive journal is open: how to draw, look around (desktop) and close it.
+        RectTransform journalHints;
+        readonly Image[] journalHintIcons = new Image[3];
+        readonly Text[] journalHintLabels = new Text[3];
         // Headset: no keyboard, so the left menu button toggles Controls and left X folds Objectives.
         // Left Y belongs to the dive-card journal (DiveCardMock). Key icons become button labels.
         InputAction helpButton, objectivesButton;
@@ -41,6 +45,7 @@ namespace Reefkeeper
         float completedAt = -1, displayedProgress;
         bool collapsedOnComplete;
         const float CompletionHold = 1.2f, CompletionFade = 0.6f;
+        const int MusicRow = 13;   // last row; row 12 lists the dive journal
         static readonly Color Cream = new Color(0.97f, 0.93f, 0.81f);
         static readonly Color Navy = new Color(0.15f, 0.22f, 0.28f, 0.94f);
         public float DisplayedProgress => displayedProgress;
@@ -98,27 +103,39 @@ namespace Reefkeeper
             promptLabel = Label(prompt, "Hint text", Vector2.zero, new Vector2(300, 38), 19);
             promptIcon = Icon(prompt, "Input glyph", new Vector2(-132, 0), new Vector2(42, 42));
 
-            helpPanel = Rect("Foldable controls", go.transform, new Vector2(0, 1), new Vector2(228, -340), new Vector2(408, 440));
+            helpPanel = Rect("Foldable controls", go.transform, new Vector2(0, 1), new Vector2(228, -354), new Vector2(408, 468));
             Background(helpPanel);
-            var helpTitle = Label(helpPanel, "Controls title", new Vector2(0, 184), new Vector2(344, 28), 21, true);
+            var helpTitle = Label(helpPanel, "Controls title", new Vector2(0, 198), new Vector2(344, 28), 21, true);
             helpTitle.text = "Controls"; helpTitle.alignment = TextAnchor.MiddleLeft;
-            closeHelpKeyIcon = Icon(helpPanel, "Close controls key", new Vector2(150, 184), new Vector2(32, 28));
+            closeHelpKeyIcon = Icon(helpPanel, "Close controls key", new Vector2(150, 198), new Vector2(32, 28));
             SetIcon(closeHelpKeyIcon, "keyboard_f1");
-            closeHelpLetter = Label(helpPanel, "Close controls button", new Vector2(150, 184), new Vector2(32, 28), 18, true);
+            closeHelpLetter = Label(helpPanel, "Close controls button", new Vector2(150, 198), new Vector2(32, 28), 18, true);
             closeHelpLetter.text = "Menu"; closeHelpLetter.fontSize = 14; closeHelpLetter.enabled = false;
             closeHelpLetter.horizontalOverflow = HorizontalWrapMode.Overflow;
             // "menu" is the control name in both the OpenXR (Quest) and PICO controller layouts.
             helpButton = new InputAction("Controls", InputActionType.Button, "<XRController>{LeftHand}/menu");
             objectivesButton = new InputAction("Objectives", InputActionType.Button, "<XRController>{LeftHand}/primaryButton");
             helpButton.Enable(); objectivesButton.Enable();
-            for (int i = 0; i < 13; i++)
+            for (int i = 0; i < MusicRow + 1; i++)
             {
-                var row = Rect("Control " + i, helpPanel, Vector2.one * 0.5f, new Vector2(0, 144 - i * 28), new Vector2(344, 26));
+                var row = Rect("Control " + i, helpPanel, Vector2.one * 0.5f, new Vector2(0, 158 - i * 28), new Vector2(344, 26));
                 helpIcons.Add(Icon(row, "Input", new Vector2(-150, 0), new Vector2(48, 24)));
                 helpSecondaryIcons.Add(Icon(row, "Alternative input", new Vector2(-112, 0), new Vector2(36, 24)));
                 var label = Label(row, "Action", Vector2.zero, new Vector2(344, 26), 16);
                 label.alignment = TextAnchor.MiddleLeft; helpLabels.Add(label);
             }
+            // Journal hints: pills stacked up from the context-hint position, same style.
+            journalHints = Rect("Dive journal hints", go.transform, new Vector2(0.5f, 0), new Vector2(0, 0), new Vector2(420, 200));
+            journalHints.pivot = new Vector2(0.5f, 0); journalHints.anchoredPosition = new Vector2(0, 30);
+            for (int i = 0; i < journalHintLabels.Length; i++)
+            {
+                var pill = Rect("Journal hint " + i, journalHints, new Vector2(0.5f, 0), new Vector2(0, 23 + i * 54), new Vector2(420, 46));
+                Background(pill);
+                journalHintIcons[i] = Icon(pill, "Input glyph", new Vector2(-172, 0), new Vector2(34, 34));
+                journalHintLabels[i] = Label(pill, "Hint text", new Vector2(18, 0), new Vector2(340, 34), 17);
+                journalHintLabels[i].alignment = TextAnchor.MiddleLeft;
+            }
+            journalHints.gameObject.SetActive(false);
             helpPanel.gameObject.SetActive(false); progress.gameObject.SetActive(false); prompt.gameObject.SetActive(false);
         }
         Image ArcLayer(string name, Sprite sprite, Color tint)
@@ -150,6 +167,9 @@ namespace Reefkeeper
         {
             if (!pickup.View) return;
             var aimDot=canvas.transform.Find("Aim dot");if(aimDot)aimDot.gameObject.SetActive(!DiveCardMock.BlocksControls);
+            bool journalOpen = DiveCardMock.Instance && DiveCardMock.Instance.IsOpen;
+            journalHints.gameObject.SetActive(journalOpen);
+            if (journalOpen) UpdateJournalHints();
             if (DiveCardMock.BlocksControls || ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
             { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
@@ -174,7 +194,7 @@ namespace Reefkeeper
                 : pickup.SpotInReach);
             if (!planting && complete && completionAge >= CompletionHold + CompletionFade && !collapsedOnComplete)
             { ObjectivesExpanded = false; collapsedOnComplete = true; }
-            objectiveBody.text = planting ? planting.Objective : complete ? "Nursery restored" : "Clean the nursery frame";
+            objectiveBody.text = shop && shop.AwaitingJournal ? $"Open your dive journal ({Corals.CoralShop.JournalKey})" : planting ? planting.Objective : complete ? "Nursery restored" : "Clean the nursery frame";
             objectiveBody.gameObject.SetActive(ObjectivesExpanded);
             objectives.sizeDelta = new Vector2(308, ObjectivesExpanded ? 86 : 48);
             objectives.anchoredPosition = new Vector2(178, ObjectivesExpanded ? -64 : -45);
@@ -202,6 +222,7 @@ namespace Reefkeeper
             }
             // Coral loop prompts (talk, plant, fertilize, moss notes); scrubbing keeps priority.
             if (shop && shop.AimingCat) { context = shop.Prompt; key = shop.PromptKey; }
+            else if (shop && shop.JournalPrompt.Length > 0) { context = shop.JournalPrompt; key = ""; }
             else if (planting && planting.Prompt.Length > 0 && !(pickup.SpotInReach && pickup.ToolHeld))
             { context = planting.Prompt; key = planting.PromptKey; }
             if (pickup.SpotInReach && pickup.ToolHeld && !pickup.CorrectTool)
@@ -216,8 +237,8 @@ namespace Reefkeeper
         void UpdateHelp()
         {
             var music = MusicSource;
-            HelpRow(12, "", music && music.mute ? "M   Unmute BGM" : "M   Mute BGM");
-            helpLabels[12].transform.parent.gameObject.SetActive(music && music.clip);
+            HelpRow(MusicRow, "", music && music.mute ? "M   Unmute BGM" : "M   Mute BGM");
+            helpLabels[MusicRow].transform.parent.gameObject.SetActive(music && music.clip);
             bool xr = pickup.workshop.xrGroup.activeSelf;
             if (Headset)
             {
@@ -232,9 +253,10 @@ namespace Reefkeeper
                 HelpRow(6, "", "Brush algae; scrape fire coral");
                 HelpRow(7, "", "A   Tools menu     B   Close it");
                 HelpRow(8, "", "X   Fold objectives");
-                HelpRow(9, "", "Y   Dive cards     Menu   Controls");
-                for (int i = 10; i < helpLabels.Count; i++) HelpRow(i, "", "");
-                helpLabels[12].transform.parent.gameObject.SetActive(false);
+                HelpRow(9, "", "Y   Dive journal     B   Close it");
+                HelpRow(10, "", "Menu   Show / hide controls");
+                for (int i = 11; i < helpLabels.Count; i++) HelpRow(i, "", "");
+                helpLabels[MusicRow].transform.parent.gameObject.SetActive(false);
                 return;
             }
             if (UsesQuestPrompts)
@@ -246,7 +268,8 @@ namespace Reefkeeper
                 HelpRow(5, "keyboard_w", "WASD  Move controller"); HelpRow(6, "keyboard_q", "Down / up", "keyboard_e");
                 HelpRow(7, "keyboard_tab", ReefToolMenu.Instance ? "Tools; ` cycles device mode" : "Body / device mode"); HelpRow(8, "", "[ / ]  Select left / right hand");
                 HelpRow(9, "mouse_right", "Toggle mouse look"); HelpRow(10, "keyboard_f2", "Desktop / XR simulator");
-                HelpRow(11, "keyboard_f5", "Reset nursery"); return;
+                HelpRow(11, "keyboard_f5", "Reset nursery");
+                HelpRow(12, "", "J   Dive journal     Esc   Close it"); return;
             }
             HelpRow(0, "keyboard_w", "WASD  Swim");
             HelpRow(1, xr ? "keyboard_q" : "keyboard_space", xr ? "Down / up" : "Up / down", xr ? "keyboard_e" : "keyboard_c");
@@ -257,6 +280,34 @@ namespace Reefkeeper
             HelpRow(8, xr ? "mouse_right" : "keyboard_r", xr ? "Toggle mouse look" : "Return to start");
             HelpRow(9, "keyboard_f2", "Desktop / XR simulator"); HelpRow(10, "keyboard_f5", "Reset nursery");
             HelpRow(11, "keyboard_f11", "Fullscreen");
+            HelpRow(12, "", "J   Dive journal     Esc   Close it");
+        }
+        // Bottom row first. Inputs match DiveCardMock: desktop LMB draws, RMB looks, Esc / J close;
+        // headset right trigger draws where the right controller points, B / Y close.
+        void UpdateJournalHints()
+        {
+            if (Headset)
+            {
+                JournalHint(0, "", "B   Close journal   (or Y)");
+                JournalHint(1, "", "Hold right trigger on the page to draw");
+                JournalHint(2, null, "");
+            }
+            else
+            {
+                JournalHint(0, "keyboard_escape", "Close journal   (or J)");
+                JournalHint(1, "mouse_right", "Hold to look around");
+                JournalHint(2, "mouse_left", "Hold and drag on the page to draw");
+            }
+        }
+        void JournalHint(int index, string key, string text)
+        {
+            var pill = journalHintLabels[index].transform.parent.gameObject;
+            pill.SetActive(key != null);
+            if (key == null) return;
+            SetIcon(journalHintIcons[index], key);
+            var label = journalHintLabels[index]; label.text = text;
+            label.rectTransform.anchoredPosition = new Vector2(journalHintIcons[index].enabled ? 18 : 0, 0);
+            label.rectTransform.sizeDelta = new Vector2(journalHintIcons[index].enabled ? 340 : 380, 34);
         }
         void HelpRow(int index, string key, string text, string secondary = "")
         {
