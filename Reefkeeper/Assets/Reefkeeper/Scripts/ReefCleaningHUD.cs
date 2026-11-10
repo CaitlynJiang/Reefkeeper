@@ -147,7 +147,8 @@ namespace Reefkeeper
         void LateUpdate()
         {
             if (!pickup.View) return;
-            if (ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
+            var aimDot=canvas.transform.Find("Aim dot");if(aimDot)aimDot.gameObject.SetActive(!DiveCardMock.BlocksControls);
+            if (DiveCardMock.BlocksControls || ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
             { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
             bool headset = Headset;
