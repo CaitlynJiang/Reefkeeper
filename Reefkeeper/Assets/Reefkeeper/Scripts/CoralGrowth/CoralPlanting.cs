@@ -306,6 +306,9 @@ namespace Reefkeeper.Corals
         // Each step stays done once reached.
         const int MossToClean = 3;
         bool cleanedThree, gotCoral, plantedOne;
+        /// <summary>First tutorial step done: the player has cleaned three mossy planting spots.</summary>
+        public bool ClearedFirstSpots => cleanedThree;
+        public int SpotsToClear => MossToClean;
         int cleanSockets;
 
         void TrackTutorial()

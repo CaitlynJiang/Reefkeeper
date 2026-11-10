@@ -30,6 +30,13 @@ namespace Reefkeeper.Corals
         [SerializeField] AudioClip purrMeow, shortMeow;
 
         public bool AimingCat { get; private set; }
+        /// <summary>The cat has handed over the dive journal and waits for the player to open and close it.</summary>
+        public bool AwaitingJournal { get; private set; }
+        /// <summary>Button that opens the journal on the current setup.</summary>
+        public static string JournalKey => UnityEngine.XR.XRSettings.isDeviceActive ? "Y" : "J";
+        /// <summary>Screen hint while the handed-over journal is still unopened.</summary>
+        public string JournalPrompt => AwaitingJournal && DiveCardMock.Instance && !DiveCardMock.Instance.IsOpen
+            ? $"Press {JournalKey} to open your dive journal" : "";
         public string Prompt => AimingCat ? (corals.Held ? "Plant your coral first" : "Talk to Lucky Cat") : "";
         public string PromptKey => !AimingCat || corals.Held ? ""
             : aimingHand == 0 ? "quest_grip_left" : aimingHand == 1 ? "quest_grip_right" : "keyboard_g";
@@ -43,6 +50,8 @@ namespace Reefkeeper.Corals
         readonly Transform[] rayOrigins = new Transform[2];
         InputAction[] grips;
         int aimingHand = -1;
+        CoralPlanting planting;
+        bool journalSeenOpen;
         string line = "";
         float lineUntil, nextTouch;
         Coroutine mood;
@@ -77,11 +86,24 @@ namespace Reefkeeper.Corals
                 var nearFar = hand.GetComponentInChildren<UnityEngine.XR.Interaction.Toolkit.Interactors.NearFarInteractor>(true);
                 rayOrigins[hand.name.StartsWith("Left") ? 0 : 1] = nearFar ? nearFar.transform : hand;
             }
+            // With the tutorial running, the journal is the cat's to hand over (see Talk).
+            planting = FindFirstObjectByType<CoralPlanting>();
+            if (planting && DiveCardMock.Instance) DiveCardMock.Instance.Available = false;
         }
 
         void Update()
         {
             AimingCat = false; aimingHand = -1;
+            // Runs before the input block below: the open journal blocks world input.
+            if (AwaitingJournal && DiveCardMock.Instance)
+            {
+                if (DiveCardMock.Instance.IsOpen) journalSeenOpen = true;
+                else if (journalSeenOpen && !DiveCardMock.BlocksControls)
+                {
+                    AwaitingJournal = false; journalSeenOpen = false;
+                    GiveCoral("Now your first coral! ");
+                }
+            }
             if (ReefToolMenu.BlocksWorldInput) return;
             bool canAct = Automated || corals.Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             if (!canAct || !corals.View) return;
@@ -127,14 +149,41 @@ namespace Reefkeeper.Corals
             return first == catCollider;
         }
 
-        /// <summary>Hands the player a random coral. Returns it, or null if they already carry one.</summary>
+        /// <summary>
+        /// Talks to the cat. In the tutorial: before three spots are clean the cat asks for that;
+        /// the first talk after hands over the dive journal, and closing the journal brings the
+        /// first coral. Otherwise hands the player a random coral. Returns it, or null.
+        /// </summary>
         public ReefCoralFragment Talk()
         {
+            var journal = DiveCardMock.Instance;
+            if (journal && !journal.Available && planting)
+            {
+                if (!planting.ClearedFirstSpots)
+                {
+                    Say($"Clear {planting.SpotsToClear} mossy planting spots first, then come see me!", LuckyCat.Mood.Beckon);
+                    return null;
+                }
+                journal.Available = true; AwaitingJournal = true; journalSeenOpen = false;
+                Say($"Great cleaning! This dive journal is yours. Press {JournalKey} to open it.", LuckyCat.Mood.Happy, 6f);
+                return null;
+            }
+            if (AwaitingJournal)
+            {
+                Say($"Have a look in your journal first! Press {JournalKey}.", LuckyCat.Mood.Beckon);
+                return null;
+            }
             if (corals.Held)
             {
                 Say("Plant that one first, then come back!", LuckyCat.Mood.Beckon);
                 return null;
             }
+            return GiveCoral("");
+        }
+
+        ReefCoralFragment GiveCoral(string intro)
+        {
+            if (corals.Held) return null;
             var prefab = stock[Random.Range(0, stock.Length)];
             var coral = Instantiate(prefab, corals.hand.transform.position, Quaternion.identity);
             string species = CoralRules.Species(prefab.gameObject);
@@ -142,13 +191,13 @@ namespace Reefkeeper.Corals
             coral.SetStage(0, false);
             var fragment = CoralSeating.MakePickable(coral, corals, outline, corals.GetComponent<XRInteractionManager>());
             corals.Give(fragment);
-            Say($"Here's a {CoralRules.DisplayName(species)}! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy);
+            Say($"{intro}Here's a {CoralRules.DisplayName(species)}! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy);
             return fragment;
         }
 
-        void Say(string text, LuckyCat.Mood face)
+        void Say(string text, LuckyCat.Mood face, float seconds = 0)
         {
-            line = text; lineUntil = Time.time + lineSeconds;
+            line = text; lineUntil = Time.time + (seconds > 0 ? seconds : lineSeconds);
             if (!cat) return;
             if (meowSource)
             {

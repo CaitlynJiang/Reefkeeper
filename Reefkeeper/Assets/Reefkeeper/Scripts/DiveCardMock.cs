@@ -18,6 +18,8 @@ namespace Reefkeeper
         public bool MouseLookActive => IsOpen && reveal>.98f && Camera.main && Camera.main.GetComponentInParent<DiveMotor>() && (Mouse.current?.rightButton.isPressed??false);
         [Range(.6f,1.6f)] public float previewScale=1.15f;
         public bool openOnStart;
+        /// <summary>Whether J / left Y opens the journal. Lucky Cat (CoralShop) hands it over after the first task.</summary>
+        public bool Available { get; set; } = true;
         readonly List<Object> generated = new List<Object>();
         Transform cards;
         Vector3 anchor;
@@ -122,7 +124,7 @@ namespace Reefkeeper
             var key=Keyboard.current;
             bool j=journalAction.IsPressed(),b=closeAction.IsPressed(),trigger=selectAction.IsPressed();
             bool keyboardJournal=key?.jKey.isPressed??false;
-            if(keyboardJournal&&!keyboardJournalDown||j&&!journalDown)SetOpen(!IsOpen);
+            if(Available&&(keyboardJournal&&!keyboardJournalDown||j&&!journalDown))SetOpen(!IsOpen);
             if((key?.escapeKey.wasPressedThisFrame==true||b&&!closeDown)&&IsOpen)SetOpen(false);
             if(IsOpen&&reveal>.8f&&!MouseLookActive)
             {
