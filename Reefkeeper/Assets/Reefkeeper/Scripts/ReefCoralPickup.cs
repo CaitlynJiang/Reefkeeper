@@ -24,6 +24,8 @@ namespace Reefkeeper
         readonly List<Home> homes = new List<Home>();
         XRInteractionSimulator simulator;
         Transform holdParent;
+        /// <summary>The controller or hand the held coral follows; null when it rides in front of the view.</summary>
+        public Transform HoldParent => holdParent;
         Camera previousView;
         bool clearing, pendingHold;
         struct Home
@@ -81,8 +83,11 @@ namespace Reefkeeper
         }
         void UpdateHand(Camera view)
         {
-            bool controller = holdParent && holdParent.gameObject.activeInHierarchy;
-            var parent = controller ? holdParent : view.transform;
+            var parent = holdParent && holdParent.gameObject.activeInHierarchy ? holdParent : null;
+            // Bare hands: a coral not yet held by either hand (one from the shop) rides on the right hand.
+            if (!parent && Hands.ReefInput.HandsMode) parent = Hands.ReefInput.RayOrigin(1);
+            bool controller = parent;
+            if (!parent) parent = view.transform;
             if (hand.transform.parent != parent) hand.transform.SetParent(parent, false);
             hand.transform.localPosition = controller ? new Vector3(0.02f, -0.02f, 0.08f) : new Vector3(0.28f, -0.20f, 0.48f);
             hand.transform.localRotation = Quaternion.Euler(0, 0, -12);
