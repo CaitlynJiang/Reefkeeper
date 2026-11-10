@@ -22,8 +22,41 @@ namespace Reefkeeper
             var go = new GameObject("XR headset performance");
             DontDestroyOnLoad(go);
             go.AddComponent<XRHeadsetPerformance>();
+            ReplaceProceduralCaustics();
         }
 #endif
+
+        /// <summary>
+        /// The vendored WaterUnder graph (sand, rock and coral) computes caustics per pixel from four
+        /// Voronoi noises; on Quest 3 it alone cost ~17 ms of a 39 ms frame. In headset players its
+        /// materials switch to Reefkeeper's UnderWater/Lit, whose caustics come from a texture.
+        /// Shared material assets are edited in memory only (player builds never save them), so
+        /// corals the cart spawns later get the cheap shader too. Returns the number of materials.
+        /// </summary>
+        public static int ReplaceProceduralCaustics()
+        {
+            var lite = Shader.Find("Reefkeeper/UnderWater/Lit");
+            if (!lite) return 0;
+            int count = 0;
+            foreach (var m in Resources.FindObjectsOfTypeAll<Material>())
+            {
+                if (!m || !m.shader || m.shader.name != "Shader Graphs/WaterUnder") continue;
+                // WaterUnder's exposed properties keep their generated reference names.
+                var color = m.GetColor("Color_DB714CC1");
+                var tiling = m.GetVector("Vector4_47405F4E");
+                float caustics = m.HasProperty("_Caustics") ? m.GetFloat("_Caustics") : 1f;
+                Texture texture = null;
+                foreach (var name in m.GetTexturePropertyNames()) { var t = m.GetTexture(name); if (t) { texture = t; break; } }
+                m.shader = lite;
+                m.SetColor("_BaseColor", color);
+                m.SetFloat("_CausticsAmount", caustics);
+                m.SetFloat("_Wrap", 0.5f);
+                if (texture) { m.SetTexture("_BaseMap", texture); m.SetTextureScale("_BaseMap", new Vector2(tiling.x, tiling.y)); }
+                count++;
+            }
+            Debug.Log($"[XRPerf] WaterUnder -> UnderWater/Lit on {count} materials");
+            return count;
+        }
 
         void Update()
         {
