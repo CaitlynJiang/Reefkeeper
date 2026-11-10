@@ -40,6 +40,7 @@ namespace Reefkeeper
 
         void Update()
         {
+            if (DiveCardMock.BlocksControls) { Velocity=Vector3.zero; return; }
             if (!view) return;
             // The simulator is EditorOnly, so it is missing on the headset.
             if (simulator)
@@ -89,6 +90,7 @@ namespace Reefkeeper
 
         public void Tick(Vector3 worldDirection, bool boost, bool brake, float dt)
         {
+            if (DiveCardMock.BlocksControls) { Velocity=Vector3.zero; return; }
             dt = Mathf.Clamp(dt, 0, 0.05f);
             body.center = transform.InverseTransformPoint(view.transform.position);
             Velocity = DiveMotor.IntegrateVelocity(Velocity, worldDirection, boost, brake, dt, 2.1f, 4, 3.5f, 1.1f, 12);

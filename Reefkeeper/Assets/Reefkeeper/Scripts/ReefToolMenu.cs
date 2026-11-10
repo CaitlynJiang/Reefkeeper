@@ -14,7 +14,7 @@ namespace Reefkeeper
     public sealed class ReefToolMenu : MonoBehaviour
     {
         public static ReefToolMenu Instance { get; private set; }
-        public static bool BlocksWorldInput => Instance && (Instance.IsOpen || Instance.consumeClick || Time.frameCount <= Instance.closedFrame + 1);
+        public static bool BlocksWorldInput => DiveCardMock.BlocksControls || Instance && (Instance.IsOpen || Instance.consumeClick || Time.frameCount <= Instance.closedFrame + 1);
         public bool IsOpen { get; private set; }
         public bool Owns(CleaningToolKind kind) => owned[(int)kind];
         public RectTransform ToggleRect => toggle;
@@ -93,6 +93,7 @@ namespace Reefkeeper
 
         void Update()
         {
+            if (DiveCardMock.BlocksControls) return;
             if (consumeClick && !(Mouse.current?.leftButton.isPressed ?? false) && !trigger.IsPressed()) consumeClick = false;
             bool xr = workshop.xrGroup.activeSelf, center = pickup.CenterMode;
             if (xr != wasXr || center != wasCenter) { if (IsOpen) SetOpen(false); wasXr = xr; wasCenter = center; }
@@ -159,6 +160,7 @@ namespace Reefkeeper
 
         void HandlePointer()
         {
+            if (DiveCardMock.BlocksControls) return;
             bool click = Mouse.current?.leftButton.wasPressedThisFrame == true;
             if (workshop.xrGroup.activeSelf && !pickup.CenterMode) click |= triggerPressed;
             if (!pointerValid || !click) return;
