@@ -138,6 +138,8 @@ namespace Reefkeeper
         }
         /// <summary>Called when a held coral is let go; return true if it was planted instead of kept.</summary>
         public System.Func<ReefCoralFragment, bool> PlantOnRelease { get; set; }
+        /// <summary>Called after PlantOnRelease declines; return true if the coral was put back somewhere instead of kept.</summary>
+        public System.Func<ReefCoralFragment, bool> ReturnOnRelease { get; set; }
 
         /// <summary>Puts a coral straight into the player's hand (e.g. one bought from the shop).</summary>
         public void Give(ReefCoralFragment fragment)
@@ -167,6 +169,7 @@ namespace Reefkeeper
         {
             if (clearing || Held != fragment) return;
             if (PlantOnRelease != null && PlantOnRelease(fragment)) return;
+            if (ReturnOnRelease != null && ReturnOnRelease(fragment)) { Held = null; return; }
             holdParent = controller == hand.transform ? null : controller;
             pendingHold = true;
         }
