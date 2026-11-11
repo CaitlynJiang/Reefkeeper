@@ -234,6 +234,7 @@ namespace Reefkeeper
             else if (shop && shop.JournalPrompt.Length > 0) { context = shop.JournalPrompt; key = ""; }
             else if (planting && planting.Prompt.Length > 0 && !(pickup.SpotInReach && pickup.ToolHeld))
             { context = planting.Prompt; key = planting.PromptKey; }
+            else if (shop && shop.CounterPrompt.Length > 0) { context = shop.CounterPrompt; key = ""; }
             if (pickup.SpotInReach && pickup.ToolHeld && !pickup.CorrectTool)
             { context = pickup.Target.CleaningHint; key = ""; }
             if (!pickup.workshop.xrGroup.activeSelf && Cursor.lockState != CursorLockMode.Locked && !pickup.Automated && !pickup.corals.Automated)

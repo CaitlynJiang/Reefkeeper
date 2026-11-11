@@ -27546,6 +27546,7 @@ MonoBehaviour:
   rayReach: 8
   purrMeow: {fileID: 8300000, guid: 0ca9acc9f3e6469e981e09cdf07a5b00, type: 3}
   shortMeow: {fileID: 8300000, guid: 79f3b05073c44323b6e04b8b0a5db51a, type: 3}
+  counterSpot: {fileID: 598437247}
 --- !u!1 &497538846
 GameObject:
   m_ObjectHideFlags: 0
@@ -31539,6 +31540,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 803839230}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &598437246
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 598437247}
+  m_Layer: 0
+  m_Name: Coral counter spot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &598437247
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598437246}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.098145366, y: 0.1415465, z: -0.08505907, w: 0.9813751}
+  m_LocalPosition: {x: 0.13427824, y: 1.0484012, z: -0.258067}
+  m_LocalScale: {x: 1, y: 1, z: 0.9999999}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1498639490}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &599433620
 PrefabInstance:
@@ -46992,6 +47024,12 @@ MonoBehaviour:
   simulator: {fileID: 976985703}
   Automated: 0
   snapTurnAngle: 45
+  strokeGain: 2.5
+  strokeMinSpeed: 0.35
+  strokeMaxSpeed: 3
+  glideReach: 0.42
+  glideHoldSeconds: 0.35
+  glideSpeed: 0.55
 --- !u!114 &896995183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85146,6 +85184,9 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1160112385810895823, guid: c3d4e38ce3588204bafb2d59425ed752, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 598437247}
     - targetCorrespondingSourceObject: {fileID: 1439015046369090469, guid: c3d4e38ce3588204bafb2d59425ed752, type: 3}
       insertIndex: -1
       addedObject: {fileID: 939685241}
@@ -85157,6 +85198,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 50871103}
   m_SourcePrefab: {fileID: 100100000, guid: c3d4e38ce3588204bafb2d59425ed752, type: 3}
+--- !u!4 &1498639490 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1160112385810895823, guid: c3d4e38ce3588204bafb2d59425ed752, type: 3}
+  m_PrefabInstance: {fileID: 1498639489}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1500121042
 GameObject:
   m_ObjectHideFlags: 0

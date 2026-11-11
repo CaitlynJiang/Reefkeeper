@@ -28,6 +28,8 @@ namespace Reefkeeper.Corals
         [Tooltip("With real controllers: how far a controller ray reaches the cat (m).")]
         public float rayReach = 8f;
         [SerializeField] AudioClip purrMeow, shortMeow;
+        [Tooltip("VR: where the cat sets a coral down on the counter for the player to pick up.\nVR 珊瑚放在柜台上的位置")]
+        public Transform counterSpot;
 
         public bool AimingCat { get; private set; }
         /// <summary>The cat has handed over the dive journal and waits for the player to open and close it.</summary>
@@ -45,13 +47,23 @@ namespace Reefkeeper.Corals
             : aimingHand == 0 ? "quest_grip_left" : aimingHand == 1 ? "quest_grip_right" : "keyboard_g";
         /// <summary>What the cat is saying, empty when quiet.</summary>
         public string Line => Time.time < lineUntil ? line : "";
+        /// <summary>VR: the coral waiting on the counter (or being carried to a spot), until it is planted.</summary>
+        public ReefCoralFragment CounterCoral => counterCoral;
+        /// <summary>VR: hint for the coral on the counter, empty when none applies.</summary>
+        public string CounterPrompt => !counterCoral ? ""
+            : counterCoral.isSelected ? "Carry it to a clean planting spot and let go"
+            : counterCoral.isHovered ? (Hands.ReefInput.HandsMode ? "Pinch or make a fist to pick up coral" : "Hold grip to pick up coral")
+            : "";
         public bool Automated { get; set; }
 
         readonly RaycastHit[] hits = new RaycastHit[32];
         // Index 0 = left, 1 = right.
         int aimingHand = -1;
         CoralPlanting planting;
+        ReefCoralFragment counterCoral;
         bool journalSeenOpen;
+        /// <summary>Headset with real hands or controllers: corals go on the counter instead of into the hand.</summary>
+        bool CounterHandover => counterSpot && workshop.xrGroup.activeSelf && !corals.CenterAimMode;
         string line = "";
         float lineUntil, nextTouch;
         Coroutine mood;
@@ -73,6 +85,22 @@ namespace Reefkeeper.Corals
             // With the tutorial running, the journal is the cat's to hand over (see Talk).
             planting = FindFirstObjectByType<CoralPlanting>();
             if (planting && DiveCardMock.Instance) DiveCardMock.Instance.Available = false;
+            // A counter coral let go away from a planting spot goes back on the counter.
+            corals.ReturnOnRelease = fragment =>
+            {
+                if (!fragment || fragment != counterCoral) return false;
+                PutOnCounter(fragment);
+                return true;
+            };
+        }
+
+        void OnDestroy() { if (corals) corals.ReturnOnRelease = null; }
+
+        void PutOnCounter(ReefCoralFragment fragment)
+        {
+            fragment.transform.SetPositionAndRotation(counterSpot.position, Quaternion.Euler(0, counterSpot.eulerAngles.y, 0));
+            // Held corals turn their colliders into triggers; on the counter they are solid again so hands find them.
+            foreach (var c in fragment.colliders) if (c) c.isTrigger = false;
         }
 
         void Update()
@@ -162,18 +190,31 @@ namespace Reefkeeper.Corals
                 Say("Plant that one first, then come back!", LuckyCat.Mood.Beckon);
                 return null;
             }
+            if (counterCoral)
+            {
+                Say("Your coral is on the counter. Take it and plant it!", LuckyCat.Mood.Beckon);
+                return null;
+            }
             return GiveCoral("");
         }
 
         ReefCoralFragment GiveCoral(string intro)
         {
-            if (corals.Held) return null;
+            if (corals.Held || counterCoral) return null;
             var prefab = stock[Random.Range(0, stock.Length)];
             var coral = Instantiate(prefab, corals.hand.transform.position, Quaternion.identity);
             string species = CoralRules.Species(prefab.gameObject);
             coral.name = species;
             coral.SetStage(0, false);
             var fragment = CoralSeating.MakePickable(coral, corals, outline, corals.GetComponent<XRInteractionManager>());
+            if (CounterHandover)
+            {
+                // Headset: set it on the counter; the player picks it up like a tool and plants it.
+                PutOnCounter(fragment);
+                counterCoral = fragment;
+                Say($"{intro}A {CoralRules.DisplayName(species)} for you, on the counter! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy, 5f);
+                return fragment;
+            }
             corals.Give(fragment);
             Say($"{intro}Here's a {CoralRules.DisplayName(species)}! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy);
             return fragment;
