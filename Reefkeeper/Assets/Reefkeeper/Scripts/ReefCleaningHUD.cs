@@ -240,6 +240,15 @@ namespace Reefkeeper
             if (!pickup.workshop.xrGroup.activeSelf && Cursor.lockState != CursorLockMode.Locked && !pickup.Automated && !pickup.corals.Automated)
             { context = "Click to dive"; key = "mouse_left"; }
             SetIcon(promptIcon, key);
+            if(ShipwreckHabitat.Instance)
+            {
+                var habitat=ShipwreckHabitat.Instance;
+                promptLabel.resizeTextForBestFit=true;promptLabel.resizeTextMinSize=12;promptLabel.resizeTextMaxSize=18;
+                if(habitat.Notice.Length>0){context=habitat.Notice;key="";}
+                else if(habitat.Prompt.Length>0){context=habitat.Prompt;key="";}
+                objectiveBody.text="Wreck visitors: "+habitat.UnlockedCount+" / 2 — J: journal";
+                SetIcon(promptIcon,key);
+            }
             promptLabel.rectTransform.anchoredPosition = new Vector2(promptIcon.enabled ? 24 : 0, 0);
             promptLabel.rectTransform.sizeDelta = new Vector2(promptIcon.enabled ? 250 : 300, 38);
             promptLabel.text = context; prompt.gameObject.SetActive(context.Length > 0);

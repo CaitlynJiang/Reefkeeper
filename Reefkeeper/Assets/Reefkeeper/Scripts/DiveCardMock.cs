@@ -38,6 +38,7 @@ namespace Reefkeeper
         public int SelectedTab { get; private set; }
         Text pageTitle;
         DiveCardDoodles doodles;
+        HabitatJournal habitatJournal;
         GameObject cornerStickers, growthStickers;
         bool tabPress;
         // Bare hands: the journal opens within reach and smaller, and a fingertip draws on it.
@@ -141,6 +142,7 @@ namespace Reefkeeper
                 if(xr?trigger&&!selectDown:Mouse.current?.leftButton.wasPressedThisFrame==true)
                     for(int i=0;i<4;i++)if(new Plane(tabs[i].forward,tabs[i].position).Raycast(ray,out float distance))
                     {var p=tabs[i].InverseTransformPoint(ray.GetPoint(distance));if(Mathf.Abs(p.x)<.041f&&Mathf.Abs(p.y)<.024f){SelectTab(i);tabPress=true;break;}}
+                if(!tabPress&&habitatJournal&&(xr?trigger&&!selectDown:Mouse.current?.leftButton.wasPressedThisFrame==true)&&habitatJournal.Click(ray))tabPress=true;
                 if(Hands.ReefInput.HandsMode)FingerDraw();
                 else if(doodles)doodles.Draw(ray,pressed&&!tabPress);
             }
@@ -176,6 +178,7 @@ namespace Reefkeeper
             if(touching&&!fingerOnPage)
                 for(int i=0;i<4;i++)if(new Plane(tabs[i].forward,tabs[i].position).Raycast(ray,out float distance))
                 {var p=tabs[i].InverseTransformPoint(ray.GetPoint(distance));if(Mathf.Abs(p.x)<.041f&&Mathf.Abs(p.y)<.024f){SelectTab(i);tabPress=true;break;}}
+            if(touching&&!fingerOnPage&&!tabPress&&habitatJournal&&habitatJournal.Click(ray))tabPress=true;
             if(!touching)tabPress=false;
             doodles.Draw(ray,touching&&!tabPress);
             fingerOnPage=touching;
@@ -184,8 +187,9 @@ namespace Reefkeeper
         {
             if(doodles)doodles.Clear();
             SelectedTab=Mathf.Clamp(index,0,3);
-            if(cornerStickers)cornerStickers.SetActive(SelectedTab!=1);
-            if(growthStickers)growthStickers.SetActive(SelectedTab==1);
+            if(cornerStickers)cornerStickers.SetActive(!habitatJournal&&SelectedTab!=1);
+            if(growthStickers)growthStickers.SetActive(!habitatJournal&&SelectedTab==1);
+            if(habitatJournal)habitatJournal.Show(SelectedTab);
             for(int i=0;i<4;i++)tabs[i].GetComponent<MeshRenderer>().sharedMaterials=new[]{i==SelectedTab?selectedTab:tabColors[i],tabColors[i]};
             if(pageTitle)pageTitle.text=titles[SelectedTab];
         }
@@ -241,6 +245,7 @@ namespace Reefkeeper
             var drawingRect=drawing.GetComponent<RectTransform>();drawingRect.sizeDelta=new Vector2(650,425);
             drawingRect.localPosition=new Vector3(0,0,-.5f);
             doodles=drawing.GetComponent<DiveCardDoodles>();doodles.raycastTarget=false;
+            if(ShipwreckHabitat.Instance){habitatJournal=canvas.AddComponent<HabitatJournal>();habitatJournal.Initialize(this);drawingRect.localPosition=new Vector3(0,0,-1f);}
         }
         void Sticker(Transform parent,string name,Vector2 position,float size,float tilt)
         {
