@@ -88538,6 +88538,63 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1601747480}
   m_Mesh: {fileID: 4300000, guid: 8b1475863a8386040b1d7120dbd69b58, type: 2}
+--- !u!1001 &1603344173
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.45
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 10.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2633530108913334333, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7016793274152217651, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
+      propertyPath: m_Name
+      value: V4 Observation Cabin
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ec4c29788168e51489f9114307eb0dd8, type: 3}
 --- !u!1 &1603760841
 GameObject:
   m_ObjectHideFlags: 0
@@ -139207,3 +139264,4 @@ SceneRoots:
   - {fileID: 803839230}
   - {fileID: 1498639489}
   - {fileID: 1753982838}
+  - {fileID: 1603344173}
