@@ -26,9 +26,6 @@ namespace Reefkeeper
         Text progressLabel, promptLabel, helpHint, objectiveBody;
         Image promptIcon;
         // Shown while the dive journal is open: how to draw, look around (desktop) and close it.
-        RectTransform journalHints;
-        readonly Image[] journalHintIcons = new Image[3];
-        readonly Text[] journalHintLabels = new Text[3];
         // Headset: no keyboard, so the left menu button toggles Controls and left X folds Objectives.
         // Left Y belongs to the dive-card journal (DiveCardMock). Key icons become button labels.
         InputAction helpButton, objectivesButton;
@@ -53,6 +50,18 @@ namespace Reefkeeper
         public bool ProgressVisible => progress && progress.gameObject.activeInHierarchy && progressGroup.alpha > 0;
         public bool HelpVisible { get; private set; }
         public bool ObjectivesExpanded { get; private set; } = true;
+        // Shared by the HUD and palm card, including while the HUD's objective is folded.
+        public string CurrentObjective
+        {
+            get
+            {
+                var habitat = ShipwreckHabitat.Instance;
+                if (habitat && habitat.Data != null) return "Wreck visitors: " + habitat.UnlockedCount + " / 2";
+                if (shop && shop.AwaitingJournal) return "Open your dive journal";
+                if (planting) return planting.Objective;
+                return pickup && pickup.workshop.Progress >= .995f ? "Nursery restored" : "Clean the nursery frame";
+            }
+        }
         public void ToggleHelp() => HelpVisible = !HelpVisible;
         public void ToggleObjectives() => ObjectivesExpanded = !ObjectivesExpanded;
         public bool UsesQuestPrompts => pickup.workshop.xrGroup.activeSelf && !pickup.CenterMode;
@@ -126,18 +135,6 @@ namespace Reefkeeper
                 var label = Label(row, "Action", Vector2.zero, new Vector2(344, 26), 16);
                 label.alignment = TextAnchor.MiddleLeft; helpLabels.Add(label);
             }
-            // Journal hints: pills stacked up from the context-hint position, same style.
-            journalHints = Rect("Dive journal hints", go.transform, new Vector2(0.5f, 0), new Vector2(0, 0), new Vector2(420, 200));
-            journalHints.pivot = new Vector2(0.5f, 0); journalHints.anchoredPosition = new Vector2(0, 30);
-            for (int i = 0; i < journalHintLabels.Length; i++)
-            {
-                var pill = Rect("Journal hint " + i, journalHints, new Vector2(0.5f, 0), new Vector2(0, 23 + i * 54), new Vector2(420, 46));
-                Background(pill);
-                journalHintIcons[i] = Icon(pill, "Input glyph", new Vector2(-172, 0), new Vector2(34, 34));
-                journalHintLabels[i] = Label(pill, "Hint text", new Vector2(18, 0), new Vector2(340, 34), 17);
-                journalHintLabels[i].alignment = TextAnchor.MiddleLeft;
-            }
-            journalHints.gameObject.SetActive(false);
             helpPanel.gameObject.SetActive(false); progress.gameObject.SetActive(false); prompt.gameObject.SetActive(false);
         }
         Image ArcLayer(string name, Sprite sprite, Color tint)
@@ -169,9 +166,6 @@ namespace Reefkeeper
         {
             if (!pickup.View) return;
             var aimDot=canvas.transform.Find("Aim dot");if(aimDot)aimDot.gameObject.SetActive(!DiveCardMock.BlocksControls);
-            bool journalOpen = DiveCardMock.Instance && DiveCardMock.Instance.IsOpen;
-            journalHints.gameObject.SetActive(journalOpen);
-            if (journalOpen) UpdateJournalHints();
             if (DiveCardMock.BlocksControls || ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
             { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
@@ -246,7 +240,7 @@ namespace Reefkeeper
                 promptLabel.resizeTextForBestFit=true;promptLabel.resizeTextMinSize=12;promptLabel.resizeTextMaxSize=18;
                 if(habitat.Notice.Length>0){context=habitat.Notice;key="";}
                 else if(habitat.Prompt.Length>0){context=habitat.Prompt;key="";}
-                objectiveBody.text="Wreck visitors: "+habitat.UnlockedCount+" / 2 — J: journal";
+                objectiveBody.text=CurrentObjective+" — J: journal";
                 SetIcon(promptIcon,key);
             }
             promptLabel.rectTransform.anchoredPosition = new Vector2(promptIcon.enabled ? 24 : 0, 0);
@@ -318,39 +312,6 @@ namespace Reefkeeper
             HelpRow(9, "keyboard_f2", "Desktop / XR simulator"); HelpRow(10, "keyboard_f5", "Reset nursery");
             HelpRow(11, "keyboard_f11", "Fullscreen");
             HelpRow(12, "", "J   Dive journal     Esc   Close it");
-        }
-        // Bottom row first. Inputs match DiveCardMock: desktop LMB draws, RMB looks, Esc / J close;
-        // headset right trigger draws where the right controller points, B / Y close.
-        void UpdateJournalHints()
-        {
-            if (Headset && Hands.ReefInput.HandsMode)
-            {
-                JournalHint(0, "", "Palm up, tap Journal to close");
-                JournalHint(1, "", "Touch the page with your finger to draw");
-                JournalHint(2, null, "");
-            }
-            else if (Headset)
-            {
-                JournalHint(0, "", "B   Close journal   (or Y)");
-                JournalHint(1, "", "Hold right trigger on the page to draw");
-                JournalHint(2, null, "");
-            }
-            else
-            {
-                JournalHint(0, "keyboard_escape", "Close journal   (or J)");
-                JournalHint(1, "mouse_right", "Hold to look around");
-                JournalHint(2, "mouse_left", "Hold and drag on the page to draw");
-            }
-        }
-        void JournalHint(int index, string key, string text)
-        {
-            var pill = journalHintLabels[index].transform.parent.gameObject;
-            pill.SetActive(key != null);
-            if (key == null) return;
-            SetIcon(journalHintIcons[index], key);
-            var label = journalHintLabels[index]; label.text = text;
-            label.rectTransform.anchoredPosition = new Vector2(journalHintIcons[index].enabled ? 18 : 0, 0);
-            label.rectTransform.sizeDelta = new Vector2(journalHintIcons[index].enabled ? 340 : 380, 34);
         }
         void HelpRow(int index, string key, string text, string secondary = "")
         {

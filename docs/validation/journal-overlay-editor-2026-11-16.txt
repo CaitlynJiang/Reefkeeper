@@ -1,0 +1,67 @@
+PASS
+F6 opens full journal in hand-layout preview
+Journal releases pointer and blocks world clicks
+Journal has only UI graphics, no mesh renderers or colliders
+Shared current objective appears in journal header
+Overlay shader compiles without errors
+Pointer opens embedded Controls page
+Controls returns to current journal page
+Pointer selects coral collection tab
+Pointer selects marine encyclopedia tab
+Overlay material: Offset card 3
+Overlay material: Offset card 2
+Overlay material: Offset card 1
+Overlay material: Blue PVC face
+Overlay material: Category tab 0
+Overlay material: GUIDE
+Overlay material: Category tab 1
+Overlay material: CORALS
+Overlay material: Category tab 2
+Overlay material: MARINE
+Overlay material: Category tab 3
+Overlay material: NOTES
+Overlay material: FIELD GUIDE
+Overlay material:
+Overlay material: Controls
+Overlay material: Controls
+Overlay material: Close journal
+Overlay material: X
+Overlay material: A LITTLE HELP FROM LUCKY CAT
+Overlay material: Actual Lucky Cat model stamp
+Overlay material: Binding
+Overlay material: Binding
+Overlay material: Tethered pencil
+Overlay material: Graphite tip
+Overlay material: Pencil tie
+Overlay material: BranchCoral_S4 sticker
+Overlay material: DiscCoral_S3 sticker
+Overlay material: TubeSponge_Blossom_S3 sticker
+Overlay material: BranchCoral_S1 sticker
+Overlay material: STAGE 1
+Overlay material: BranchCoral_S2 sticker
+Overlay material: STAGE 2
+Overlay material: BranchCoral_S3 sticker
+Overlay material: STAGE 3
+Overlay material: BranchCoral_S4 sticker
+Overlay material: STAGE 4
+Overlay material: V4 journal page
+Overlay material: UNDISCOVERED VISITOR
+Overlay material: ?
+Overlay material: WRECK COMBINATION
+2 Branch Coral + 1 Mushroom Coral
+Overlay material: Place this combination to discover it.
+Overlay material: Visitor 0
+Overlay material: ?
+Overlay material: Locked
+Overlay material: Visitor 1
+Overlay material: ?
+Overlay material: Locked
+Overlay material: Temporary black doodles
+Desktop swims with journal open
+Preview follows player movement rather than remaining in terrain
+Opaque geometry placed IN FRONT does not occlude journal (49120/49120 samples)
+Occluder visibly changes background, validating depth test
+Doodle graphic remains available on UI journal
+Escape closes and releases gameplay input after animation
+J opens normal desktop journal
+J toggles journal closed

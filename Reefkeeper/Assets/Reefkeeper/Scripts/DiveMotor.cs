@@ -57,23 +57,8 @@ namespace Reefkeeper
 
         void Update()
         {
-            if (DiveCardMock.BlocksControls)
-            {
-                Velocity=Vector3.zero; Braking=false; Sprinting=false;
-#if ENABLE_INPUT_SYSTEM
-                bool looking=!Automated && DiveCardMock.Instance.MouseLookActive;
-                if(looking)
-                {
-                    if(!readingLook) pitch=Mathf.DeltaAngle(0,view.transform.localEulerAngles.x);
-                    else ApplyLook(Mouse.current.delta.ReadValue());
-                }
-                readingLook=looking;
-#endif
-                return;
-            }
-            readingLook=false;
             if (Automated) return;
-            bool escape, click, reset, boost, brake;
+            bool escape, click, reset, boost, brake, journalBrake;
             Vector2 look;
             Vector3 axes;
 #if ENABLE_INPUT_SYSTEM
@@ -84,7 +69,8 @@ namespace Reefkeeper
             click = m.leftButton.wasPressedThisFrame;
             reset = k.rKey.wasPressedThisFrame;
             boost = k.leftShiftKey.isPressed || k.rightShiftKey.isPressed;
-            brake = m.rightButton.isPressed || k.xKey.isPressed;
+            journalBrake = k.xKey.isPressed;
+            brake = m.rightButton.isPressed || journalBrake;
             look = m.delta.ReadValue();
             axes = new Vector3((k.dKey.isPressed ? 1 : 0) - (k.aKey.isPressed ? 1 : 0),
                 (k.spaceKey.isPressed ? 1 : 0) - (k.cKey.isPressed ? 1 : 0),
@@ -94,13 +80,27 @@ namespace Reefkeeper
             click = Input.GetMouseButtonDown(0);
             reset = Input.GetKeyDown(KeyCode.R);
             boost = Input.GetKey(KeyCode.LeftShift);
-            brake = Input.GetMouseButton(1) || Input.GetKey(KeyCode.X);
+            journalBrake = Input.GetKey(KeyCode.X);
+            brake = Input.GetMouseButton(1) || journalBrake;
             look = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * 15;
             axes = new Vector3(Input.GetAxisRaw("Horizontal"),
                 (Input.GetKey(KeyCode.Space) ? 1 : 0) - (Input.GetKey(KeyCode.C) ? 1 : 0),
                 Input.GetAxisRaw("Vertical"));
 #endif
-            if (ReefToolMenu.BlocksWorldInput) { Tick(axes, boost, brake, Time.deltaTime); return; }
+            if (ReefToolMenu.BlocksWorldInput)
+            {
+                bool looking=DiveCardMock.Instance && DiveCardMock.Instance.MouseLookActive;
+                if(looking)
+                {
+                    if(!readingLook)pitch=Mathf.DeltaAngle(0,view.transform.localEulerAngles.x);
+                    else ApplyLook(look);
+                }
+                readingLook=looking;
+                // Reading only owns pointer actions, not swimming. X still brakes; RMB looks.
+                Tick(axes,boost,looking ? journalBrake : brake,Time.deltaTime);
+                return;
+            }
+            readingLook=false;
             if (escape) { SetControl(false); return; }
             if (!controlling)
             {
@@ -122,7 +122,6 @@ namespace Reefkeeper
         // Separate input from motion so a later glove/XR adapter can supply the same commands.
         public void Tick(Vector3 localInput, bool boost, bool brake, float deltaTime)
         {
-            if (DiveCardMock.BlocksControls) { Velocity=Vector3.zero; return; }
             float dt = Mathf.Clamp(deltaTime, 0, 0.05f);
             Vector3 direction = view.transform.right * localInput.x
                 + Vector3.up * localInput.y + view.transform.forward * localInput.z;
