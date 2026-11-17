@@ -91,10 +91,16 @@ def export(blend, name, budget):
     meshes = [o for o in scene.objects if o.type == "MESH" and not o.name.startswith("Circle")]
     sockets = find_sockets(meshes, blend)
 
+    # Keep the already low-poly cords out of the decimator entirely. Joining them
+    # first used to collapse their cylinder walls into single-sided triangles.
+    cords = [o for o in meshes if any(m and m.name.startswith("Cord") for m in o.data.materials)]
+    solid_meshes = [o for o in meshes if o not in cords]
+    cord_tris = sum(len(p.vertices) - 2 for o in cords for p in o.data.polygons)
+
     bpy.ops.object.select_all(action="DESELECT")
-    for o in meshes:
+    for o in solid_meshes:
         o.select_set(True)
-    bpy.context.view_layer.objects.active = meshes[0]
+    bpy.context.view_layer.objects.active = solid_meshes[0]
     bpy.ops.object.convert(target="MESH")          # applies subsurf etc.
     bpy.ops.object.join()
     ob = bpy.context.view_layer.objects.active
@@ -102,10 +108,18 @@ def export(blend, name, budget):
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     tris = sum(len(p.vertices) - 2 for p in ob.data.polygons)
-    if tris > budget:
+    if tris > budget - cord_tris:
         dec = ob.modifiers.new("Decimate", "DECIMATE")
-        dec.ratio = budget / tris
+        dec.ratio = max(0.01, (budget - cord_tris) / tris)
         bpy.ops.object.modifier_apply(modifier=dec.name)
+    if cords:
+        # Still export one mesh and one atlas, with no extra renderers or materials.
+        bpy.ops.object.select_all(action="DESELECT")
+        ob.select_set(True)
+        for cord in cords:
+            cord.select_set(True)
+        bpy.context.view_layer.objects.active = ob
+        bpy.ops.object.join()
     bpy.ops.object.shade_smooth()
 
     bpy.ops.object.mode_set(mode="EDIT")
