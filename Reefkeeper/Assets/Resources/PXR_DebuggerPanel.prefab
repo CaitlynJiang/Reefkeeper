@@ -261,7 +261,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7385050101264014554}
-        m_TargetAssemblyTypeName: Unity.XR.PXR.Debugger.PXR_InspectorManager, Unity.XR.PICO
+        m_TargetAssemblyTypeName: ByteDance.PICO.XR.Debugger.PXR_InspectorManager, ByteDance.PICO.XR
         m_MethodName: Refresh
         m_Mode: 1
         m_Arguments:
@@ -457,7 +457,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1206448648072376585}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 442a798e1fcc34e479becec159b8aaf7, type: 3}
+  m_Script: {fileID: 11500000, guid: 10de0c5e3cc484c64b5582c6c1ca3080, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   config: {fileID: 0}
@@ -661,7 +661,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2043612707412564304}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34aff3ee7450748cba11e0267142e5ba, type: 3}
+  m_Script: {fileID: 11500000, guid: 6f1ae80411dd94524a7ec7819b182046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   toolButtons:
@@ -759,7 +759,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 3770464016379487785}
-        m_TargetAssemblyTypeName: Unity.XR.PXR.Debugger.PXR_DefaultButton, Unity.XR.PICO
+        m_TargetAssemblyTypeName: ByteDance.PICO.XR.Debugger.PXR_DefaultButton, ByteDance.PICO.XR
         m_MethodName: Reset
         m_Mode: 1
         m_Arguments:
@@ -937,7 +937,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7814148540375861453}
-        m_TargetAssemblyTypeName: Unity.XR.PXR.Debugger.PXR_DefaultButton, Unity.XR.PICO
+        m_TargetAssemblyTypeName: ByteDance.PICO.XR.Debugger.PXR_DefaultButton, ByteDance.PICO.XR
         m_MethodName: Reset
         m_Mode: 1
         m_Arguments:
@@ -1152,7 +1152,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4335395727798351222}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11c28c50e274e400ababdc4ef40ca441, type: 3}
+  m_Script: {fileID: 11500000, guid: 14d42ff010a0b45228c394b3ac252d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   inspectItem: {fileID: 666162858044710491, guid: 08bc7342026c945c9818c4783d6713b4,
@@ -2261,7 +2261,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8157969599181179519}
-        m_TargetAssemblyTypeName: Unity.XR.PXR.Debugger.PXR_ToolManager, Unity.XR.PICO
+        m_TargetAssemblyTypeName: ByteDance.PICO.XR.Debugger.PXR_ToolManager, ByteDance.PICO.XR
         m_MethodName: CreateTool
         m_Mode: 2
         m_Arguments:
@@ -2469,7 +2469,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8117762128163067748}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37649a96b60c841e08f9e20ab7f59dfd, type: 3}
+  m_Script: {fileID: 11500000, guid: 271c5a148a5be4011a1ab535a7074d49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   infoList: []
@@ -2577,7 +2577,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8157969599181179519}
-        m_TargetAssemblyTypeName: Unity.XR.PXR.Debugger.PXR_ToolManager, Unity.XR.PICO
+        m_TargetAssemblyTypeName: ByteDance.PICO.XR.Debugger.PXR_ToolManager, ByteDance.PICO.XR
         m_MethodName: DeleteTool
         m_Mode: 1
         m_Arguments:
@@ -2675,7 +2675,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8199475428708132981}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b3c9f458c1e945d7b07755d7c90f336, type: 3}
+  m_Script: {fileID: 11500000, guid: bda04fc8ff0c74d448fd043957bc2ddf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   uiController: {fileID: 451847324802949725}
@@ -3132,7 +3132,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8157969599181179519}
-        m_TargetAssemblyTypeName: Unity.XR.PXR.Debugger.PXR_ToolManager, Unity.XR.PICO
+        m_TargetAssemblyTypeName: ByteDance.PICO.XR.Debugger.PXR_ToolManager, ByteDance.PICO.XR
         m_MethodName: CreateTool
         m_Mode: 2
         m_Arguments:
@@ -3454,7 +3454,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4043547093990596514}
-        m_TargetAssemblyTypeName: Unity.XR.PXR.Debugger.PXR_DefaultButton, Unity.XR.PICO
+        m_TargetAssemblyTypeName: ByteDance.PICO.XR.Debugger.PXR_DefaultButton, ByteDance.PICO.XR
         m_MethodName: Reset
         m_Mode: 1
         m_Arguments:
@@ -3675,7 +3675,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40cb8883085df4ffa8cca5f3a0072dfa, type: 3}
+  m_Script: {fileID: 11500000, guid: 673bb40bab89b4687b8e321bdca6de27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &3267367497500153630
@@ -3888,7 +3888,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40cb8883085df4ffa8cca5f3a0072dfa, type: 3}
+  m_Script: {fileID: 11500000, guid: 673bb40bab89b4687b8e321bdca6de27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &8733882068947533937
@@ -4101,6 +4101,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40cb8883085df4ffa8cca5f3a0072dfa, type: 3}
+  m_Script: {fileID: 11500000, guid: 673bb40bab89b4687b8e321bdca6de27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

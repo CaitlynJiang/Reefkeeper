@@ -24,7 +24,7 @@ namespace Reefkeeper.V2
         public const string ScenePath = "Assets/Reefkeeper/Scenes/ShallowReef_V2.unity";
         public const string ApkPath = "Builds/Reefkeeper_V2_PICO.apk";
         const string PackageId = "com.reefkeeper.v2";
-        const string PicoLoader = "Unity.XR.PXR.PXR_Loader";
+        const string PicoLoader = "ByteDance.PICO.XR.PXR_Loader";
 
         [MenuItem("Reefkeeper/PICO/1. Configure project for PICO - 配置 PICO")]
         public static void Configure()
@@ -77,10 +77,10 @@ namespace Reefkeeper.V2
             // throws half-way through writing the PICO meta-data. The platform and project settings
             // assets are created on first access, which must not first happen mid-build.
             var pxrSettings = AssetDatabase.FindAssets("t:PXR_Settings").Select(AssetDatabase.GUIDToAssetPath)
-                .Select(AssetDatabase.LoadAssetAtPath<Unity.XR.PXR.PXR_Settings>).FirstOrDefault(s => s);
-            if (pxrSettings) EditorBuildSettings.AddConfigObject("Unity.XR.PXR.Settings", pxrSettings, true);
-            _ = Unity.XR.PXR.PXR_PlatformSetting.Instance;
-            _ = Unity.XR.PXR.PXR_ProjectSetting.GetProjectConfig();
+                .Select(AssetDatabase.LoadAssetAtPath<ByteDance.PICO.XR.PXR_Settings>).FirstOrDefault(s => s);
+            if (pxrSettings) EditorBuildSettings.AddConfigObject("ByteDance.PICO.XR.Settings", pxrSettings, true);
+            _ = ByteDance.PICO.Platform.Framework.PXR_PlatformSetting.Instance;
+            _ = ByteDance.PICO.XR.PXR_ProjectSetting.GetProjectConfig();
         }
 
         // PICO requires HDR off with URP on device.
@@ -100,7 +100,7 @@ namespace Reefkeeper.V2
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             var roots = scene.GetRootGameObjects();
             var origin = roots.SelectMany(r => r.GetComponentsInChildren<Unity.XR.CoreUtils.XROrigin>(true)).FirstOrDefault();
-            var managerType = TypeCache.GetTypesDerivedFrom<MonoBehaviour>().FirstOrDefault(t => t.FullName == "Unity.XR.PXR.PXR_Manager");
+            var managerType = TypeCache.GetTypesDerivedFrom<MonoBehaviour>().FirstOrDefault(t => t.FullName == "ByteDance.PICO.XR.PXR_Manager");
             if (origin && managerType != null && !origin.GetComponent(managerType)) origin.gameObject.AddComponent(managerType);
             // The desktop XR simulator must not ship: EditorOnly objects are stripped from builds.
             foreach (var root in roots)

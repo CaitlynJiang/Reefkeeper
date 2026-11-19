@@ -15,9 +15,9 @@ namespace Reefkeeper.Hands
         public static void BuildPico()
         {
             V2.PicoSetup.Configure();
-            Unity.XR.PXR.PXR_ProjectSetting.GetProjectConfig().handTracking = true;
-            Unity.XR.PXR.PXR_ProjectSetting.GetProjectConfig().handTrackingSupportType = Unity.XR.PXR.HandTrackingSupport.ControllersAndHands;
-            EditorUtility.SetDirty(Unity.XR.PXR.PXR_ProjectSetting.GetProjectConfig());
+            ByteDance.PICO.XR.PXR_ProjectSetting.GetProjectConfig().handTracking = true;
+            ByteDance.PICO.XR.PXR_ProjectSetting.GetProjectConfig().handTrackingSupportType = ByteDance.PICO.XR.HandTrackingSupport.ControllersAndHands;
+            EditorUtility.SetDirty(ByteDance.PICO.XR.PXR_ProjectSetting.GetProjectConfig());
             PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, PackageId);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(HandTrackingSetup.ScenePath, true) };
             AssetDatabase.SaveAssets();
