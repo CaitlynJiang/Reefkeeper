@@ -91,8 +91,9 @@ namespace Reefkeeper.Hands
             public enum Kind { Grab, Pinch }
             readonly int hand; readonly Kind kind;
             public Button(int hand, Kind kind) { this.hand = hand; this.kind = kind; }
-            public bool ReadIsPerformed() { var s = Get(hand); return kind == Kind.Grab ? s.Grab : s.Pinch; }
-            public bool ReadWasPerformedThisFrame() { var s = Get(hand); return kind == Kind.Grab ? s.GrabDown : s.PinchDown; }
+            bool SurfaceOwnsInput => ReefSurfaceHold.Instance && ReefSurfaceHold.Instance.OwnsHand(hand);
+            public bool ReadIsPerformed() { if (SurfaceOwnsInput) return false; var s = Get(hand); return kind == Kind.Grab ? s.Grab : s.Pinch; }
+            public bool ReadWasPerformedThisFrame() { if (SurfaceOwnsInput) return false; var s = Get(hand); return kind == Kind.Grab ? s.GrabDown : s.PinchDown; }
             public bool ReadWasCompletedThisFrame() { var s = Get(hand); return kind == Kind.Grab ? s.GrabUp : s.PinchUp; }
             public float ReadValue() => ReadIsPerformed() ? 1f : 0f;
             public bool TryReadValue(out float value) { value = ReadValue(); return Get(hand).Tracked; }

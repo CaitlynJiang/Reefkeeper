@@ -118,11 +118,13 @@ namespace Reefkeeper.Hands
 
         /// <summary>Trigger pulled, or pinch closed, this frame.</summary>
         public static bool UseDown(int hand) =>
-            HandsMode ? ReefHands.Get(hand).PinchDown : use != null && use[hand].WasPressedThisFrame();
+            HandsMode ? !SurfaceOwnsInput(hand) && ReefHands.Get(hand).PinchDown : use != null && use[hand].WasPressedThisFrame();
 
         /// <summary>Grip pressed, or pinch closed, this frame.</summary>
         public static bool TalkDown(int hand) =>
-            HandsMode ? ReefHands.Get(hand).PinchDown : talk != null && talk[hand].WasPressedThisFrame();
+            HandsMode ? !SurfaceOwnsInput(hand) && ReefHands.Get(hand).PinchDown : talk != null && talk[hand].WasPressedThisFrame();
+
+        static bool SurfaceOwnsInput(int hand) => ReefSurfaceHold.Instance && ReefSurfaceHold.Instance.OwnsHand(hand);
 
         /// <summary>"Pull the trigger" / "Pinch", for prompts.</summary>
         public static string UseVerb => HandsMode ? "Pinch" : "Pull the trigger";
