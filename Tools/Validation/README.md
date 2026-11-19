@@ -1,7 +1,8 @@
 # Hand-control comparison checks
 
 The current `immersive-opening` checkpoint uses the first tool-grip gesture logic
-with PICO SDK 6.2.0. Headset swimming remains under investigation.
+with PICO SDK 6.2.0. The user confirmed swimming works in this rollback APK on
+the Swan headset. The later regression's individual cause remains under investigation.
 
 `CheckFirstHandControls.cs` is the current Unity script-run fixture. Enter Play
 mode in `ImmersiveOpening`, finish the dive transition and release both tools.

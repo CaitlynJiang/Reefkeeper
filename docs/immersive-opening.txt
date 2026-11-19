@@ -181,3 +181,7 @@ CURRENT CHECKPOINT / 当前版本 (2026-11-19)
 - Current gesture/tool code matches the first HandControls package: original swim thresholds and acceleration, 15 mm grip offset, pinch-to-hold tools and middle-pinch journal. The later hand-side cleaning HUD is retained.
 - SDK 6.2.0 and the user's three-layer icon remain installed. The comparison APK is awaiting headset results; do not describe swimming as fixed.
 - Full details and backup record: swan-hand-controls-comparison.txt.
+
+HEADSET BASELINE CONFIRMED / 真机基线确认 (2026-11-19)
+- The user confirmed swimming works in the Swan + FirstHandControls rollback APK. The earlier pending status is superseded for this exact build.
+- Preserve tag swan-swim-baseline-2026-11-19 and restore changes individually, with one APK per feature. Broader hand-comfort changes remain rolled back.
