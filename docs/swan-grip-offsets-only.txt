@@ -38,3 +38,8 @@ Build result
 - SHA-256: EF1F64BCC56F0A48FDB831B45E31FD25C5DB5836C371A40F356F01D29820CD13.
 - This increment is ready for the user's next headset test; no headset pass is
   claimed for the new grip pose yet.
+
+User feedback / 用户反馈 (2026-11-19)
+- The user tested the grip-offset increment and reported that the tool angle is
+  now perfect. Preserve this grip geometry. This feedback specifically confirms
+  the angle; it is not a blanket validation of every interaction or performance.
