@@ -20,6 +20,8 @@ namespace Reefkeeper.CoralGrowthTools
         const string PrefabDir = "Assets/Reefkeeper/Prefabs/CoralGrowth";
         const string GeneratorPath = "Assets/Reefkeeper/Editor/CoralGrowth/Blender/coral_generator.py";
         const string ScenePath = "Assets/Reefkeeper/Scenes/UnderWater/TestScene_UnderWater.unity";
+        // Lit + reactions to neighbouring corals (see CoralColony)
+        const string CoralShader = "Reefkeeper/UnderWater/Lit Coral";
         const string ShowcaseName = "Coral Growth Showcase 珊瑚生长展示";
         const string BlenderPathKey = "Reefkeeper.CoralGrowth.BlenderPath";
         const string DefaultBlender = @"D:\blender-5.2.3\blender-5.2.3-candidate+v52.c361aec8a863-windows.amd64-release\blender.exe";
@@ -29,6 +31,7 @@ namespace Reefkeeper.CoralGrowthTools
         {
             "DiscCoral", "BranchCoral", "BarrelSponge", "PolypPillar_Pink", "PolypPillar_Coral",
             "FingerCoral", "TubeSponge_Magenta", "TubeSponge_Lemon", "TubeSponge_Blossom", "TendrilCoral",
+            "RedCoral",   // built by coral_crab.py, not coral_generator.py
         };
 
         // Seaweed: no growth stages, sways with the current. (name, tip sway in m, typical height in m)
@@ -165,16 +168,31 @@ namespace Reefkeeper.CoralGrowthTools
             Directory.CreateDirectory(MaterialDir);
             Directory.CreateDirectory(PrefabDir);
             AssetDatabase.Refresh();
-            var shader = Shader.Find("Reefkeeper/UnderWater/Lit");
-            if (!shader) throw new System.Exception("Shader 'Reefkeeper/UnderWater/Lit' not found.");
+            var shader = Shader.Find(CoralShader);
+            if (!shader) throw new System.Exception($"Shader '{CoralShader}' not found.");
 
             var result = new Dictionary<string, GameObject>();
             foreach (string model in Models)
             {
+                var prefab = BuildPrefab(model, shader);
+                if (prefab) result[model] = prefab;
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[CoralGrowth] Built {result.Count} prefabs in {PrefabDir}.");
+            return result;
+        }
+
+        /// <summary>One coral prefab (CoralGrowth + a child per stage) from Meshes/CoralGrowth/&lt;model&gt;.fbx.</summary>
+        public static GameObject BuildPrefab(string model, Shader shader = null)
+        {
+            shader = shader ? shader : Shader.Find(CoralShader);
+            Directory.CreateDirectory(MaterialDir);
+            Directory.CreateDirectory(PrefabDir);
+            {
                 string fbx = CoralGrowthImport.MeshDir + model + ".fbx";
                 var meshes = AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<Mesh>()
                     .Where(m => m.name.StartsWith(model + "_S")).OrderBy(m => m.name).ToArray();
-                if (meshes.Length == 0) { Debug.LogWarning($"[CoralGrowth] No meshes in {fbx}; run step 1 first."); continue; }
+                if (meshes.Length == 0) { Debug.LogWarning($"[CoralGrowth] No meshes in {fbx}; run step 1 first."); return null; }
 
                 var modelAsset = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
                 var root = new GameObject(model);
@@ -203,13 +221,17 @@ namespace Reefkeeper.CoralGrowthTools
                 coral.stage = stages.Count - 1;
                 for (int i = 0; i < stages.Count; i++) stages[i].gameObject.SetActive(i == coral.stage);
 
+                // keep components added to the prefab later (e.g. CoralCrabSpawn on the red coral)
                 string path = $"{PrefabDir}/{model}.prefab";
-                result[model] = PrefabUtility.SaveAsPrefabAsset(root, path);
+                var old = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (old)
+                    foreach (var extra in old.GetComponents<MonoBehaviour>())
+                        if (extra && !(extra is CoralGrowth) && !root.GetComponent(extra.GetType()))
+                            EditorUtility.CopySerialized(extra, root.AddComponent(extra.GetType()));
+                var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
                 Object.DestroyImmediate(root);
+                return prefab;
             }
-            AssetDatabase.SaveAssets();
-            Debug.Log($"[CoralGrowth] Built {result.Count} prefabs in {PrefabDir}.");
-            return result;
         }
 
         static Material StageMaterial(Shader shader, string name)
@@ -224,6 +246,7 @@ namespace Reefkeeper.CoralGrowthTools
                 mat.SetFloat("_Wrap", 0.6f);
                 mat.SetFloat("_CausticsAmount", 0.7f);
             }
+            if (mat.shader != shader) mat.shader = shader;
             mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath(name)));
             EditorUtility.SetDirty(mat);
             return mat;

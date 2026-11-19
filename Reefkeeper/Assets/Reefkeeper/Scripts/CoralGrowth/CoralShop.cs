@@ -7,7 +7,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 namespace Reefkeeper.Corals
 {
     /// <summary>
-    /// Lucky Cat's coral cart. Aim at the cat and press G (or touch it with a controller) to talk:
+    /// Lucky Cat's coral cart. Aim at the cat and press G (desktop), or point a controller ray at it
+    /// and press that hand's Grip, or touch it with a controller, to talk:
     /// the cat hands over a random coral from the cart, at its smallest stage, straight into the
     /// player's hand. One coral at a time: plant it before asking for another.
     /// </summary>
@@ -24,49 +25,130 @@ namespace Reefkeeper.Corals
         [Tooltip("With real controllers: how close a hand must come to the cat (m).")]
         public float touchReach = 0.35f;
         public float lineSeconds = 3.5f;
+        [Tooltip("With real controllers: how far a controller ray reaches the cat (m).")]
+        public float rayReach = 8f;
+        [SerializeField] AudioClip purrMeow, shortMeow;
+        [Tooltip("VR: where the cat sets a coral down on the counter for the player to pick up.\nVR 珊瑚放在柜台上的位置")]
+        public Transform counterSpot;
 
         public bool AimingCat { get; private set; }
-        public string Prompt => AimingCat ? (corals.Held ? "Plant your coral first" : "Talk to Lucky Cat") : "";
-        public string PromptKey => AimingCat && !corals.Held ? "keyboard_g" : "";
+        /// <summary>The cat has handed over the dive journal and waits for the player to open and close it.</summary>
+        public bool AwaitingJournal { get; private set; }
+        /// <summary>Button that opens the journal on the current setup.</summary>
+        public static string JournalKey => UnityEngine.XR.XRSettings.isDeviceActive ? "Y" : "J";
+        /// <summary>How to open the journal on the current setup, as an instruction.</summary>
+        static string OpenJournal => Hands.ReefInput.HandsMode ? "Turn your left palm up and tap Journal" : $"Press {JournalKey}";
+        /// <summary>Screen hint while the handed-over journal is still unopened.</summary>
+        public string JournalPrompt => AwaitingJournal && DiveCardMock.Instance && !DiveCardMock.Instance.IsOpen
+            ? $"{OpenJournal} to open your dive journal" : "";
+        public string Prompt => AimingCat ? (corals.Held ? "Plant your coral first"
+            : aimingHand >= 0 && Hands.ReefInput.HandsMode ? "Pinch to talk to Lucky Cat" : "Talk to Lucky Cat") : "";
+        public string PromptKey => !AimingCat || corals.Held || aimingHand >= 0 && Hands.ReefInput.HandsMode ? ""
+            : aimingHand == 0 ? "quest_grip_left" : aimingHand == 1 ? "quest_grip_right" : "keyboard_g";
         /// <summary>What the cat is saying, empty when quiet.</summary>
         public string Line => Time.time < lineUntil ? line : "";
+        /// <summary>VR: the coral waiting on the counter (or being carried to a spot), until it is planted.</summary>
+        public ReefCoralFragment CounterCoral => counterCoral;
+        /// <summary>VR: hint for the coral on the counter, empty when none applies.</summary>
+        public string CounterPrompt => !counterCoral ? ""
+            : counterCoral.isSelected ? "Carry it to a clean planting spot and let go"
+            : counterCoral.isHovered ? (Hands.ReefInput.HandsMode ? "Pinch or make a fist to pick up coral" : "Hold grip to pick up coral")
+            : "";
         public bool Automated { get; set; }
 
         readonly RaycastHit[] hits = new RaycastHit[32];
-        Transform[] hands = new Transform[0];
+        // Index 0 = left, 1 = right.
+        int aimingHand = -1;
+        CoralPlanting planting;
+        ReefCoralFragment counterCoral;
+        bool journalSeenOpen;
+        /// <summary>Headset with real hands or controllers: corals go on the counter instead of into the hand.</summary>
+        bool CounterHandover => counterSpot && workshop.xrGroup.activeSelf && !corals.CenterAimMode;
         string line = "";
         float lineUntil, nextTouch;
         Coroutine mood;
+        AudioSource meowSource;
+
+        void Awake()
+        {
+            if (cat && (purrMeow || shortMeow))
+            {
+                meowSource = cat.gameObject.AddComponent<AudioSource>();
+                meowSource.playOnAwake = false;
+                meowSource.spatialBlend = 1f;
+                meowSource.dopplerLevel = 0f;
+            }
+        }
 
         void Start()
         {
-            hands = workshop.xrGroup.GetComponentsInChildren<Transform>(true)
-                .Where(t => t.name == "Left Controller" || t.name == "Right Controller").ToArray();
+            // With the tutorial running, the journal is the cat's to hand over (see Talk).
+            planting = FindFirstObjectByType<CoralPlanting>();
+            if (planting && DiveCardMock.Instance) DiveCardMock.Instance.Available = false;
+            // A counter coral let go away from a planting spot goes back on the counter.
+            corals.ReturnOnRelease = fragment =>
+            {
+                if (!fragment || fragment != counterCoral) return false;
+                PutOnCounter(fragment);
+                return true;
+            };
+        }
+
+        void OnDestroy() { if (corals) corals.ReturnOnRelease = null; }
+
+        void PutOnCounter(ReefCoralFragment fragment)
+        {
+            fragment.transform.SetPositionAndRotation(counterSpot.position, Quaternion.Euler(0, counterSpot.eulerAngles.y, 0));
+            // Held corals turn their colliders into triggers; on the counter they are solid again so hands find them.
+            foreach (var c in fragment.colliders) if (c) c.isTrigger = false;
         }
 
         void Update()
         {
-            AimingCat = false;
+            AimingCat = false; aimingHand = -1;
+            // Runs before the input block below: the open journal blocks world input.
+            if (AwaitingJournal && DiveCardMock.Instance)
+            {
+                if (DiveCardMock.Instance.IsOpen) journalSeenOpen = true;
+                else if (journalSeenOpen && !DiveCardMock.BlocksControls)
+                {
+                    AwaitingJournal = false; journalSeenOpen = false;
+                    GiveCoral("Now your first coral! ");
+                }
+            }
+            if (ReefToolMenu.BlocksWorldInput) return;
             bool canAct = Automated || corals.Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             if (!canAct || !corals.View) return;
             if (corals.CenterAimMode)
             {
-                AimingCat = LookingAtCat();
+                var view = corals.View.transform;
+                AimingCat = RayHitsCat(new Ray(view.position, view.forward), reach);
                 if (AimingCat && Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame) Talk();
             }
-            else if (workshop.xrGroup.activeSelf && Time.time >= nextTouch)
+            else if (workshop.xrGroup.activeSelf)
             {
-                foreach (var hand in hands)
-                    if (hand && hand.gameObject.activeInHierarchy &&
-                        Vector3.Distance(catCollider.ClosestPoint(hand.position), hand.position) <= touchReach)
-                    { nextTouch = Time.time + 2f; Talk(); break; }
+                // Point a controller or hand ray at the cat and press Grip (controller) or pinch (hand).
+                // Both rays may be on the cat; the hand that presses is the one that talks.
+                for (int i = 0; i < 2; i++)
+                {
+                    var origin = Hands.ReefInput.RayOrigin(i);
+                    if (!origin) continue;
+                    if (!RayHitsCat(new Ray(origin.position, origin.forward), rayReach)) continue;
+                    if (!AimingCat) { AimingCat = true; aimingHand = i; }
+                    if (Hands.ReefInput.TalkDown(i)) { aimingHand = i; nextTouch = Time.time + 2f; Talk(); break; }
+                }
+                // Or reach out and touch the cat.
+                if (Time.time >= nextTouch)
+                    for (int i = 0; i < 2; i++)
+                        if (Hands.ReefInput.TryGetPosition(i, out var at) &&
+                            Vector3.Distance(catCollider.ClosestPoint(at), at) <= touchReach)
+                        { nextTouch = Time.time + 2f; Talk(); break; }
             }
         }
 
-        bool LookingAtCat()
+        bool RayHitsCat(Ray ray, float distance)
         {
-            var view = corals.View.transform;
-            int count = Physics.RaycastNonAlloc(new Ray(view.position, view.forward), hits, reach, ~0, QueryTriggerInteraction.Collide);
+            int count = Physics.RaycastNonAlloc(ray, hits, distance, ~0, QueryTriggerInteraction.Collide);
             float nearest = float.PositiveInfinity; Collider first = null;
             for (int i = 0; i < count; i++)
             {
@@ -79,29 +161,76 @@ namespace Reefkeeper.Corals
             return first == catCollider;
         }
 
-        /// <summary>Hands the player a random coral. Returns it, or null if they already carry one.</summary>
+        /// <summary>
+        /// Talks to the cat. In the tutorial: before three spots are clean the cat asks for that;
+        /// the first talk after hands over the dive journal, and closing the journal brings the
+        /// first coral. Otherwise hands the player a random coral. Returns it, or null.
+        /// </summary>
         public ReefCoralFragment Talk()
         {
+            var journal = DiveCardMock.Instance;
+            if (journal && !journal.Available && planting)
+            {
+                if (!planting.ClearedFirstSpots)
+                {
+                    Say($"Clear {planting.SpotsToClear} mossy planting spots first, then come see me!", LuckyCat.Mood.Beckon);
+                    return null;
+                }
+                journal.Available = true; AwaitingJournal = true; journalSeenOpen = false;
+                Say($"Great cleaning! This dive journal is yours. {OpenJournal} to open it.", LuckyCat.Mood.Happy, 6f);
+                return null;
+            }
+            if (AwaitingJournal)
+            {
+                Say($"Have a look in your journal first! {OpenJournal}.", LuckyCat.Mood.Beckon);
+                return null;
+            }
             if (corals.Held)
             {
                 Say("Plant that one first, then come back!", LuckyCat.Mood.Beckon);
                 return null;
             }
+            if (counterCoral)
+            {
+                Say("Your coral is on the counter. Take it and plant it!", LuckyCat.Mood.Beckon);
+                return null;
+            }
+            return GiveCoral("");
+        }
+
+        ReefCoralFragment GiveCoral(string intro)
+        {
+            if (corals.Held || counterCoral) return null;
             var prefab = stock[Random.Range(0, stock.Length)];
             var coral = Instantiate(prefab, corals.hand.transform.position, Quaternion.identity);
             string species = CoralRules.Species(prefab.gameObject);
             coral.name = species;
             coral.SetStage(0, false);
             var fragment = CoralSeating.MakePickable(coral, corals, outline, corals.GetComponent<XRInteractionManager>());
+            if (CounterHandover)
+            {
+                // Headset: set it on the counter; the player picks it up like a tool and plants it.
+                PutOnCounter(fragment);
+                counterCoral = fragment;
+                Say($"{intro}A {CoralRules.DisplayName(species)} for you, on the counter! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy, 5f);
+                return fragment;
+            }
             corals.Give(fragment);
-            Say($"Here's a {CoralRules.DisplayName(species)}! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy);
+            Say($"{intro}Here's a {CoralRules.DisplayName(species)}! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy);
             return fragment;
         }
 
-        void Say(string text, LuckyCat.Mood face)
+        void Say(string text, LuckyCat.Mood face, float seconds = 0)
         {
-            line = text; lineUntil = Time.time + lineSeconds;
+            line = text; lineUntil = Time.time + (seconds > 0 ? seconds : lineSeconds);
             if (!cat) return;
+            if (meowSource)
+            {
+                bool playPurr = purrMeow && (!shortMeow || Random.value < 0.5f);
+                meowSource.clip = playPurr ? purrMeow : shortMeow;
+                meowSource.volume = playPurr ? 0.8f : 0.55f;
+                meowSource.Play();
+            }
             if (mood != null) StopCoroutine(mood);
             mood = StartCoroutine(Mood(face));
         }

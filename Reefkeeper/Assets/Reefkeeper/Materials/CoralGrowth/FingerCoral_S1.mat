@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: FingerCoral_S1
-  m_Shader: {fileID: 4800000, guid: e687a9aaaf93e6c41a1757ed267c165b, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0e4ad71c3a132ea408f21619e9785010, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -31,6 +31,9 @@ Material:
     m_Floats:
     - _CausticsAmount: 0.7
     - _Cutoff: 0.5
+    - _NeighbourTint: 0.7
+    - _PushStrength: 0.45
+    - _TintReach: 0.22
     - _Wrap: 0.6
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

@@ -45,7 +45,8 @@ namespace Reefkeeper.Editor
             origin.CameraYOffset = 1.6f;
             rig.transform.position = new Vector3(0, hit.point.y + 0.6f, -15.15f);
             foreach (Transform child in rig.GetComponentsInChildren<Transform>(true))
-                if (child.name == "Locomotion") child.gameObject.SetActive(false);
+                // ReefXRSwim owns the thumbsticks; teleport arcs would fight left-stick swimming.
+                if (child.name == "Locomotion" || child.name == "Teleport Interactor") child.gameObject.SetActive(false);
             var camera = origin.Camera;
             camera.nearClipPlane = 0.04f; camera.farClipPlane = 110;
             camera.fieldOfView = 72; camera.clearFlags = CameraClearFlags.SolidColor;

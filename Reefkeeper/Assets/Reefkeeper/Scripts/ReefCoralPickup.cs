@@ -19,11 +19,13 @@ namespace Reefkeeper
         public ReefCoralFragment Aimed { get; private set; }
         public Camera View => Camera.main;
         public bool HasPrompt => Aimed && Aimed != Held;
-        public bool CenterAimMode => !workshop.xrGroup.activeSelf || (simulator && simulator.isActiveAndEnabled && simulator.manipulatingFPS);
+        public bool CenterAimMode => !workshop.xrGroup.activeSelf || (simulator && simulator.isActiveAndEnabled && simulator.manipulatingFPS && !Hands.ReefInput.HandsMode);
         readonly RaycastHit[] hits = new RaycastHit[64];
         readonly List<Home> homes = new List<Home>();
         XRInteractionSimulator simulator;
         Transform holdParent;
+        /// <summary>The controller or hand the held coral follows; null when it rides in front of the view.</summary>
+        public Transform HoldParent => holdParent;
         Camera previousView;
         bool clearing, pendingHold;
         struct Home
@@ -57,6 +59,7 @@ namespace Reefkeeper
                 holdParent = null; previousView = view;
             }
             UpdateHand(view);
+            if (ReefToolMenu.BlocksWorldInput) { SetAim(null); return; }
             bool centerAim = CenterAimMode;
             bool canAim = Automated || workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked;
             ReefCoralFragment target = null;
@@ -80,8 +83,11 @@ namespace Reefkeeper
         }
         void UpdateHand(Camera view)
         {
-            bool controller = holdParent && holdParent.gameObject.activeInHierarchy;
-            var parent = controller ? holdParent : view.transform;
+            var parent = holdParent && holdParent.gameObject.activeInHierarchy ? holdParent : null;
+            // Bare hands: a coral not yet held by either hand (one from the shop) rides on the right hand.
+            if (!parent && Hands.ReefInput.HandsMode) parent = Hands.ReefInput.RayOrigin(1);
+            bool controller = parent;
+            if (!parent) parent = view.transform;
             if (hand.transform.parent != parent) hand.transform.SetParent(parent, false);
             hand.transform.localPosition = controller ? new Vector3(0.02f, -0.02f, 0.08f) : new Vector3(0.28f, -0.20f, 0.48f);
             hand.transform.localRotation = Quaternion.Euler(0, 0, -12);
@@ -132,6 +138,8 @@ namespace Reefkeeper
         }
         /// <summary>Called when a held coral is let go; return true if it was planted instead of kept.</summary>
         public System.Func<ReefCoralFragment, bool> PlantOnRelease { get; set; }
+        /// <summary>Called after PlantOnRelease declines; return true if the coral was put back somewhere instead of kept.</summary>
+        public System.Func<ReefCoralFragment, bool> ReturnOnRelease { get; set; }
 
         /// <summary>Puts a coral straight into the player's hand (e.g. one bought from the shop).</summary>
         public void Give(ReefCoralFragment fragment)
@@ -161,6 +169,7 @@ namespace Reefkeeper
         {
             if (clearing || Held != fragment) return;
             if (PlantOnRelease != null && PlantOnRelease(fragment)) return;
+            if (ReturnOnRelease != null && ReturnOnRelease(fragment)) { Held = null; return; }
             holdParent = controller == hand.transform ? null : controller;
             pendingHold = true;
         }

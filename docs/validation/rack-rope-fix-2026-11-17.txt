@@ -1,0 +1,5 @@
+PASS: 21 closed six-sided cords restored (18 hanging + 3 buoy).
+Side-ray hits across 18 hanging ropes / 16 directions: 232/288 before, 288/288 after.
+Triangles: 23984 -> 24420.
+Idempotence, imported result, 18 socket anchors and prefab renderer/collider mesh references verified.
+Renderer/material count unchanged; source FBX and scene not modified.

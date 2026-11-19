@@ -31,6 +31,16 @@ namespace Reefkeeper.Corals
 
         public int StageCount => stages.Length;
         public Transform Current => stage >= 0 && stage < stages.Length ? stages[stage] : null;
+        /// <summary>How far along the coral is, 0 (first stage) to 1 (last stage).</summary>
+        public float Maturity => stages.Length > 1 ? (float)stage / (stages.Length - 1) : 1f;
+
+        /// <summary>Every enabled coral, so neighbours can find each other (see <see cref="CoralColony"/>).</summary>
+        public static readonly System.Collections.Generic.List<CoralGrowth> Active = new System.Collections.Generic.List<CoralGrowth>();
+        /// <summary>Raised when any coral is enabled, disabled or changes stage.</summary>
+        public static event System.Action<CoralGrowth> AnyChanged;
+
+        void OnEnable() { Active.Add(this); AnyChanged?.Invoke(this); }
+        void OnDisable() { Active.Remove(this); AnyChanged?.Invoke(this); }
 
         void Awake()
         {
@@ -46,6 +56,7 @@ namespace Reefkeeper.Corals
             index = Mathf.Clamp(index, 0, stages.Length - 1);
             bool changed = index != stage;
             ShowOnly(index);
+            if (changed) AnyChanged?.Invoke(this);
             if (!animate) { scale = Vector3.one; velocity = Vector3.zero; Apply(0f); return; }
             if (changed) { scale = popFrom; velocity = new Vector3(-0.6f, 2.5f, -0.6f); }
             else Poke();

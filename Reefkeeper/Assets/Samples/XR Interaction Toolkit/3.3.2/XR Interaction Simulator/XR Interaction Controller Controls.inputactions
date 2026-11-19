@@ -160,7 +160,7 @@
                 {
                     "name": "left",
                     "id": "87590669-a188-4b8b-ba41-f5f8a58cede9",
-                    "path": "<Keyboard>/j",
+                    "path": "<Keyboard>/leftArrow",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -215,7 +215,7 @@
                 {
                     "name": "left",
                     "id": "e1b7cebf-9197-42dd-91a0-6ec9bfa15f9f",
-                    "path": "<Keyboard>/j",
+                    "path": "<Keyboard>/leftArrow",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

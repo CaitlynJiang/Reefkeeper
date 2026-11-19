@@ -17,10 +17,11 @@ namespace Reefkeeper.Corals
         [Tooltip("A: Mushroom (Disc) coral only. B: any flat-based coral. C: hanging corals.")]
         public Grade grade = Grade.B;
         [Tooltip("What is planted here, if anything.")] public CoralGrowth occupant;
-        [Tooltip("Moss covering this socket; cleaned with the brush.")] public RackDirtPatch moss;
+        [Tooltip("Surface covering this socket: algae needs a brush; fire coral needs a scraper.")] public RackDirtPatch moss;
 
         public bool IsFree => !occupant;
         public bool Mossy => moss && !moss.Complete;
+        public string CleaningHint => moss ? moss.CleaningHint : "Clear the planting spot";
 
         void OnDrawGizmos()
         {

@@ -33,6 +33,7 @@ namespace Reefkeeper
         Quaternion spawnRotation;
         float pitch;
         bool controlling;
+        bool readingLook;
 
         void Awake()
         {
@@ -57,7 +58,7 @@ namespace Reefkeeper
         void Update()
         {
             if (Automated) return;
-            bool escape, click, reset, boost, brake;
+            bool escape, click, reset, boost, brake, journalBrake;
             Vector2 look;
             Vector3 axes;
 #if ENABLE_INPUT_SYSTEM
@@ -68,7 +69,8 @@ namespace Reefkeeper
             click = m.leftButton.wasPressedThisFrame;
             reset = k.rKey.wasPressedThisFrame;
             boost = k.leftShiftKey.isPressed || k.rightShiftKey.isPressed;
-            brake = m.rightButton.isPressed || k.xKey.isPressed;
+            journalBrake = k.xKey.isPressed;
+            brake = m.rightButton.isPressed || journalBrake;
             look = m.delta.ReadValue();
             axes = new Vector3((k.dKey.isPressed ? 1 : 0) - (k.aKey.isPressed ? 1 : 0),
                 (k.spaceKey.isPressed ? 1 : 0) - (k.cKey.isPressed ? 1 : 0),
@@ -78,12 +80,27 @@ namespace Reefkeeper
             click = Input.GetMouseButtonDown(0);
             reset = Input.GetKeyDown(KeyCode.R);
             boost = Input.GetKey(KeyCode.LeftShift);
-            brake = Input.GetMouseButton(1) || Input.GetKey(KeyCode.X);
+            journalBrake = Input.GetKey(KeyCode.X);
+            brake = Input.GetMouseButton(1) || journalBrake;
             look = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * 15;
             axes = new Vector3(Input.GetAxisRaw("Horizontal"),
                 (Input.GetKey(KeyCode.Space) ? 1 : 0) - (Input.GetKey(KeyCode.C) ? 1 : 0),
                 Input.GetAxisRaw("Vertical"));
 #endif
+            if (ReefToolMenu.BlocksWorldInput)
+            {
+                bool looking=DiveCardMock.Instance && DiveCardMock.Instance.MouseLookActive;
+                if(looking)
+                {
+                    if(!readingLook)pitch=Mathf.DeltaAngle(0,view.transform.localEulerAngles.x);
+                    else ApplyLook(look);
+                }
+                readingLook=looking;
+                // Reading only owns pointer actions, not swimming. X still brakes; RMB looks.
+                Tick(axes,boost,looking ? journalBrake : brake,Time.deltaTime);
+                return;
+            }
+            readingLook=false;
             if (escape) { SetControl(false); return; }
             if (!controlling)
             {
@@ -91,10 +108,15 @@ namespace Reefkeeper
                 return;
             }
             if (reset) { ResetDive(); return; }
-            transform.Rotate(0, look.x * mouseSensitivity, 0, Space.World);
-            pitch = Mathf.Clamp(pitch - look.y * mouseSensitivity, -pitchLimit, pitchLimit);
-            view.transform.localRotation = Quaternion.Euler(pitch, 0, 0);
+            ApplyLook(look);
             Tick(axes, boost, brake, Time.deltaTime);
+        }
+
+        void ApplyLook(Vector2 delta)
+        {
+            transform.Rotate(0, delta.x * mouseSensitivity, 0, Space.World);
+            pitch = Mathf.Clamp(pitch - delta.y * mouseSensitivity, -pitchLimit, pitchLimit);
+            view.transform.localRotation = Quaternion.Euler(pitch, 0, 0);
         }
 
         // Separate input from motion so a later glove/XR adapter can supply the same commands.
@@ -141,6 +163,14 @@ namespace Reefkeeper
         {
             float intoSurface = Vector3.Dot(Velocity, hit.normal);
             if (intoSurface < 0) Velocity -= hit.normal * intoSurface;
+        }
+
+        public void SetViewAngles(float heading, float downwardPitch)
+        {
+            // Keep the mouse-look accumulator in sync so the next frame preserves this view.
+            pitch = Mathf.Clamp(downwardPitch, -pitchLimit, pitchLimit);
+            transform.rotation = Quaternion.Euler(0, heading, 0);
+            view.transform.localRotation = Quaternion.Euler(pitch, 0, 0);
         }
 
         public void ResetDive()

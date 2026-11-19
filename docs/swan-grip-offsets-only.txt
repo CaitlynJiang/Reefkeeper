@@ -1,0 +1,45 @@
+Increment 1: tool grip offsets only / 第一项：仅调整工具握持点
+2026-11-19
+
+Baseline: swan-swim-baseline-2026-11-19 (914027f).
+The user confirmed hand swimming on Swan with the FirstHandControls rollback APK.
+
+Change
+- Brush and scraper share ReefToolHandPose: grip = palm + palm-local -Y * 0.03 m;
+  adjusted pinch = raw pinch midpoint + palm-local +Y * 0.03 m.
+- Handle direction runs from the adjusted grip to the adjusted pinch. Preserve
+  palm-based roll, smoothing, tracking-loss handling and degenerate fallbacks.
+- These offsets only affect the displayed tool pose. Raw tracked joints and
+  pinch-to-hold/release detection remain unchanged.
+- No swimming/gesture classification, brake, acceleration, journal, HUD, scene
+  tuning, SDK or icon changes are included in this increment.
+
+Build target
+Reefkeeper/Builds/Reefkeeper_Swan_GripOffsetsOnly_2026-11-19.apk
+Preserve the separately named FirstHandControls APK for comparison.
+
+Next headset check
+Confirm swimming still works, then inspect brush/scraper position and orientation
+in both hands and confirm releasing pinch still releases each tool. Grip comfort
+and native behavior remain pending until the user tests this new APK.
+
+Editor validation
+- Compilation passed; controlled joint/XRI tests passed for both tools in both
+  hands, pinch release, mirrored/rotated grip geometry and coincident adjusted
+  endpoints, journal toggling and the retained cleaning HUD.
+- Verified the swim, hand classification/input, journal, tool select/release,
+  opening scene and package manifest/lock files match the confirmed baseline.
+- The named baseline APK retains SHA-256
+  0E4BE9C2E765CFF8AAB06E1396BE3020BC828F0D78E448C47D3CEADCB1A2FDF2.
+
+Build result
+- Succeeded, 0 errors, 1m18s build phase; APK size 104,471,110 bytes.
+- APK v2 signature verified with the same certificate as the working baseline.
+- SHA-256: EF1F64BCC56F0A48FDB831B45E31FD25C5DB5836C371A40F356F01D29820CD13.
+- This increment is ready for the user's next headset test; no headset pass is
+  claimed for the new grip pose yet.
+
+User feedback / 用户反馈 (2026-11-19)
+- The user tested the grip-offset increment and reported that the tool angle is
+  now perfect. Preserve this grip geometry. This feedback specifically confirms
+  the angle; it is not a blanket validation of every interaction or performance.

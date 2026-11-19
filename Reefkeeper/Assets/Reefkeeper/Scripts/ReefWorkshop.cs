@@ -9,8 +9,10 @@ namespace Reefkeeper
     {
         public GameObject desktopPlayer, xrGroup;
         public ReefBrush brush;
+        public ReefBrush scraper;
         public RackDirtPatch[] patches;
         public Transform brushHome;
+        public Transform scraperHome;
         public float Progress
         {
             get { float total = 0; foreach (var patch in patches) total += patch.Cleaned; return patches.Length > 0 ? total / patches.Length : 0; }
@@ -19,11 +21,14 @@ namespace Reefkeeper
         {
             // Existing desktop checks can still run on the same scene.
             var args = System.Environment.GetCommandLineArgs();
-            bool desktopSmoke = System.Array.IndexOf(args, "-reef-smoke") >= 0 || System.Array.IndexOf(args, "-reef-pickup-smoke") >= 0 || System.Array.IndexOf(args, "-reef-cleaning-smoke") >= 0;
+            bool desktopSmoke = System.Array.IndexOf(args, "-reef-smoke") >= 0 || System.Array.IndexOf(args, "-reef-pickup-smoke") >= 0 || System.Array.IndexOf(args, "-reef-cleaning-smoke") >= 0 || System.Array.IndexOf(args, "-reef-v3-smoke") >= 0;
             xrGroup.SetActive(!desktopSmoke); desktopPlayer.SetActive(desktopSmoke);
+            if (scraper && !GetComponent<ReefToolMenu>()) gameObject.AddComponent<ReefToolMenu>();
+            if (scraper && !GetComponent<DiveCardMock>()) gameObject.AddComponent<DiveCardMock>();
         }
         void Update()
         {
+            if (DiveCardMock.BlocksControls) return;
             var k = Keyboard.current;
             if (k == null) return;
             if (k.f2Key.wasPressedThisFrame)
@@ -38,6 +43,7 @@ namespace Reefkeeper
         }
         public void ResetWorkshop()
         {
+            if (scraper && scraper.scrapeDebris) scraper.scrapeDebris.Clear();
             foreach (var patch in patches) patch.ResetDirt();
             ReturnBrush();
             var corals = GetComponent<ReefCoralPickup>();
@@ -49,17 +55,20 @@ namespace Reefkeeper
         {
             var pickup = GetComponent<ReefBrushPickup>();
             if (pickup) pickup.Release();
-            ReleaseBrush();
-            var body = brush.GetComponent<Rigidbody>();
-            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
-            brush.transform.SetPositionAndRotation(brushHome.position, brushHome.rotation);
-            body.position = brushHome.position; body.rotation = brushHome.rotation;
-            Physics.SyncTransforms();
+            ReturnTool(brush);
+            if (scraper) ReturnTool(scraper);
         }
-        void ReleaseBrush()
+        public void ReturnTool(ReefBrush tool)
         {
-            var grab = brush.GetComponent<XRGrabInteractable>();
+            if (!tool) return;
+            var home = tool == scraper ? scraperHome : brushHome;
+            var grab = tool.GetComponent<XRGrabInteractable>();
             if (grab.isSelected) grab.interactionManager.CancelInteractableSelection((IXRSelectInteractable)grab);
+            var body = tool.GetComponent<Rigidbody>();
+            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
+            tool.transform.SetPositionAndRotation(home.position, home.rotation);
+            body.position = home.position; body.rotation = home.rotation;
+            Physics.SyncTransforms();
         }
     }
 }
