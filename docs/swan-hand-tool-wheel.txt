@@ -1,0 +1,17 @@
+Right-hand tool wheel — 2026-11-19
+
+Hold right thumb + middle finger together for 0.5 seconds to toggle the existing
+tool wheel. Release the gesture, point with the right-hand ray, then index-pinch
+an acquired tool to equip it. Keep that index pinch held to hold the tool.
+Another middle pinch closes the wheel. The left-hand journal gesture is unchanged.
+
+Opening either menu closes the other. Lost right-hand tracking closes a wheel
+opened by the hand gesture; tracking recovery requires release before reopening.
+Middle-pinching and the wheel's right hand are excluded from swim input; no swim
+tuning or approved grip geometry changed. No new UI or player-facing copy.
+
+Validation: Unity compilation passed. Tools/Validation/CheckHandToolWheel.cs passed
+gesture timing, debounce, tracking recovery, menu exclusion, hand-ray projection,
+unowned slots, and actual XRI brush/scraper selection. CheckHandControls.cs passed
+existing grip, release, journal, and cleaning HUD regressions.
+These are synthetic Editor inputs; physical headset validation remains pending.
