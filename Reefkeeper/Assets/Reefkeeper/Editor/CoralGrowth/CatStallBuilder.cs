@@ -58,7 +58,7 @@ namespace Reefkeeper.CoralGrowthTools
             animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
             foreach (var r in cat.GetComponentsInChildren<MeshRenderer>(true)) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             cat.AddComponent<LuckyCat>().startMood = LuckyCat.Mood.Idle;      // idle is the default loop of the prefab
-            var catPrefab = PrefabUtility.SaveAsPrefabAsset(cat, $"{PrefabDir}/LuckyCat.prefab");
+            PrefabUtility.SaveAsPrefabAsset(cat, $"{PrefabDir}/LuckyCat.prefab");
             Object.DestroyImmediate(cat);
 
             // ---- the stall with the cat behind the counter
@@ -85,7 +85,10 @@ namespace Reefkeeper.CoralGrowthTools
                 if (t.name == "Socket_Cart") t.name = "Cart 珊瑚推车 (empty)";
             }
             var anchor = all.FirstOrDefault(t => t.name == "Cat_Anchor");
+            var catPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Reefkeeper/Art/CharacterVariants/LuckyCatDesignV2/LuckyCat_DesignV2.prefab");
             var c = (GameObject)PrefabUtility.InstantiatePrefab(catPrefab, stall.transform);
+            c.name = "LuckyCat";
             // keep the cat model's own root rotation (Blender Z-up -> Unity Y-up)
             c.transform.SetPositionAndRotation(anchor ? anchor.position : stall.transform.position,
                 stall.transform.rotation * catPrefab.transform.rotation);

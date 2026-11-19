@@ -38,6 +38,7 @@ namespace Reefkeeper
         readonly bool[] hadPalm = new bool[2];
         readonly float[] glideHeld = new float[2];
         CharacterController body;
+        ReefSurfaceHold surfaceHold;
         InputAction moveAction, lookAction, boostAction;
         bool turnArmed = true;
 
@@ -46,6 +47,7 @@ namespace Reefkeeper
         void Awake()
         {
             body = GetComponent<CharacterController>();
+            surfaceHold = GetComponent<ReefSurfaceHold>() ?? gameObject.AddComponent<ReefSurfaceHold>();
             // The starter rig's 1 mm cutoff discards slow movement at high frame rates.
             body.minMoveDistance = 0;
             moveAction = new InputAction("Swim", InputActionType.Value, "<XRController>{LeftHand}/{Primary2DAxis}", expectedControlType: "Vector2");
@@ -53,12 +55,13 @@ namespace Reefkeeper
             boostAction = new InputAction("Boost", InputActionType.Button, "<XRController>{LeftHand}/{Primary2DAxisClick}");
         }
         void OnEnable() { moveAction.Enable(); lookAction.Enable(); boostAction.Enable(); }
-        void OnDisable() { moveAction.Disable(); lookAction.Disable(); boostAction.Disable(); }
+        void OnDisable() { moveAction.Disable(); lookAction.Disable(); boostAction.Disable(); surfaceHold.ReleaseAll(); }
         void OnDestroy() { moveAction.Dispose(); lookAction.Dispose(); boostAction.Dispose(); }
 
         void Update()
         {
-            if (DiveCardMock.BlocksControls) { Velocity=Vector3.zero; return; }
+            if (!Hands.ReefInput.HandsMode || Automated || simulator && simulator.manipulatingFPS)
+                surfaceHold.ReleaseAll();
             if (!view) return;
             // The simulator is EditorOnly, so it is missing on the headset.
             if (simulator)
@@ -78,24 +81,29 @@ namespace Reefkeeper
             float dt = Time.deltaTime;
             Gliding = false;
             if (dt <= 0) return;
-            // Tapping the palm menu is not swimming; coast instead.
-            if (Hands.ReefPalmMenu.Instance && Hands.ReefPalmMenu.Instance.Visible)
-            {
-                hadPalm[0] = hadPalm[1] = false; glideHeld[0] = glideHeld[1] = 0;
-                Tick(Vector3.zero, false, false, dt);
-                return;
-            }
             // Hand joints and the camera's local pose share the camera offset's space.
             var space = view.transform.parent;
+            if (surfaceHold.Step(space))
+            {
+                Velocity = Vector3.zero;
+                for (int i = 0; i < 2; i++) { hadPalm[i] = false; palmVelocity[i] = Vector3.zero; glideHeld[i] = 0; }
+                return;
+            }
             Vector3 head = view.transform.localPosition, thrust = Vector3.zero, glide = Vector3.zero;
             for (int i = 0; i < 2; i++)
             {
                 var hand = Hands.ReefHands.Get(i);
                 // A hand that pinches, grips or holds something is working, not swimming.
-                if (!hand.Tracked || hand.Grab || Hands.ReefInput.HandBusy(i)) { hadPalm[i] = false; glideHeld[i] = 0; continue; }
+                if (!hand.Tracked || hand.Grab || hand.MiddlePinch || Hands.ReefInput.HandBusy(i)
+                    || DiveCardMock.Instance && DiveCardMock.Instance.OwnsHand(i)
+                    || ReefToolMenu.Instance && ReefToolMenu.Instance.OwnsHand(i))
+                { hadPalm[i] = false; palmVelocity[i] = Vector3.zero; glideHeld[i] = 0; continue; }
                 Vector3 relative = hand.Palm.position - head;
                 palmVelocity[i] = hadPalm[i] ? Vector3.Lerp(palmVelocity[i], (relative - lastPalm[i]) / dt, 0.5f) : Vector3.zero;
                 lastPalm[i] = relative; hadPalm[i] = true;
+
+                if (!surfaceHold.CanSwim(i, hand))
+                { hadPalm[i] = false; palmVelocity[i] = Vector3.zero; glideHeld[i] = 0; continue; }
 
                 Vector3 palmFacing = space.TransformDirection(hand.Palm.rotation * Vector3.down);
                 thrust += StrokeThrust(space.TransformVector(palmVelocity[i]), palmFacing, strokeMinSpeed) * strokeGain;
@@ -159,7 +167,6 @@ namespace Reefkeeper
 
         public void Tick(Vector3 worldDirection, bool boost, bool brake, float dt)
         {
-            if (DiveCardMock.BlocksControls) { Velocity=Vector3.zero; return; }
             dt = Mathf.Clamp(dt, 0, 0.05f);
             body.center = transform.InverseTransformPoint(view.transform.position);
             Velocity = DiveMotor.IntegrateVelocity(Velocity, worldDirection, boost, brake, dt, 2.1f, 4, 3.5f, 1.1f, 12);

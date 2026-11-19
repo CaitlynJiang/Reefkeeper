@@ -1,0 +1,8 @@
+Observation cabin low-poly prototype
+Units: metres. Floor y=0, roof underside y=2.6.
+Outer footprint 4.2 x 3.8m; interior roughly 3.9 x 3.5m before bench.
+Entry +X: 1.3m clear width, 2.22m height. Door parked OPEN; no door controls yet.
+Floor viewing opening: 2.6 x 1.05m, towards -Z. Independent solid floor collider.
+Six opaque material groups, 3404 triangles. No transparent panes, reflection/refraction, extra cameras or realtime lights.
+Fixed placement above forward shipwreck deck. Swimming remains unchanged; no gravity/airlock logic.
+VR comfort and headset timing still require device testing. Desktop screenshots are actual model captures, not generated concept art.

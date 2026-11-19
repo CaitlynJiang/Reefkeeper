@@ -22,13 +22,13 @@ namespace Reefkeeper
         Canvas canvas;
         RectTransform progress, prompt, helpPanel, objectives;
         CanvasGroup progressGroup;
+        Canvas handProgressCanvas;
+        bool progressAtHand;
+        float lastCleaningContact = -10;
         Material fillMaterial;
         Text progressLabel, promptLabel, helpHint, objectiveBody;
         Image promptIcon;
         // Shown while the dive journal is open: how to draw, look around (desktop) and close it.
-        RectTransform journalHints;
-        readonly Image[] journalHintIcons = new Image[3];
-        readonly Text[] journalHintLabels = new Text[3];
         // Headset: no keyboard, so the left menu button toggles Controls and left X folds Objectives.
         // Left Y belongs to the dive-card journal (DiveCardMock). Key icons become button labels.
         InputAction helpButton, objectivesButton;
@@ -38,6 +38,7 @@ namespace Reefkeeper
         static bool Headset => UnityEngine.XR.XRSettings.isDeviceActive;
         XRInteractionSimulator simulator;
         ReefSoundscape soundscape;
+        OpeningDiveSequence opening;
         AudioSource MusicSource => soundscape ? soundscape.MusicSource : null;
         readonly Dictionary<string, Sprite> glyphs = new Dictionary<string, Sprite>();
         readonly List<Image> helpIcons = new List<Image>(), helpSecondaryIcons = new List<Image>();
@@ -53,6 +54,18 @@ namespace Reefkeeper
         public bool ProgressVisible => progress && progress.gameObject.activeInHierarchy && progressGroup.alpha > 0;
         public bool HelpVisible { get; private set; }
         public bool ObjectivesExpanded { get; private set; } = true;
+        // Shared by the HUD and palm card, including while the HUD's objective is folded.
+        public string CurrentObjective
+        {
+            get
+            {
+                var habitat = ShipwreckHabitat.Instance;
+                if (habitat && habitat.Data != null) return "Wreck visitors: " + habitat.UnlockedCount + " / 2";
+                if (shop && shop.AwaitingJournal) return "Open your dive journal";
+                if (planting) return planting.Objective;
+                return pickup && pickup.workshop.Progress >= .995f ? "Nursery restored" : "Clean the nursery frame";
+            }
+        }
         public void ToggleHelp() => HelpVisible = !HelpVisible;
         public void ToggleObjectives() => ObjectivesExpanded = !ObjectivesExpanded;
         public bool UsesQuestPrompts => pickup.workshop.xrGroup.activeSelf && !pickup.CenterMode;
@@ -63,6 +76,7 @@ namespace Reefkeeper
         void Awake()
         {
             soundscape = GetComponent<ReefSoundscape>();
+            opening = FindFirstObjectByType<OpeningDiveSequence>();
             foreach (var sprite in inputGlyphs) if (sprite) glyphs[sprite.name] = sprite;
             simulator = pickup.workshop.xrGroup.GetComponentInChildren<XRInteractionSimulator>(true);
             var go = new GameObject("Reef HUD", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -126,18 +140,6 @@ namespace Reefkeeper
                 var label = Label(row, "Action", Vector2.zero, new Vector2(344, 26), 16);
                 label.alignment = TextAnchor.MiddleLeft; helpLabels.Add(label);
             }
-            // Journal hints: pills stacked up from the context-hint position, same style.
-            journalHints = Rect("Dive journal hints", go.transform, new Vector2(0.5f, 0), new Vector2(0, 0), new Vector2(420, 200));
-            journalHints.pivot = new Vector2(0.5f, 0); journalHints.anchoredPosition = new Vector2(0, 30);
-            for (int i = 0; i < journalHintLabels.Length; i++)
-            {
-                var pill = Rect("Journal hint " + i, journalHints, new Vector2(0.5f, 0), new Vector2(0, 23 + i * 54), new Vector2(420, 46));
-                Background(pill);
-                journalHintIcons[i] = Icon(pill, "Input glyph", new Vector2(-172, 0), new Vector2(34, 34));
-                journalHintLabels[i] = Label(pill, "Hint text", new Vector2(18, 0), new Vector2(340, 34), 17);
-                journalHintLabels[i].alignment = TextAnchor.MiddleLeft;
-            }
-            journalHints.gameObject.SetActive(false);
             helpPanel.gameObject.SetActive(false); progress.gameObject.SetActive(false); prompt.gameObject.SetActive(false);
         }
         Image ArcLayer(string name, Sprite sprite, Color tint)
@@ -168,15 +170,17 @@ namespace Reefkeeper
         void LateUpdate()
         {
             if (!pickup.View) return;
-            var aimDot=canvas.transform.Find("Aim dot");if(aimDot)aimDot.gameObject.SetActive(!DiveCardMock.BlocksControls);
-            bool journalOpen = DiveCardMock.Instance && DiveCardMock.Instance.IsOpen;
-            journalHints.gameObject.SetActive(journalOpen);
-            if (journalOpen) UpdateJournalHints();
+            bool compactVR = Headset || UsesQuestPrompts;
+            objectives.gameObject.SetActive(!compactVR);
+            helpHint.gameObject.SetActive(!compactVR);
+            helpKeyIcon.gameObject.SetActive(!compactVR);
+            SetHandProgressMode(compactVR);
+            var aimDot=canvas.transform.Find("Aim dot");if(aimDot)aimDot.gameObject.SetActive(!compactVR && !DiveCardMock.BlocksControls);
             if (DiveCardMock.BlocksControls || ReefToolMenu.Instance && ReefToolMenu.Instance.IsOpen)
             { prompt.gameObject.SetActive(false); progress.gameObject.SetActive(false); helpPanel.gameObject.SetActive(false); return; }
             helpPanel.gameObject.SetActive(HelpVisible);
             bool headset = Headset, hands = Hands.ReefInput.HandsMode;
-            helpHint.text = hands ? "Palm up   Menu" : (headset ? "Menu   " : "") + (HelpVisible ? "Close controls" : "Controls");
+            helpHint.text = hands ? "placeholder text" : (headset ? "Menu   " : "") + (HelpVisible ? "Close controls" : "Controls");
             helpHint.rectTransform.anchoredPosition = new Vector2(headset ? 106 : 142, 26);
             helpHint.horizontalOverflow = HorizontalWrapMode.Overflow;
             helpKeyIcon.enabled = !headset && helpKeyIcon.sprite;
@@ -208,16 +212,14 @@ namespace Reefkeeper
             if (UsesQuestPrompts && Hands.ReefInput.HandsMode)
             {
                 // Bare hands: gestures in words, no controller glyph.
-                if (pickup.ToolHeld) context = pickup.ActiveTool.Scrubbing || pickup.Carrying ? "" : "Open your hand to let go of " + pickup.ActiveTool.ToolName;
-                else if (pickup.ActiveInteractable.isHovered) context = "Pinch or make a fist to grab " + pickup.ActiveTool.ToolName;
-                else if (pickup.corals.HasPrompt) context = pickup.corals.Held ? "Pinch to swap coral" : "Pinch to pick up coral";
+                if (!pickup.ToolHeld && !pickup.ActiveInteractable.isHovered && pickup.corals.HasPrompt)
+                    context = pickup.corals.Held ? "Pinch to swap coral" : "Pinch to pick up coral";
             }
             else if (UsesQuestPrompts)
             {
                 key = ControllerGripGlyph;
-                if (pickup.ToolHeld) { context = pickup.ActiveTool.Scrubbing ? "" : pickup.Carrying ? "A: switch tools" : "Release to let go of " + pickup.ActiveTool.ToolName; if (pickup.Carrying) key = ""; }
-                else if (pickup.ActiveInteractable.isHovered) context = "Hold to grab " + pickup.ActiveTool.ToolName;
-                else if (pickup.corals.HasPrompt) context = pickup.corals.Held ? "Hold to replace coral" : "Hold to pick up coral";
+                if (!pickup.ToolHeld && !pickup.ActiveInteractable.isHovered && pickup.corals.HasPrompt)
+                    context = pickup.corals.Held ? "Hold to replace coral" : "Hold to pick up coral";
             }
             else
             {
@@ -240,6 +242,80 @@ namespace Reefkeeper
             if (!pickup.workshop.xrGroup.activeSelf && Cursor.lockState != CursorLockMode.Locked && !pickup.Automated && !pickup.corals.Automated)
             { context = "Click to dive"; key = "mouse_left"; }
             SetIcon(promptIcon, key);
+            if(ShipwreckHabitat.Instance)
+            {
+                var habitat=ShipwreckHabitat.Instance;
+                promptLabel.resizeTextForBestFit=true;promptLabel.resizeTextMinSize=12;promptLabel.resizeTextMaxSize=18;
+                if(habitat.Notice.Length>0){context=habitat.Notice;key="";}
+                else if(habitat.Prompt.Length>0){context=habitat.Prompt;key="";}
+                objectiveBody.text=CurrentObjective+" — J: journal";
+                SetIcon(promptIcon,key);
+            }
+            if (opening && opening.State != OpeningDiveSequence.Phase.Swimming)
+            {
+                progress.gameObject.SetActive(false);
+                context = opening.State == OpeningDiveSequence.Phase.Seated
+                    ? (opening.IsXR ? "Pinch to Dive" : "Click to dive") : "";
+                key = "";
+            }
+            SetContextPrompt(context, key);
+            if (compactVR) PositionHandProgress(complete);
+        }
+        void SetHandProgressMode(bool value)
+        {
+            if (value == progressAtHand) return;
+            progressAtHand = value;
+            if (value)
+            {
+                // Reuse the existing arc; this is its rendering surface, not another UI panel.
+                progress.SetParent(transform, false);
+                if (!handProgressCanvas) handProgressCanvas = progress.gameObject.AddComponent<Canvas>();
+                handProgressCanvas.enabled = true;
+                handProgressCanvas.renderMode = RenderMode.WorldSpace;
+                handProgressCanvas.sortingOrder = 81;
+                progress.anchorMin = progress.anchorMax = new Vector2(.5f,.5f);
+                progress.localScale = Vector3.one * .0004f; // 8.8 cm instead of the large central arc.
+            }
+            else
+            {
+                if (handProgressCanvas) handProgressCanvas.enabled = false;
+                progress.SetParent(canvas.transform, false);
+                progress.anchorMin = progress.anchorMax = new Vector2(.5f,.5f);
+                progress.anchoredPosition = new Vector2(60,0);
+                progress.localRotation = Quaternion.identity;
+                progress.localScale = Vector3.one;
+            }
+        }
+        void PositionHandProgress(bool complete)
+        {
+            if (!progress.gameObject.activeSelf || !pickup.ToolHeld
+                || opening && opening.State != OpeningDiveSequence.Phase.Swimming)
+            { progress.gameObject.SetActive(false); return; }
+            int hand = -1;
+            foreach (var selected in pickup.ActiveInteractable.interactorsSelecting)
+            {
+                if (Hands.ReefInput.TryGetBareHand(selected, out hand)) break;
+                if (selected is XRBaseInputInteractor input)
+                    hand = input.handedness == InteractorHandedness.Left ? 0 : 1;
+            }
+            if (hand < 0 || !Hands.ReefInput.TryGetPosition(hand, out var position))
+            { progress.gameObject.SetActive(false); return; }
+            if (pickup.SpotInReach && pickup.CorrectTool && pickup.ActiveTool.InContact)
+                lastCleaningContact = Time.unscaledTime;
+            bool visible = complete ? Time.unscaledTime - lastCleaningContact < CompletionHold + CompletionFade
+                : pickup.SpotInReach && pickup.CorrectTool && pickup.ActiveTool.InContact;
+            if (!visible) { progress.gameObject.SetActive(false); return; }
+            var view = pickup.View;
+            handProgressCanvas.worldCamera = view;
+            progress.position = HandProgressPosition(position, view.transform.right, view.transform.position, hand);
+            progress.rotation = Quaternion.LookRotation(progress.position - view.transform.position, view.transform.up);
+        }
+        public static Vector3 HandProgressPosition(Vector3 handPosition, Vector3 viewRight, Vector3 eye, int hand) =>
+            handPosition + viewRight.normalized * (hand == 0 ? .12f : -.12f)
+            + Vector3.up * .025f + (eye - handPosition).normalized * .025f;
+        void SetContextPrompt(string context, string key)
+        {
+            SetIcon(promptIcon, key);
             promptLabel.rectTransform.anchoredPosition = new Vector2(promptIcon.enabled ? 24 : 0, 0);
             promptLabel.rectTransform.sizeDelta = new Vector2(promptIcon.enabled ? 250 : 300, 38);
             promptLabel.text = context; prompt.gameObject.SetActive(context.Length > 0);
@@ -257,12 +333,12 @@ namespace Reefkeeper
                 HelpRow(1, "", "Push palms down / up   Rise / sink");
                 HelpRow(2, "", "Hold an open hand out   Glide");
                 HelpRow(3, "", "Turn your body   Turn");
-                HelpRow(4, "", "Pinch or fist   Grab a tool or coral");
+                HelpRow(4, "", "placeholder text");
                 HelpRow(5, "", "Open hand near a spot   Plant");
                 HelpRow(6, "", "Pinch at Lucky Cat   Talk (or touch)");
                 HelpRow(7, "", "Pinch at a coral   Fertilize");
                 HelpRow(8, "", "Brush algae; scrape fire coral");
-                HelpRow(9, "", "Left palm up   Menu (journal, controls)");
+                HelpRow(9, "", "placeholder text");
                 HelpRow(10, "", "Touch the page   Draw in the journal");
                 for (int i = 11; i < helpLabels.Count; i++) HelpRow(i, "", "");
                 helpLabels[MusicRow].transform.parent.gameObject.SetActive(false);
@@ -309,39 +385,6 @@ namespace Reefkeeper
             HelpRow(9, "keyboard_f2", "Desktop / XR simulator"); HelpRow(10, "keyboard_f5", "Reset nursery");
             HelpRow(11, "keyboard_f11", "Fullscreen");
             HelpRow(12, "", "J   Dive journal     Esc   Close it");
-        }
-        // Bottom row first. Inputs match DiveCardMock: desktop LMB draws, RMB looks, Esc / J close;
-        // headset right trigger draws where the right controller points, B / Y close.
-        void UpdateJournalHints()
-        {
-            if (Headset && Hands.ReefInput.HandsMode)
-            {
-                JournalHint(0, "", "Palm up, tap Journal to close");
-                JournalHint(1, "", "Touch the page with your finger to draw");
-                JournalHint(2, null, "");
-            }
-            else if (Headset)
-            {
-                JournalHint(0, "", "B   Close journal   (or Y)");
-                JournalHint(1, "", "Hold right trigger on the page to draw");
-                JournalHint(2, null, "");
-            }
-            else
-            {
-                JournalHint(0, "keyboard_escape", "Close journal   (or J)");
-                JournalHint(1, "mouse_right", "Hold to look around");
-                JournalHint(2, "mouse_left", "Hold and drag on the page to draw");
-            }
-        }
-        void JournalHint(int index, string key, string text)
-        {
-            var pill = journalHintLabels[index].transform.parent.gameObject;
-            pill.SetActive(key != null);
-            if (key == null) return;
-            SetIcon(journalHintIcons[index], key);
-            var label = journalHintLabels[index]; label.text = text;
-            label.rectTransform.anchoredPosition = new Vector2(journalHintIcons[index].enabled ? 18 : 0, 0);
-            label.rectTransform.sizeDelta = new Vector2(journalHintIcons[index].enabled ? 340 : 380, 34);
         }
         void HelpRow(int index, string key, string text, string secondary = "")
         {
@@ -397,6 +440,6 @@ namespace Reefkeeper
             var shadow = text.gameObject.AddComponent<Shadow>(); shadow.effectColor = new Color(0, 0.04f, 0.05f, 0.35f); shadow.effectDistance = new Vector2(0, -1);
             return text;
         }
-        void OnDestroy() { if (fillMaterial) Destroy(fillMaterial); helpButton?.Dispose(); objectivesButton?.Dispose(); }
+        void OnDestroy() { if (progressAtHand && progress) Destroy(progress.gameObject); if (fillMaterial) Destroy(fillMaterial); helpButton?.Dispose(); objectivesButton?.Dispose(); }
     }
 }

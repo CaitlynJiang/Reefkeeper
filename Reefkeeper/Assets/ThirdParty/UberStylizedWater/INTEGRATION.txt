@@ -1,0 +1,23 @@
+Uber Stylized Water - surface opening prototype
+Source: https://github.com/MatrixRex/Uber-Stylized-Water
+Pinned commit: 1fdd16c6312611fef7fb248dee86cdd3fd456a1e
+License: MIT, original LICENSE.txt and Cyan custom-lighting license retained.
+Only the exported shader, two required HLSL includes, and three foam/normal/noise textures are imported.
+No third-party editor tools, reflection scripts, demo scenes or pipeline settings are imported.
+
+Local shader changes: renamed Reefkeeper/Uber Surface; opaque render queue, Blend One Zero, ZWrite On; custom inspector omitted.
+Added a cheap view-angle and wave-slope color modulation to the exported color passes, without a reflection camera.
+Surface foam, two-way normals, small Gerstner waves and specular highlights enabled on the project material.
+Planar reflection, refraction, caustics, underwater layer, shoreline and intersection effects disabled.
+Entry disables this surface renderer and restores the existing underwater system.
+PICO performance and stereo behavior still need actual headset testing.
+
+Full visual trial (2026-11-17, requested after the lightweight trial):
+- Active scene now uses SurfaceWater_Full.mat / Reefkeeper/Uber Surface Full.
+- Full exported upstream shader retained, only its shader name and unavailable custom inspector changed. Original transparent blend, queue and depth states restored.
+- All seven shader feature keywords enabled: normals, waves, planar reflections, refraction, caustics, shoreline, underwater foam layer; surface and intersection foam also enabled.
+- Original planar-reflection components imported. Local fixes: preserve configured layer masks; skip disabled water and release reflection resources; always restore render settings with finally; disable automatic/stereo rendering on the auxiliary camera; expose RenderForCamera for preview.
+- Full reflection uses one monoscopic reflection texture, as upstream; XR stereo alignment is not validated and may need a per-eye implementation before shipping.
+- Added Caustic 1 texture. Opening camera depth/color copies are enabled only above water and restored on dive.
+- Existing opaque and lightweight assets remain available for comparison. Full grid is 40,401 vertices / 80,000 triangles, with half-metre spacing near the player.
+- Full visual quality is the priority of this trial; PICO performance is not measured.

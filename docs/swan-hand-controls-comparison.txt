@@ -1,0 +1,44 @@
+Swan SDK + first tool-grip gesture version / 手势回退对比包
+2026-11-19
+
+Purpose / 目的
+The user reports the Swan SwimFix APK still cannot swim, while hand tracking, pinch and journal work. The earlier hand-size classification defect was real in synthetic tests, but fixing it did not resolve the reported headset failure. This build restores the gesture version first packaged after the initial tool-grip change, retaining SDK 6.2.0 to narrow the regression.
+
+Backup / 备份
+artifacts/pre-hand-rollback-20261119-050003.zip
+2,771 files; 240,400,783 bytes; ZIP integrity and every archived source SHA-256 verified.
+Archive SHA-256: 3cfe3c0e80d9d9c1811cd1b74c0a085afbc03fea0a4c77c8f23b27f759b079d0
+Includes Assets, Packages, ProjectSettings, Tools, docs, ArtSource, Git HEAD/status and staged/unstaged patches. Generated Library caches are excluded. All previously named APKs remain in Reefkeeper/Builds.
+
+Restored / 回退范围
+- Reconstructed the first hand-controls source from HEAD 2a067376e1bcf3ce772fe1de1eecd1e3e962e088 and recorded patches preceding the original 02:20 PST HandControls APK.
+- ReefHands.cs: original pinch/middle-pinch/fist classification, without OpenPalm gating or the subsequent proportional finger-extension change.
+- ReefXRSwim.cs: original stroke/glide path; no later fist-brake latch, reach-arming, travel gate or acceleration filter.
+- ReefToolHandPose.cs: original palm-to-raw-pinch direction and 15 mm palm-local -Y grip offset.
+- Restored six serialized ImmersiveOpening swim values, not just defaults: strokeGain 2.5, strokeMinSpeed .35, strokeMaxSpeed 3, glideReach .42, glideHoldSeconds .35, glideSpeed .55.
+- Verified all seven gesture/tool interaction files match the reconstructed history. Compared with the pre-rollback backup, ImmersiveOpening differs only in those six values; package manifest/lock and PICO XR settings/loader are byte-identical.
+- ReefInput, ReefPalmMenu, ReefBrushInteractable and ReefBrushPickup already match the first hand-controls behavior. Retain pinch-to-hold/release and the left thumb/middle-pinch journal toggle.
+- Retain Swan SDK 6.2.0 pinned commit, loader/configuration, current icon layers, latest HUD cleanup, opening flow and artwork. No new UI/copy.
+
+Checks / 验证
+- Unity compilation passed.
+- After the opening transition, actual scene swim component is enabled and non-Automated, with all six original values and no newer OpenPalm/brake API.
+- Controlled joint/XRI checks pass for pinch/middle-pinch distinction, original grip geometry, brush/scraper select/release in both hands, journal toggle/rearm, and retained small hand-side cleaning HUD.
+- These are Editor checks, not proof of headset locomotion. First test the comparison APK on the same headset. A pass implicates the later gesture/parameter changes; a failure calls for native input logs and/or the retained original old-SDK HandControls APK as a second control, rather than proving an SDK defect by itself.
+
+Output / 输出
+Reefkeeper/Builds/Reefkeeper_Swan_FirstHandControls_2026-11-19.apk
+Original old-SDK comparison: Reefkeeper/Builds/Reefkeeper_HandControls_PICO_2026-11-19.apk
+
+Build result / 打包结果
+- Succeeded, 0 errors, 2m13s build phase. APK file size 104,472,026 bytes.
+- APK v2 signature verified and certificate matches the existing test builds, permitting an in-place update.
+- Packaged IL2CPP metadata contains original tool/gesture methods and excludes the later HandBrakeLatched, LatchHandBrake and HandSwimStep methods.
+- SHA-256: 0E4BE9C2E765CFF8AAB06E1396BE3020BC828F0D78E448C47D3CEADCB1A2FDF2.
+- Awaiting headset comparison; no claim that this build fixes native swimming yet.
+
+Headset result / 真机结果 (2026-11-19, supersedes the pending status above)
+- The user tested Reefkeeper_Swan_FirstHandControls_2026-11-19.apk on the Swan headset and confirmed hand swimming works.
+- This establishes the restored hand-controls implementation plus SDK 6.2.0 as a working locomotion baseline. The failure lies in the later implementation/configuration combination; the individual responsible change has not been isolated.
+- Keep this APK and the swan-swim-baseline-2026-11-19 Git tag as the reference. Reintroduce one feature per APK and distinguish Editor checks from the user's next headset result.
+- 用户已确认回退版可用手势游泳；接下来逐项修改、逐包真机确认，不再同时恢复整组手势调整。

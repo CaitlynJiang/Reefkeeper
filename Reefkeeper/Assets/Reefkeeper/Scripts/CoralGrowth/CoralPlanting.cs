@@ -283,6 +283,16 @@ namespace Reefkeeper.Corals
             return true;
         }
 
+        /// <summary>V4: removes a mature nursery coral after its identity has been stored in the collection.</summary>
+        public bool Harvest(CoralNurture nurture)
+        {
+            if(!nurture||!nurture.FullyGrown||nurture.Paused||!planted.Contains(nurture))return false;
+            if(nurture.GetComponentsInChildren<RackSocket>().Any(s=>s.occupant))return false;
+            sockets.RemoveAll(s=>!s||s.transform.IsChildOf(nurture.transform));
+            if(nurture.socket){nurture.socket.occupant=null;foreach(Transform child in nurture.socket.transform)if(child.name=="Coral line")Destroy(child.gameObject);}
+            planted.Remove(nurture);nurture.gameObject.SetActive(false);Destroy(nurture.gameObject);return true;
+        }
+
         /// <summary>F5: removes every planted coral and covers all sockets in moss again.</summary>
         public void ResetAll()
         {

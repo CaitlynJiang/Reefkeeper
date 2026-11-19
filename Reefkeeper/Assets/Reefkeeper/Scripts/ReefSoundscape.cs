@@ -12,14 +12,15 @@ namespace Reefkeeper
         void Start()
         {
             AmbienceSource = Loop("Underwater ambience", ambience, ambienceVolume, 32);
-            MusicSource = Loop("Quiet background music", music, musicVolume, 128);
+            MusicSource = Loop("Quiet background music", music, musicVolume, 128, muted: true);
         }
-        AudioSource Loop(string name, AudioClip clip, float volume, int priority)
+        AudioSource Loop(string name, AudioClip clip, float volume, int priority, bool muted = false)
         {
             var child = new GameObject(name); child.transform.SetParent(transform, false);
             var source = child.AddComponent<AudioSource>(); source.clip = clip;
             source.loop = true; source.playOnAwake = false; source.spatialBlend = 0;
             source.volume = volume; source.priority = priority;
+            source.mute = muted; // Set before Play so startup cannot emit a brief burst of music.
             if (clip) source.Play(); return source;
         }
         void OnValidate()

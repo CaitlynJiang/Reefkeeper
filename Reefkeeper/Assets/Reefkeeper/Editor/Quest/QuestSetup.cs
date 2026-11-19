@@ -23,6 +23,8 @@ namespace Reefkeeper.Quest
     /// </summary>
     public static class QuestSetup
     {
+        /// <summary>Main scene since the immersive-opening branch: surface start, then the dive.</summary>
+        public const string SceneOpening = "Assets/Reefkeeper/Scenes/ImmersiveOpening.unity";
         public const string SceneV3 = "Assets/Reefkeeper/Scenes/ShallowReef_V3.unity";
         public const string SceneV2 = "Assets/Reefkeeper/Scenes/ShallowReef_V2.unity";
         const string PackageId = "com.reefkeeper.quest3";
@@ -143,16 +145,19 @@ namespace Reefkeeper.Quest
             else Debug.LogError($"[Quest] OpenXR feature {typeof(T).Name} not found.");
         }
 
-        [MenuItem("Reefkeeper/Quest 3/2. Build Quest APK (V3) - 打包 V3")]
+        [MenuItem("Reefkeeper/Quest 3/2. Build Quest APK (Immersive Opening) - 打包开场版")]
+        public static void BuildOpening() => Build(SceneOpening, "Builds/Reefkeeper_Opening_Quest3.apk");
+
+        [MenuItem("Reefkeeper/Quest 3/3. Build Quest APK (V3) - 打包 V3")]
         public static void BuildV3() => Build(SceneV3, "Builds/Reefkeeper_V3_Quest3.apk");
 
-        [MenuItem("Reefkeeper/Quest 3/3. Build Quest APK (V2) - 打包 V2")]
+        [MenuItem("Reefkeeper/Quest 3/4. Build Quest APK (V2) - 打包 V2")]
         public static void BuildV2() => Build(SceneV2, "Builds/Reefkeeper_V2_Quest3.apk");
 
         /// <summary>Command line: -executeMethod Reefkeeper.Quest.QuestSetup.BuildBatch</summary>
         public static void BuildBatch()
         {
-            var ok = Build(SceneV3, "Builds/Reefkeeper_V3_Quest3.apk");
+            var ok = Build(SceneOpening, "Builds/Reefkeeper_Opening_Quest3.apk");
             if (Application.isBatchMode) EditorApplication.Exit(ok ? 0 : 1);
         }
 
