@@ -165,6 +165,14 @@ namespace Reefkeeper
             if (intoSurface < 0) Velocity -= hit.normal * intoSurface;
         }
 
+        public void SetViewAngles(float heading, float downwardPitch)
+        {
+            // Keep the mouse-look accumulator in sync so the next frame preserves this view.
+            pitch = Mathf.Clamp(downwardPitch, -pitchLimit, pitchLimit);
+            transform.rotation = Quaternion.Euler(0, heading, 0);
+            view.transform.localRotation = Quaternion.Euler(pitch, 0, 0);
+        }
+
         public void ResetDive()
         {
             body.enabled = false;
