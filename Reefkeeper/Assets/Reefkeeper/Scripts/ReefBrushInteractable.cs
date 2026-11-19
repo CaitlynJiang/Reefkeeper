@@ -29,6 +29,13 @@ namespace Reefkeeper
                 renderer.enabled = false; outlines.Add(renderer);
             }
         }
+        protected override void AddDefaultSingleGrabTransformer()
+        {
+            base.AddDefaultSingleGrabTransformer();
+            var pose = GetComponent<Hands.ReefToolHandPose>();
+            if (!pose) pose = gameObject.AddComponent<Hands.ReefToolHandPose>();
+            AddSingleGrabTransformer(pose);
+        }
         public void SetAim(bool value) { aimed = value; Refresh(); }
         void Refresh()
         {
@@ -36,7 +43,9 @@ namespace Reefkeeper
             foreach (var shell in outlines) shell.enabled = Highlighted;
         }
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
-            (!ReefToolMenu.BlocksWorldInput || isSelected || owner && owner.MenuEquipping && ReferenceEquals(interactor, owner.hand)) &&
+            (!Hands.ReefInput.TryGetBareHand(interactor, out int handIndex) || Hands.ReefHands.Get(handIndex).Pinch) &&
+            (!ReefToolMenu.BlocksWorldInput || isSelected || owner && owner.MenuEquipping &&
+                (ReferenceEquals(interactor, owner.hand) || Hands.ReefInput.TryGetBareHand(interactor, out _))) &&
             (isSelected || !owner || !owner.CenterMode || ReferenceEquals(interactor, owner.hand)) && base.IsSelectableBy(interactor);
         public override bool IsHoverableBy(IXRHoverInteractor interactor) =>
             !ReefToolMenu.BlocksWorldInput &&

@@ -111,6 +111,16 @@ namespace Reefkeeper
         {
             workshop.ReturnBrush();
             corals.ClearHeld();
+            if (Hands.ReefInput.HandsMode && !CenterMode)
+            {
+                // Menu selection must use the real hand too, not the persistent desktop slot.
+                var tracked = Hands.ReefInput.BareHandInteractor(1);
+                if (!tracked || !Hands.ReefHands.Get(1).Pinch) return;
+                MenuEquipping = fromMenu;
+                try { tracked.interactionManager.SelectEnter((UnityEngine.XR.Interaction.Toolkit.Interactors.IXRSelectInteractor)tracked, (IXRSelectInteractable)selected); }
+                finally { MenuEquipping = false; }
+                return;
+            }
             equippedFromMenu = fromMenu;
             var tool = selected.GetComponent<ReefBrush>();
             tipLocal = selected.transform.InverseTransformPoint(tool.bristles.position);

@@ -84,7 +84,7 @@ namespace Reefkeeper
             {
                 var hand = Hands.ReefHands.Get(i);
                 // A hand that pinches, grips or holds something is working, not swimming.
-                if (!hand.Tracked || hand.Grab || Hands.ReefInput.HandBusy(i) || DiveCardMock.Instance && DiveCardMock.Instance.OwnsHand(i)) { hadPalm[i] = false; glideHeld[i] = 0; continue; }
+                if (!hand.Tracked || hand.Grab || i == 0 && hand.MiddlePinch || Hands.ReefInput.HandBusy(i) || DiveCardMock.Instance && DiveCardMock.Instance.OwnsHand(i)) { hadPalm[i] = false; glideHeld[i] = 0; continue; }
                 Vector3 relative = hand.Palm.position - head;
                 palmVelocity[i] = hadPalm[i] ? Vector3.Lerp(palmVelocity[i], (relative - lastPalm[i]) / dt, 0.5f) : Vector3.zero;
                 lastPalm[i] = relative; hadPalm[i] = true;

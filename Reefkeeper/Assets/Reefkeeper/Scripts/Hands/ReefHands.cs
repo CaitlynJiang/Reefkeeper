@@ -23,11 +23,13 @@ namespace Reefkeeper.Hands
         {
             public bool Tracked;
             public bool Pinch, PinchDown, PinchUp;
+            public bool MiddlePinch;
             public bool Fist, FistDown, FistUp;
             /// <summary>Pinch or fist: what grabs a tool or coral.</summary>
             public bool Grab, GrabDown, GrabUp;
             public Pose Palm;
             public Pose IndexTip;
+            public Vector3 PinchPoint;
         }
 
         static readonly State[] states = new State[2];
@@ -56,16 +58,21 @@ namespace Reefkeeper.Hands
                 && Pose(hand, XRHandJointID.IndexTip, out var index))
             {
                 s.Palm = palm; s.IndexTip = index;
+                s.PinchPoint = (thumb.position + index.position) * .5f;
                 float pinch = Vector3.Distance(thumb.position, index.position);
                 s.Pinch = wasPinch ? pinch < PinchOff : pinch < PinchOn;
+                // Keep the journal gesture distinct from index pinch and a closed fist.
+                s.MiddlePinch = Pose(hand, XRHandJointID.MiddleTip, out var middle)
+                    && Vector3.Distance(thumb.position, middle.position) < (s.MiddlePinch ? PinchOff : PinchOn)
+                    && !s.Pinch && Vector3.Distance(index.position, palm.position) > .06f;
                 float curl = 0; int n = 0;
                 foreach (var id in new[] { XRHandJointID.MiddleTip, XRHandJointID.RingTip, XRHandJointID.LittleTip })
                     if (Pose(hand, id, out var tip)) { curl += Vector3.Distance(tip.position, palm.position); n++; }
                 curl = n > 0 ? curl / n : 1f;
                 float indexCurl = Vector3.Distance(index.position, palm.position);
-                s.Fist = wasFist ? curl < FistOff && indexCurl < IndexFistOff : curl < FistOn && indexCurl < IndexFistOn;
+                s.Fist = !s.MiddlePinch && (wasFist ? curl < FistOff && indexCurl < IndexFistOff : curl < FistOn && indexCurl < IndexFistOn);
             }
-            else s.Pinch = s.Fist = false;
+            else { s.Pinch = s.Fist = s.MiddlePinch = false; s.Tracked = false; }
             s.Grab = s.Pinch || s.Fist;
             s.PinchDown = s.Pinch && !wasPinch; s.PinchUp = !s.Pinch && wasPinch;
             s.FistDown = s.Fist && !wasFist; s.FistUp = !s.Fist && wasFist;

@@ -98,6 +98,24 @@ namespace Reefkeeper.Hands
         /// <summary>True while that bare hand is holding a tool or coral.</summary>
         public static bool HandBusy(int hand) => handInteractors[hand] && handInteractors[hand].hasSelection;
 
+        public static bool TryGetBareHand(UnityEngine.XR.Interaction.Toolkit.Interactors.IXRSelectInteractor interactor, out int hand)
+        {
+            hand = -1;
+            if (!HandsMode) return false;
+            if (!origin) Bind();
+            for (int i = 0; i < 2; i++)
+                if (handInteractors[i] && ReferenceEquals(interactor, handInteractors[i])) { hand = i; return true; }
+            return false;
+        }
+
+        public static Transform HandTrackingSpace => origin ? origin.CameraFloorOffsetObject.transform : null;
+
+        public static UnityEngine.XR.Interaction.Toolkit.Interactors.NearFarInteractor BareHandInteractor(int hand)
+        {
+            if (!origin) Bind();
+            return handInteractors[hand];
+        }
+
         /// <summary>Trigger pulled, or pinch closed, this frame.</summary>
         public static bool UseDown(int hand) =>
             HandsMode ? ReefHands.Get(hand).PinchDown : use != null && use[hand].WasPressedThisFrame();

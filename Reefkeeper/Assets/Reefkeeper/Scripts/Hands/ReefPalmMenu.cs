@@ -4,14 +4,14 @@ using UnityEngine.InputSystem;
 #endif
 namespace Reefkeeper.Hands
 {
-    /// <summary>Left palm gesture opens the full overlay journal, not a second menu.</summary>
+    /// <summary>Left thumb/middle pinch toggles the existing hand journal.</summary>
     [DefaultExecutionOrder(120)]
     public sealed class ReefPalmMenu : MonoBehaviour
     {
         public static ReefPalmMenu Instance { get; private set; }
         public bool Visible => DiveCardMock.Instance && DiveCardMock.Instance.IsOpen;
-        float upTime,downTime;
-        bool openedByPalm,armed=true;
+        float holdTime, releaseTime;
+        bool openedByPalm, armed;
 #if UNITY_EDITOR
         public bool EditorPreview => DiveCardMock.Instance && DiveCardMock.Instance.EditorHandPreview && Visible;
         public void SetEditorPreview(bool value)
@@ -51,21 +51,31 @@ namespace Reefkeeper.Hands
             if(!view||!ReefInput.HandsMode)
             {
                 if(openedByPalm)card.SetOpen(false);
-                openedByPalm=false;upTime=downTime=0;return;
+                openedByPalm=false;holdTime=releaseTime=0;armed=false;return;
             }
             var left=ReefHands.Get(0);
-            Vector3 normal=view.transform.parent.TransformDirection(left.Palm.rotation*Vector3.down);
-            bool up=left.Tracked&&!left.Grab&&!ReefInput.HandBusy(0)&&Vector3.Dot(normal,Vector3.up)>(openedByPalm?.5f:.75f);
-            upTime=up?upTime+Time.unscaledDeltaTime:0;
-            downTime=up?0:downTime+Time.unscaledDeltaTime;
-            if(downTime>=.3f)
+            if(!left.Tracked)
             {
-                if(openedByPalm)card.SetOpen(false);
-                openedByPalm=false;armed=true;
+                holdTime=releaseTime=0;armed=false;return;
             }
-            if(armed&&!Visible&&card.Available&&upTime>=.3f)
-            {card.SetOpen(true);openedByPalm=card.IsOpen;armed=false;}
-            // Closing with X/Esc must not reopen until the player lowers and raises the palm again.
+            bool gesture=left.MiddlePinch&&!ReefInput.HandBusy(0);
+            if(!gesture)
+            {
+                holdTime=0;
+                releaseTime+=Time.unscaledDeltaTime;
+                if(releaseTime>=.15f)armed=true;
+                return;
+            }
+            releaseTime=0;
+            if(!armed||!card.Available)return;
+            holdTime+=Time.unscaledDeltaTime;
+            if(holdTime>=.5f)
+            {
+                card.SetOpen(!card.IsOpen);
+                openedByPalm=card.IsOpen;
+                armed=false;holdTime=0;
+            }
+            // Keep the page open on release; require a fresh gesture before toggling again.
         }
         void OnDisable(){if(openedByPalm&&DiveCardMock.Instance)DiveCardMock.Instance.SetOpen(false);openedByPalm=false;}
         void OnDestroy(){if(Instance==this)Instance=null;}
