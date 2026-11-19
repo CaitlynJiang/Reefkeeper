@@ -1,6 +1,8 @@
 # Reefkeeper — underwater prototype
 
-Unity **6.3 LTS / 6000.3.19f1**, Universal Render Pipeline, XR Interaction Toolkit **3.3.2**. Open the `Reefkeeper` folder in Unity Hub, then open `Assets/Reefkeeper/Scenes/ShallowReef.unity` and press Play. The saved scene starts at the nursery rack with the official XR Interaction Simulator active. No headset is required for this mode.
+Unity **6.3 LTS / 6000.3.19f1**, Universal Render Pipeline, XR Interaction Toolkit **3.3.2**. On the `immersive-opening` branch, open the `Reefkeeper` folder in Unity Hub, then open `Assets/Reefkeeper/Scenes/ImmersiveOpening.unity` and press Play. The opening starts above water; F2 switches the Editor preview to XR simulation. Android builds enter XR directly.
+
+Current checkpoint (2026-11-19): PICO SDK **6.2.0**, layered launcher icon, and the first tool-grip gesture logic restored for a headset comparison. **Native hand swimming is still under investigation.** See [opening notes](docs/immersive-opening.txt) and [comparison scope](docs/swan-hand-controls-comparison.txt). The milestones below describe earlier prototype checkpoints.
 
 ![Milestone 08 — teal water, softer sand and clearer caustics](docs/previews/milestone-08-nursery.png)
 

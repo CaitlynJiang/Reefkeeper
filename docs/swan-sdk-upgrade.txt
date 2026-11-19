@@ -1,0 +1,59 @@
+Project Swan SDK migration / Project Swan SDK 升级
+2026-11-19
+
+Target / 目标
+- User confirmed Project Swan. Keep PICO XR (Unity-rendered Full Space VR).
+- Unity 6000.3.19f1; XRI 3.3.2 and XR Hands 1.7.3 retained.
+- Replace com.unity.xr.picoxr 3.4.0 with com.bytedance.pico.xr 6.2.0.
+- Official Git dependency pinned to 673b0f84355585c45aaf0ba477d48f480472e51d, XR subfolder.
+- Source: https://github.com/Pico-Developer/PICO-Unity-SDK
+- 保留现有 VR 游戏模式，不迁移为 Shared Space 多窗口应用。
+
+Recovery / 备份
+- artifacts/pre-swan-upgrade-2026-11-19.zip contains pre-migration Assets, Packages and ProjectSettings, including uncommitted work.
+- Existing named HandControls APK retained. Do not restore the entire backup over later artwork or gameplay work; select the needed files.
+
+Migration / 改动
+- Updated PICO namespaces, assembly identifiers, configuration key and SDK script GUID references.
+- PXR_PlatformSetting now belongs to ByteDance.PICO.Platform.Framework.
+- ENABLE_PICO_XR_SDK set for Android and Standalone; Android retains PICO loader and hand/controller support.
+- No gameplay tuning or player-facing copy added by this migration.
+
+Icon / 图标
+- User-authored source PNGs: ArtSource/AppIcon/LuckyDive_UserLayers/Layer1.png through Layer3.png.
+- Order: background -> Lucky Cat -> water and bubbles.
+- Use official SDK Icon Configurator export for launcher layers, SDFs and Android manifest metadata.
+- Sources are 300 x 300. Keep originals; higher-resolution artwork must be re-exported from the user's design source, not AI-generated.
+- Lucky Dive.Co names the shop. Application label remains Reefkeeper; application identifier remains com.reefkeeper.v2.
+- SDK 6.2 square normalization wraps the bottom row into the top at UV 1. Already-square artwork is imported directly with Clamp and no NPOT scaling; official export still supplies the layered resources.
+
+Validation / 已验证
+- Unity Editor compilation passed after SDK migration.
+- Opening scene: no missing scripts; exactly one XR Origin and one PICO manager; hand tracking enabled.
+- Controlled input regression passed: slow acceleration, speed cap, natural stop, same-sample empty-fist braking, stopped state preserved after opening fists, deliberate restart, rejection of head-motion/sideways glide.
+- Controlled joint/state regression passed: pinch release for brush and scraper in both hands, grip geometry, middle-pinch journal toggle, hand-side cleaning progress scale and visibility.
+- These are Editor synthetic-input checks, not native headset tracking, stereo, comfort or performance certification.
+- Package validation requires explicit signing information. Test builds use the existing local Android debug keystore and restore publishing settings afterward. Store signing remains a separate release task.
+
+Build result / 构建结果
+- Success: Reefkeeper/Builds/Reefkeeper_Swan_2026-11-19.apk. Final incremental build: 40 seconds, 0 errors.
+- APK v2 signature verified; certificate matches the previous HandControls test APK.
+- Packaged manifest verifies SDK Unity_XR_6.2.0, VR mode, ARM64, hand tracking, icon.3d.list and icon.sdf.list.
+- Resource arrays contain all 3 foreground-to-background layers and all 3 SDFs in matching order.
+- SHA-256: 073FBBC25921D7882A1EB084962289E3D646478E426B3A0AF8098A11937707B8.
+- 新包已构建并验证；尚未安装到头显，需实机确认手势、立体画面和图标聚焦效果。
+
+Swimming regression follow-up / 游泳回归修复 (2026-11-19)
+- Headset report: hands, pinch and journal work, but swimming does not. No ADB device was connected during this investigation.
+- Reproduced a gameplay classification defect independent of SDK input: OpenPalm required index and mean outer fingertip distances above 10 cm. Small open hands could also satisfy the absolute-distance fist thresholds, continuously braking. A medium sample could remain classified as a fist after opening because of hysteresis.
+- The earlier synthetic tests used oversized fingertip distances and directly injected OpenPalm=true for movement. Those checks did not cover normal/small articulated hand geometry.
+- ReefHands now compares palm-to-tip distance with the finger's articulated path length. Open/fist hysteresis uses dimensionless extension ratios. At least index plus two outer fingers need valid joints; missing data cannot latch a fist. One occluded outer finger does not veto an otherwise open hand.
+- Pinch distances, middle-pinch journal gesture, palm grip offsets, swim acceleration, speed limits, glide conditions and immediate fist brake behavior are unchanged.
+- Tools/Validation/CheckSwimHandShapes.cs is a Unity script-run regression fixture. Run its Main in Play mode after the opening transition, with empty hands. It constructs complete XRHand joint arrays and runs the production classifier and hand-swim step; it does not inject OpenPalm/Fist values.
+- Passed: both hands, rotated poses, three scale variants; open/fist/reopen and partial joint loss; forward/backward strokes, immediate braking, no restart just from opening fists, deliberate new glide, and small-jitter rejection at 30/72/90 Hz.
+- Existing slow acceleration / natural stop / head-motion rejection, tool select/release and journal toggle checks also passed. The gameplay rig was enabled, active, non-Automated, with a valid view after diving.
+- New package target: Reefkeeper/Builds/Reefkeeper_Swan_SwimFix_2026-11-19.apk. Keep the original named Swan APK for comparison.
+- 修复了可稳定复现的手型误判；仍需用户在 Swan 真机验证，不能将模拟关节测试视为实机验证。
+- Fix APK built successfully (148 seconds total build invocation), 104,473,830 bytes. APK v2 signature verified; signing certificate matches the original Swan/HandControls packages, application identifier remains com.reefkeeper.v2, ARM64.
+- Packaged IL2CPP metadata contains the new FingerExtension and HandSwimStep methods, confirming this APK includes the fix.
+- Fix APK SHA-256: 7E0DDAC410C22AAF65978F023EFB9BE35CD8CE3EFEF185593CBA9680B22CC3F7.

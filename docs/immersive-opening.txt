@@ -1,0 +1,183 @@
+IMMERSIVE OPENING PROTOTYPE / 沉浸式开场原型
+
+Purpose / 目的
+Introduce one clear task on a quiet sea-surface platform before revealing the reef.
+玩家先在安静的海面阅读手册，再第一次看到海底，减少开场分心。
+
+Present checkpoint / 已有占位
+- Independent scene: Assets/Reefkeeper/Scenes/SurfaceIntro_Blockout.unity
+- Wood platform, edge seat, manual prop, mooring/bird perch, opaque ocean and sky.
+- Reference transforms for seated eyes, hips, knees, water entry and bird landing.
+- This is a static visual blockout, not a playable PC/XR opening yet.
+- Existing ShallowReef_V4 spawn and gameplay have not been changed.
+- 木板、座位、手册、海面和天空已搭建；尚未接入正式出生流程。
+
+First-person body prototype / 第一人称身体原型 (2026-11-17)
+- New independent scene: Assets/Reefkeeper/Scenes/SurfaceIntro_DiverPreview.unity
+- Newly authored waist/hips, legs and flippers; no head, arms or duplicate hands.
+- 908 triangles, one skinned mesh, one opaque material, 9 bones, 32x4 palette.
+- SeatedIdle: 4-second gentle leg/foot/fin sway, imported and looping in Unity.
+- Editable source: ArtSource/OpeningDiver/OpeningDiver.blend
+- Unity setup menu: Reefkeeper > Opening > Build seated diver preview.
+- Compiled and sampled in Unity; first-person and external captures reviewed.
+- Still a visual preview: no XR rig, tracked body fitting or water-entry sequence.
+- 新建低模身体与坐姿轻晃；Unity 导入验证通过，实机比例及性能待测。
+
+Open / 打开
+Unity menu: Reefkeeper > V4 > Open surface intro blockout.
+Builder: Assets/Reefkeeper/Editor/SurfaceIntroBlockoutBuilder.cs
+Rebuild menu: Reefkeeper > V4 > Build surface intro blockout.
+Review captures: artifacts/surface-intro (local, ignored by Git).
+
+Same-scene opening / 同场景开场 (2026-11-17)
+- Playable prototype: Assets/Reefkeeper/Scenes/ImmersiveOpening.unity.
+- This scene contains the existing V4 reef plus a wooden platform and seated diver at its real surface (Y=15).
+- The same existing desktop/XR player rig moves from the seat into the water; no scene loading or replacement camera.
+- Entry: short fade, relocate just below the platform, splash and sparse bubbles, restore swimming and underwater environment.
+- Existing Journal / Controls / Tools UI is reused. No new opening panel, button, objective or copy.
+- PC: the first click after startup/focus return only captures input. Release, then click again to dive; RMB looks around; the existing J journal remains available.
+- Interacting with the existing journal or tool wheel does not trigger diving. Startup/held inputs and focus return are gated until controls are released for 0.2 seconds; tested with zero unintended dives.
+- XR trigger / pinch is provisional; final VR input, seated fit and comfort await headset review.
+- BGM remains muted by default. Surface hides underwater ambience and camera particles until entry.
+- 海面与珊瑚海域在同一个场景；复用角色、摄像机和既有 UI。实体手册文字仅为 placeholder text。
+- New UI requires the user's request. All new final player-facing copy belongs to the user; use literal placeholder text until provided.
+- Original ShallowReef_V4 is preserved. The superseded ImmersiveOpening_Reef destination scene was removed.
+- Compilation and existing journal's dive-blocking behavior checked; full entry and VR behavior still require play/headset review.
+- No extended PC control testing: prioritize the upcoming VR implementation and real headset review.
+
+Surface sky / 海面天空 (2026-11-17)
+- Selected Kenney Skyboxes 1.0, skybox-day.png (CC0): https://kenney.nl/assets/skyboxes
+- Source and original license: Assets/ThirdParty/KenneySkyboxes/.
+- Soft blue daytime sky with pale clouds; static Skybox/Panoramic material.
+- Imported at 2048x1024; Android ASTC 6x6; mipmaps; CPU read/write disabled.
+- Assigned SurfaceSky_Day.mat to the existing opening sequence and builder.
+- Existing underwater sky is unchanged. No new UI, text, lights, realtime clouds or reflection passes.
+- Unity seated-camera preview reviewed; PICO performance and perceived sharpness are not yet measured.
+
+Lightweight surface waves / 轻量海面水波 (2026-11-17)
+- Reuses the directional wave calculation from UnderwaterSurface.shader via SurfaceWaves.hlsl; existing underwater math is unchanged.
+- SurfaceWaterLite.shader evaluates only two waves for animated ripple shading and soft highlights.
+- Retains the original two-triangle opaque ocean, one forward pass, zero textures, no additional cameras or physics.
+- Surface geometry remains flat; apparent waves come from animated normals and color. No boat/camera bobbing.
+- Detail fades with distance; material exposes colors, slope, length, speed, contrast and highlight strength.
+- OpeningDiveSequence disables the surface renderer under the entry fade, restoring the existing underwater environment and sky.
+- Unity shader compilation and rendered appearance checked; headset GPU cost remains unmeasured.
+
+Warm sky trial / 暖黄色天空试版 (2026-11-17)
+- Switched the opening to Kenney skybox-morning.png / SurfaceSky_Morning.mat at the user's request.
+- Warm cream and peach sky; same 2K import and Android ASTC 6x6 settings as Day.
+- Day variant retained for comparison. Water shader, input guards and underwater environment unchanged.
+
+Surface foam and glints / 海面泡沫与波光 (2026-11-17)
+- Replaces the assigned Lite material with SurfaceWater_Foam; Lite assets remain as a fallback.
+- Based on MatrixRex Uber Stylized Water, MIT, pinned 1fdd16c6312611fef7fb248dee86cdd3fd456a1e.
+- Source: https://github.com/MatrixRex/Uber-Stylized-Water ; licenses and integration notes retained under Assets/ThirdParty/UberStylizedWater/.
+- Imported only the exported shader, required includes and three textures; no vendor editor scripts or pipeline changes.
+- Opaque surface with drifting sparse foam, two-way animated normals, warm specular glints and small geometric waves.
+- Ocean grid: 5,329 vertices / 10,368 triangles, dense near the seat and sparse toward the horizon.
+- Foam/noise capped at 512, normals at 1024; mipmaps enabled, Android ASTC 6x6, CPU read/write disabled.
+- Planar reflections, refraction, caustics, shoreline, intersection foam and secondary underwater layer remain disabled.
+- Reuses the existing sun, with surface angles (20,180,0); original rotation is cached and restored on entry or teardown.
+- Unity preview and compilation checked. Play-mode check passed: surface visible before entry, disabled after entry, original underwater sun restored.
+- No UI/copy or input mapping changes. Actual PICO GPU cost, stereo rendering and distant shimmer still require headset review.
+- 海面启用泡沫与暖色碎光，入水后关闭；未增加反射摄像机。实机帧率尚未测量。
+
+Full water visual trial / 完整海面效果试版 (2026-11-17)
+- User requested stronger waves and the full visual effect before optimization.
+- Active material: SurfaceWater_Full.mat, using the original transparent Uber shader, renamed Reefkeeper/Uber Surface Full.
+- Both Gerstner wave heights increased from .035/.022 to .32/.16; periods 8/4.5, speeds .65/.48. Camera and seated body do not bob.
+- Near-surface grid spacing .5m, 40,401 vertices / 80,000 triangles; previous Foam and Lite materials/meshes retained for comparison.
+- Enabled normals, waves, full-resolution planar reflection, refraction, caustics, shoreline, underwater foam layer, surface foam and intersection foam.
+- Depth and opaque color copies are scoped to the opening camera and restored on entry. Disabled surface renderer causes the reflection manager to release its extra camera/texture.
+- No new UI or player-facing copy. Shoreline/caustics naturally depend on nearby geometry/depth; they may be subtle in deep open water.
+- Upstream planar reflection is monoscopic; PICO stereo alignment and performance still need real-device testing.
+- Verification passed: full shader compile, 40 runtime preview frames, active surface reflection, reflection camera released after dive, original depth/color overrides and sun restored.
+- 本轮优先完整视觉，保留旧方案用于对比，之后再根据实机表现优化。
+
+Next / 待定与后续
+- User-written manual content and final VR dive gesture/button.
+- Real headset body scale, seated alignment, reach and transition comfort.
+- Replace platform with boat art later; Lucky Cat art remains user-owned.
+- Oxygen management, return-to-boat flow, full waterline crossing and boat physics remain out of scope.
+
+Character visual reference / 人物视觉参考
+Diver by nolanfa:
+https://sketchfab.com/3d-models/diver-9ee9b8b722ed457da424869cd8d08b1a
+Official Sketchfab model metadata checked 2026-11-17: downloadable, 2,592 triangles, CC BY 4.0.
+License: https://creativecommons.org/licenses/by/4.0/
+Download was blocked by the account registration flow. User chose to build a new
+first-person body inspired by the simple suit silhouette, blue palette and broad fins.
+No original model files or textures were downloaded or used. All prototype geometry,
+rigging, animation and palette were newly authored; reference credit is kept in its README.
+注册问题导致未下载原模型；改为参考其造型方向，自建第一人称低模身体。
+
+Foam removed / 移除贴片式泡沫 (2026-11-17)
+- User rejected the disconnected white fragments. Disabled surface foam, intersection foam, shoreline foam and the secondary underwater foam layer in the active Full material and builder defaults.
+- Waves, specular glints, planar reflection, refraction and caustics preserved.
+- No replacement foam added. Future foam should be driven by wave crests/compression, with generation and dissipation, rather than an independently drifting mask.
+- Reference: https://docs.crest.waveharmonic.com/Manual/Appearance/Foam.html
+
+Approved underwater entry overview (2026-11-17)
+- Captured the user's current view to match their screenshot: eye (-1.3741052, 5.8697624, -21.648186), heading 9.92503, desktop downward pitch 18.53988.
+- Click-to-dive now enters above the practice tables with the coral racks, shop and wreck visible ahead, replacing the old just-below-platform destination.
+- Desktop mouse-look pitch is initialized consistently. XR aligns horizontal heading during the covered transition and preserves tracked head pitch/roll; eye placement occurs after alignment.
+- Updated scene and builder defaults. Runtime transition check passed with zero position/orientation error after swimming resumed. Headset confirmation remains pending.
+
+XR simulator opening verification (2026-11-17)
+- Added OpeningDiveSequence.previewXRInEditor; enabled in ImmersiveOpening.unity. Editor-only selection runs after ShipwreckHabitat's desktop fallback. Actual headset startup is unchanged.
+- Controller pass: real XR Interaction Simulator remained enabled; keyboard H + arrow changed tracked head rotation, ] selected the right controller, T drove its trigger, one dive completed with zero eye-position error, then backquote + W moved the XR player ~0.70m underwater.
+- Bare-hand pass: ] twice changed the simulator to right-hand tracking; M generated a real simulated XR Hands joint pinch. ReefHands detected it and completed exactly one dive with zero eye-position error.
+- Both passes used normal OpeningDiveSequence.Update input handling, never called TryBeginDive directly, and never replaced ReefHands state.
+- New Play starts in XR controller/FPS mode. Press ] twice, releasing each time, to select the right bare hand, then M toggles pinch. Press ] once and T for right-controller trigger from a fresh controller-mode start. Backquote switches device/body manipulation. Uncheck Preview XR In Editor before Play to return to PC opening.
+- No dedicated pinch-to-dive UI prompt exists; no new player-facing copy was added. User owns prompt wording and placement.
+- These are Editor simulator checks, not physical PICO hand-tracking, stereo or performance validation.
+
+Approved dive prompt (2026-11-17)
+- Added the exact user-approved text "Pinch to Dive" for XR at the surface, reusing ReefCleaningHUD's existing Context hint panel, sprite, font and colors. PC retains its existing "Click to dive" wording.
+- No new canvas, button or blocking dialog. The prompt clears as entry begins; underwater contextual hints resume normally.
+- Verified with the actual simulator: existing font/sprite identity, visible surface prompt, simulated hand pinch, prompt removal and immediate free swimming after the fade. Moved ~0.66m without any extra click/confirmation.
+
+Manual surface F2 switching (2026-11-17, supersedes automatic XR preview)
+- Removed previewXRInEditor and its automatic startup override. Editor opening defaults to PC via the existing habitat behavior.
+- F2 now switches PC/XR while seated at the surface, with Journal/Tools closed. The opening owns the switch until entry; normal workshop F2 resumes underwater.
+- Switching preserves the eye position, rebinds the active camera, restores each old camera's settings/particles, applies surface settings to the new one, and rearms dive input only after release.
+- PC uses the existing Click to dive prompt; XR uses the approved Pinch to Dive prompt.
+- Verified default PC -> F2 XR -> F2 PC -> F2 XR, stable position and prompt, no accidental dive. Then verified simulated pinch -> prompt cleared -> free swimming (~0.66m without another click).
+- Surface F2 handling is editor-only. APK retains the existing direct XR rig startup; no F2 or PC mode is required on PICO. Physical headset testing remains pending.
+
+Table-front entry and PICO package (2026-11-17)
+- User moved the entry closer to the two practice tables. New eye (-0.456255, 1.674831, -17.225203), heading 2.8949914, PC pitch 10.749868. Scene and builder defaults updated; PC transition position/view check passed with zero error.
+- OpeningPicoBuild builds only ImmersiveOpening as scene 0, with PICO loader, ARM64/IL2CPP, Vulkan, ASTC, controllers and hand tracking. Editor simulator objects are excluded from the APK.
+- Existing application identifier retained: com.reefkeeper.v2. Output: Builds/Reefkeeper_ImmersiveOpening_PICO.apk.
+- Full water effects remain enabled except foam; device performance and monoscopic planar reflection in stereo remain unverified. This package is for first hardware testing, not a performance-certified release.
+
+- Table-front XR confirmation: after selecting XR with F2, actual simulated hand-joint pinch completed one entry with eye-position error below 0.000001m. Initial rapid F2 automation lost a switch; refocused Game view and verified the normal single-switch route successfully.
+
+- APK build completed successfully (0 errors, 5m50s build phase). Android dependencies were installed for Unity 6000.3.19f1. Final APK is 106,413,890 bytes; v2 signature verified; packaged manifest confirms com.reefkeeper.v2, ARM64, PICO VR, controllers and hand tracking. Minimum API 29 / target API 36.
+- SHA-256: E7F21CD084DCA3CCA36093BBE0FC2512C66C945D181EAFC01DCBF176A4C7C0B8. Physical headset validation is still pending.
+
+
+Hand grip and journal gesture prototype (2026-11-19)
+- Bare-hand brush and scraper selection now requires index/thumb pinch throughout; releasing pinch releases the tool even if the hand remains a fist. Controllers retain their existing grip behavior.
+- Tool handle follows palm-to-pinch-midpoint direction; palm orientation resolves roll. Grip center is 15 mm toward the inner palm surface. Rotation is lightly filtered in tracking space, with degenerate-direction fallbacks.
+- Bare-hand menu equipment uses the real right-hand interactor instead of the persistent desktop slot.
+- Journal: left thumb + middle finger pinch held for 0.5 s toggles open/closed. Index finger stays separate and relatively extended. Release for 0.15 s to rearm. Palm-up no longer opens it; release does not close it.
+- Left hand is excluded from swimming while this gesture is active; the journal gesture cannot also classify as a fist grab. No new UI added. Obsolete grip/menu instructions temporarily use the required literal placeholder text pending user copy.
+- Validation: Unity compile passed; actual XR simulator pinch still enters the underwater scene. Controlled joint/state checks passed for pinch hysteresis, distinct middle-pinch/fist gestures, missing joint handling, mirrored/rotated/degenerate grip geometry, XRI select/release for both tools in both hands, and journal toggle/rearm behavior. Grip fit and middle-finger tracking still require physical headset testing.
+- Updated APK built successfully: Builds/Reefkeeper_HandControls_PICO_2026-11-19.apk, 106,422,618 bytes; 0 build errors; v2 signature verified; ARM64/PICO package identity retained. SHA-256: 7AB739AD9AA37C79CB4ACB417F26091114187CFD5C193A0FBA54189E4A071C85.
+
+
+VR comfort and cleanup pass (2026-11-19; supersedes prior grip offsets)
+- User hardware feedback: accidental/abrupt forward motion, difficult stopping, incorrect grip angle, excessive HUD.
+- Hands now need an open palm for propulsion. Stroke input needs 0.12 s / 5 cm of deliberate movement; speed threshold 0.55 m/s. Tracking-space palm velocity prevents head motion from becoming a fictitious stroke; reject discontinuous tracking samples.
+- Glide requires actual outward hand travel from a retracted pose, >55 cm reach, forward placement, finger alignment, low hand speed and 0.7 s hold. Its target ramps over 1.1 s; acceleration is filtered and capped. Maximum hand-swim speed 1.6 m/s, with faster natural stopping. Controller locomotion remains unchanged.
+- Both tracked empty fists immediately set velocity and pending acceleration to zero. Brake stays latched after opening fists. A new qualified stroke, or retract-then-extend glide, is required to restart. Existing forward palm push still provides backward thrust.
+- Grip geometry explicitly approved by user: grip point = palm + palm-local -Y * 0.03 m; adjusted pinch midpoint = raw midpoint + palm-local +Y * 0.03 m. Handle direction uses these two shifted points. Palm orientation still resolves roll. Pinch detection uses raw fingertips.
+- VR HUD removes persistent objective/help/aim overlays and routine tool pickup/release hints. Objectives/controls remain accessible in the existing journal. Existing progress arc is reused at 8.8 cm on the inner side of the active tool hand: left hand -> right side; right hand -> left side. Show only while contacting a correct cleaning target (plus brief completion fade), hide on tracking loss/no tool/UI menus.
+- Checks passed: compile; controlled motion tests for gradual start, speed cap, faster natural stop, same-sample fist braking, persistent stopped state after release, explicit restart, no head-motion propulsion or sideways/misaligned glide, and backward thrust. Live HUD fixture verified both tools in both hands, scale/side/visibility and removal of routine hints. Revised grip geometry, gesture distinctions and XRI release checks passed. Physical comfort/fit remain for user headset testing.
+
+CURRENT CHECKPOINT / 当前版本 (2026-11-19)
+- The comfort/gesture changes above were subsequently rolled back at the user's request after Swan headset swimming failed in two builds. Their earlier synthetic checks did not resolve or verify the native issue.
+- Current gesture/tool code matches the first HandControls package: original swim thresholds and acceleration, 15 mm grip offset, pinch-to-hold tools and middle-pinch journal. The later hand-side cleaning HUD is retained.
+- SDK 6.2.0 and the user's three-layer icon remain installed. The comparison APK is awaiting headset results; do not describe swimming as fixed.
+- Full details and backup record: swan-hand-controls-comparison.txt.
