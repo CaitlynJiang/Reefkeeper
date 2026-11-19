@@ -12,7 +12,7 @@ namespace Reefkeeper.Editor
 {
     public static class SwanPicoBuild
     {
-        public const string ApkPath = "Builds/Reefkeeper_Swan_FirstHandControls_2026-11-19.apk";
+        public const string ApkPath = "Builds/Reefkeeper_Swan_GripOffsetsOnly_2026-11-19.apk";
 
         public static void Configure()
         {

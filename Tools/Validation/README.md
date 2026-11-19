@@ -4,17 +4,22 @@ The current `immersive-opening` checkpoint uses the first tool-grip gesture logi
 with PICO SDK 6.2.0. The user confirmed swimming works in this rollback APK on
 the Swan headset. The later regression's individual cause remains under investigation.
 
-`CheckFirstHandControls.cs` is the current Unity script-run fixture. Enter Play
+`CheckHandControls.cs` is the current Unity script-run fixture. Enter Play
 mode in `ImmersiveOpening`, finish the dive transition and release both tools.
 Run its static `Main` through the project's Unity Pipeline script runner:
 
 ```text
-script run --file ../Tools/Validation/CheckFirstHandControls.cs
+script run --file ../Tools/Validation/CheckHandControls.cs
 ```
 
-It checks pinch/release, the original 15 mm grip geometry, middle-pinch journal
+It checks pinch/release, the 30 mm opposing grip/pinch offsets, middle-pinch journal
 toggle and the retained hand-side cleaning HUD using synthetic XR Hands/XRI
-inputs. It does not establish that native headset swimming works.
+inputs. The current increment changes only the tool's visual grip pose; the
+headset-confirmed swim/gesture code and scene parameters remain unchanged. These
+checks do not establish the new grip's fit on the user's hand.
+
+The baseline tag retains `CheckFirstHandControls.cs` with the original 15 mm
+geometry expectations. Use that version only when testing the baseline.
 
 `CheckSwimHandShapes.cs` is retained as a historical fixture for the experimental
 proportional finger classifier and comfort controls. It references APIs deliberately

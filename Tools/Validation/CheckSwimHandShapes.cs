@@ -1,6 +1,6 @@
 // Historical fixture for the experimental proportional-gesture / comfort version.
 // The current comparison build intentionally rolls those APIs back. Do not run
-// this fixture against it; see README.md and CheckFirstHandControls.cs instead.
+// this fixture against it; see README.md and CheckHandControls.cs instead.
 using System;
 using System.Reflection;
 using System.Text;

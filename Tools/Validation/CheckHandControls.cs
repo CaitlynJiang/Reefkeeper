@@ -100,9 +100,11 @@ public static class CheckHandProgress
                 var palm=new Pose(new Vector3(.2f,1.3f,.4f),rotation);
                 var pinch=palm.position+rotation*new Vector3(side*.025f,-.03f,.08f);
                 var pose=ReefToolHandPose.GripPose(palm,pinch);
-                Require(Vector3.Dot(pose.rotation*Vector3.forward,(pinch-palm.position).normalized)>.9999f,"Handle direction mismatch");
+                Require(Vector3.Dot(pose.rotation*Vector3.forward,(pinch+rotation*Vector3.up*.03f-(palm.position+rotation*Vector3.down*.03f)).normalized)>.9999f,"Handle direction mismatch");
                 Require(Vector3.Dot(pose.rotation*Vector3.up,palm.rotation*Vector3.up)>0,"Working face flipped");
-                Require(Vector3.Distance(pose.position,palm.position+rotation*Vector3.down*.015f)<.00001f,"Grip offset must be original 1.5 cm");
+                Require(Vector3.Distance(pose.position,palm.position+rotation*Vector3.down*.03f)<.00001f,"Grip offset must be 3 cm in palm-local -Y");
+                var coincident=ReefToolHandPose.GripPose(palm,palm.position+rotation*Vector3.down*.06f);
+                Require(Vector3.Dot(coincident.rotation*Vector3.forward,rotation*Vector3.forward)>.999f,"Coincident adjusted endpoints must use palm-forward fallback");
                 var fallback=ReefToolHandPose.GripPose(palm,palm.position);
                 Require(!float.IsNaN(fallback.rotation.x),"Degenerate direction");
                 var axial=ReefToolHandPose.GripPose(palm,palm.position+rotation*Vector3.up*.08f);

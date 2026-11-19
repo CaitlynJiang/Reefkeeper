@@ -2,7 +2,9 @@
 
 Unity **6.3 LTS / 6000.3.19f1**, Universal Render Pipeline, XR Interaction Toolkit **3.3.2**. On the `immersive-opening` branch, open the `Reefkeeper` folder in Unity Hub, then open `Assets/Reefkeeper/Scenes/ImmersiveOpening.unity` and press Play. The opening starts above water; F2 switches the Editor preview to XR simulation. Android builds enter XR directly.
 
-Current checkpoint (2026-11-19): PICO SDK **6.2.0**, layered launcher icon, and the first tool-grip gesture logic. **The user confirmed that hand swimming works on the Swan headset with the rollback APK.** This is the working baseline for restoring one change per test build; the specific cause in the later gesture/comfort changes is not yet isolated. See [opening notes](docs/immersive-opening.txt) and [comparison scope](docs/swan-hand-controls-comparison.txt). The milestones below describe earlier prototype checkpoints.
+Headset-confirmed baseline (2026-11-19): PICO SDK **6.2.0**, layered launcher icon, and the first tool-grip gesture logic. **The user confirmed that hand swimming works on the Swan headset with the rollback APK.** Tag `swan-swim-baseline-2026-11-19` preserves that version; the specific cause in the later gesture/comfort changes is not yet isolated. See [opening notes](docs/immersive-opening.txt) and [comparison scope](docs/swan-hand-controls-comparison.txt). The milestones below describe earlier prototype checkpoints.
+
+Current increment: [tool grip offsets only](docs/swan-grip-offsets-only.txt), keeping the verified swimming/gesture implementation unchanged. The new tool fit awaits headset testing.
 
 ![Milestone 08 — teal water, softer sand and clearer caustics](docs/previews/milestone-08-nursery.png)
 
