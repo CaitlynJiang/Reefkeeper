@@ -14,6 +14,22 @@ namespace Reefkeeper.Editor
     {
         public const string ApkPath = "Builds/Reefkeeper_Swan_GripOffsetsOnly_2026-11-19.apk";
 
+        [MenuItem("Reefkeeper/Hands/Build and Run Hand Skeleton on PICO")]
+        public static void BuildAndRunHandSkeleton()
+        {
+            const string path = "Builds/Reefkeeper_Swan_HandSkeleton_PICO.apk";
+            Directory.CreateDirectory("Builds");
+            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            {
+                scenes = new[] { ImmersiveOpeningBuilder.Opening },
+                locationPathName = path,
+                target = BuildTarget.Android,
+                options = BuildOptions.AutoRunPlayer
+            });
+            if (report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
+                throw new InvalidOperationException("PICO hand skeleton build: " + report.summary.result);
+        }
+
         public static void Configure()
         {
             if (Application.isPlaying) throw new InvalidOperationException("Exit Play mode first.");
