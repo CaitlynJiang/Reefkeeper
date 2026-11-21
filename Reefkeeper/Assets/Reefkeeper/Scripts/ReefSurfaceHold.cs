@@ -33,7 +33,7 @@ namespace Reefkeeper
         public bool Step(Transform space)
         {
             bool wasHolding = Holding;
-            bool allowed = focused && space && ReefInput.HandsMode && !ReefToolMenu.BlocksWorldInput;
+            bool allowed = focused && space && ReefInput.HandsMode && !ReefToolMenu.BlocksWorldInput && !Photos.ReefPhotoMode.OwnsHands;
             for (int i = 0; i < 2; i++)
             {
                 var hand = ReefHands.Get(i);

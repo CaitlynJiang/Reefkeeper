@@ -20,6 +20,8 @@ namespace Reefkeeper.Hands
         const float IndexFistOn = 0.1f, IndexFistOff = 0.12f;
         // Every fingertip at least this far from the palm (m): an open, flat hand.
         const float OpenCurl = 0.11f;
+        // Camera frame corner: index tip to palm, thumb tip to index tip, thumb tip to index knuckle (m).
+        const float FrameIndexReach = 0.08f, FrameGap = 0.05f, FrameThumbReach = 0.04f;
 
         public struct State
         {
@@ -34,9 +36,17 @@ namespace Reefkeeper.Hands
             public Pose Palm;
             public Pose IndexTip;
             public Vector3 PinchPoint;
+            /// <summary>Thumb and index stretched out at roughly a right angle, not touching: one corner of the camera frame.</summary>
+            public bool FrameCorner;
+            /// <summary>Unit directions from the knuckle to the tip (tracking space), valid when Tracked.</summary>
+            public Vector3 IndexDirection, ThumbDirection;
+            public Vector3 ThumbTip;
         }
 
         static readonly State[] states = new State[2];
+        static readonly string[] frameDebug = { "", "" };
+        /// <summary>The measurements behind FrameCorner, for diagnostics.</summary>
+        public static string FrameDebug(int hand) { Refresh(); return frameDebug[hand]; }
         static readonly List<XRHandSubsystem> subsystems = new List<XRHandSubsystem>();
         static int frame = -1;
 
@@ -76,8 +86,23 @@ namespace Reefkeeper.Hands
                 float indexCurl = Vector3.Distance(index.position, palm.position);
                 s.Fist = !s.MiddlePinch && (wasFist ? curl < FistOff && indexCurl < IndexFistOff : curl < FistOn && indexCurl < IndexFistOn);
                 s.Open = !s.Pinch && !s.MiddlePinch && curl > OpenCurl && indexCurl > OpenCurl;
+                s.ThumbTip = thumb.position;
+                s.FrameCorner = false;
+                if (Pose(hand, XRHandJointID.IndexProximal, out var indexBase) && Pose(hand, XRHandJointID.ThumbProximal, out var thumbBase))
+                {
+                    s.IndexDirection = (index.position - indexBase.position).normalized;
+                    s.ThumbDirection = (thumb.position - thumbBase.position).normalized;
+                    // An "L": index straight out, thumb clear of it, the two at 40-140 degrees.
+                    float angle = Vector3.Angle(s.IndexDirection, s.ThumbDirection);
+                    frameDebug[hand.handedness == Handedness.Left ? 0 : 1] =
+                        $"index {indexCurl * 100:F0}cm gap {Vector3.Distance(thumb.position, index.position) * 100:F0}cm thumb {Vector3.Distance(thumb.position, indexBase.position) * 100:F0}cm angle {angle:F0} pinch {s.Pinch}";
+                    s.FrameCorner = !s.Pinch && !s.MiddlePinch && indexCurl > FrameIndexReach
+                        && Vector3.Distance(thumb.position, index.position) > FrameGap
+                        && Vector3.Distance(thumb.position, indexBase.position) > FrameThumbReach
+                        && angle > 40f && angle < 140f;
+                }
             }
-            else { s.Pinch = s.Fist = s.MiddlePinch = s.Open = false; s.Tracked = false; }
+            else { s.Pinch = s.Fist = s.MiddlePinch = s.Open = s.FrameCorner = false; s.Tracked = false; }
             s.Grab = s.Pinch || s.Fist;
             s.PinchDown = s.Pinch && !wasPinch; s.PinchUp = !s.Pinch && wasPinch;
             s.FistDown = s.Fist && !wasFist; s.FistUp = !s.Fist && wasFist;
@@ -96,7 +121,7 @@ namespace Reefkeeper.Hands
             public enum Kind { Grab, Pinch }
             readonly int hand; readonly Kind kind;
             public Button(int hand, Kind kind) { this.hand = hand; this.kind = kind; }
-            bool SurfaceOwnsInput => ReefSurfaceHold.Instance && ReefSurfaceHold.Instance.OwnsHand(hand);
+            bool SurfaceOwnsInput => ReefSurfaceHold.Instance && ReefSurfaceHold.Instance.OwnsHand(hand) || Photos.ReefPhotoMode.OwnsHands;
             public bool ReadIsPerformed() { if (SurfaceOwnsInput) return false; var s = Get(hand); return kind == Kind.Grab ? s.Grab : s.Pinch; }
             public bool ReadWasPerformedThisFrame() { if (SurfaceOwnsInput) return false; var s = Get(hand); return kind == Kind.Grab ? s.GrabDown : s.PinchDown; }
             public bool ReadWasCompletedThisFrame() { var s = Get(hand); return kind == Kind.Grab ? s.GrabUp : s.PinchUp; }
