@@ -25,6 +25,8 @@ namespace Reefkeeper
         {
             if(!habitat||habitat.Data==null)return;
             revision=habitat.Revision;buttons.Clear();if(page){page.SetActive(false);Destroy(page);}
+            // The journal's first page is blank, for writing: no printed page on it.
+            if(tab<0&&!controls)return;
             page=new GameObject("V4 journal page",typeof(RectTransform),typeof(Image));page.transform.SetParent(transform,false);
             var rect=page.GetComponent<RectTransform>();rect.sizeDelta=new Vector2(610,294);rect.localPosition=new Vector3(0,-13,-.6f);
             page.GetComponent<Image>().material=card.OverlayMaterial;page.GetComponent<Image>().color=Paper;page.GetComponent<Image>().raycastTarget=false;
@@ -33,7 +35,7 @@ namespace Reefkeeper
             {
                 Label("CONTROLS",new Vector2(0,113),new Vector2(560,32),23);
                 string instructions=Hands.ReefInput.HandsMode
-                    ? "Raise left palm: journal / Lower palm: close\nRight index: touch tabs, buttons and draw\nMove your right hand away from the card to swim\nPinch: pick up / use tools and corals"
+                    ? "Left thumb + middle pinch: open / close journal\nTurn your right palm over: next / previous page\nRight index: touch tabs, buttons and draw\nPinch: pick up / use tools and corals"
                     : UnityEngine.XR.XRSettings.isDeviceActive
                     ? "Left Y: journal / Right B: close\nRight controller: point + trigger to select or draw\nLeft stick: swim / Right stick: turn, rise or sink\nRight A: tools"
                     : "J: journal / Esc: close / Tab: tools\nLeft mouse: select or draw / Hold RMB: look\nWASD: swim / Space, C: up, down / X: brake\nF2: desktop / XR simulator / F6: hand layout preview";

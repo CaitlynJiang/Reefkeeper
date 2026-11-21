@@ -1,4 +1,22 @@
-Combined hand interaction prototype — 2026-11-19
+Current status — 2026-11-20
+
+- The user tested surface holding on the headset and reported that it works well.
+  Keep this implementation and its existing swim restart behavior unchanged.
+- The user reported that the right thumb/middle gesture did not open the wheel
+  and decided the gesture was unsuitable. The dedicated wheel commit cff3c4b has
+  been reverted, including its gesture timer, input changes and validation fixture.
+- Left thumb/middle journal control is unchanged. Existing Tab / right-controller
+  A wheel controls remain. No replacement gesture or UI has been added.
+- The builder now targets Reefkeeper_Swan_SurfaceHold_2026-11-20.apk so a future
+  build cannot overwrite or be confused with the combined comparison APK below.
+  No new APK is produced by this cleanup itself.
+- The separate, uncommitted coral-touch prototype is not included in this push.
+- Cleanup validation: Unity compiled successfully; CheckSurfaceHold.cs and
+  CheckHandControls.cs passed in the Editor. Surface-hold source is unchanged
+  from the user-tested build; ReefToolMenu is restored to checkpoint 96c0d91.
+
+Historical combined hand interaction prototype — 2026-11-19
+The following describes the earlier comparison package, not the current wheel controls.
 
 Two separate commits:
 1. cff3c4b: right thumb + middle pinch held 0.5s toggles the existing Tools wheel.

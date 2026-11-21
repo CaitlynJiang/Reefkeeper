@@ -16,7 +16,6 @@ namespace Reefkeeper
         public static ReefToolMenu Instance { get; private set; }
         public static bool BlocksWorldInput => DiveCardMock.BlocksControls || Instance && (Instance.IsOpen || Instance.consumeClick || Time.frameCount <= Instance.closedFrame + 1);
         public bool IsOpen { get; private set; }
-        public bool OwnsHand(int hand) => hand == 1 && (IsOpen || consumeClick || Time.frameCount <= closedFrame + 1);
         public bool Owns(CleaningToolKind kind) => owned[(int)kind];
         public RectTransform ToggleRect => toggle;
         public RectTransform SlotRect(int index) => slots[index];
@@ -25,7 +24,8 @@ namespace Reefkeeper
         {
             get
             {
-                return Hands.ReefInput.HandsMode ? Hands.ReefInput.RayOrigin(1) : rightController;
+                var hand = Hands.ReefInput.HandsMode ? Hands.ReefInput.RayOrigin(1) : null;
+                return hand ? hand : rightController;
             }
         }
         Transform rightController;
@@ -62,8 +62,6 @@ namespace Reefkeeper
         int closedFrame = -10;
         bool consumeClick, wasXr, wasCenter, pointerValid;
         bool openWasDown, backWasDown, triggerWasDown, triggerPressed;
-        float handHoldTime, handReleaseTime;
-        bool handToggleArmed, handSelectionArmed, openedByHand;
         CursorLockMode previousCursor;
         bool previousCursorVisible;
         Vector2 pointerScreen;
@@ -104,10 +102,8 @@ namespace Reefkeeper
 
         void Update()
         {
-            UpdateHandGesture(Time.unscaledDeltaTime);
             if (DiveCardMock.BlocksControls) return;
-            if (consumeClick && !(Mouse.current?.leftButton.isPressed ?? false) && !trigger.IsPressed()
-                && (!Hands.ReefInput.HandsMode || !Hands.ReefHands.Get(1).Pinch)) consumeClick = false;
+            if (consumeClick && !(Mouse.current?.leftButton.isPressed ?? false) && !trigger.IsPressed()) consumeClick = false;
             bool xr = workshop.xrGroup.activeSelf, center = pickup.CenterMode;
             if (xr != wasXr || center != wasCenter) { if (IsOpen) SetOpen(false); wasXr = xr; wasCenter = center; }
             var keyboard = Keyboard.current;
@@ -120,37 +116,6 @@ namespace Reefkeeper
             openWasDown=openDown;backWasDown=backDown;triggerWasDown=triggerDown;
             if (keyboard?.f5Key.wasPressedThisFrame == true && IsOpen) SetOpen(false);
             if (!XRSettings.isDeviceActive) { UpdatePointer(); HandlePointer(); }
-        }
-
-        void UpdateHandGesture(float dt)
-        {
-            if (!Hands.ReefInput.HandsMode || !workshop.xrGroup.activeSelf || pickup.CenterMode)
-            {
-                if (openedByHand) SetOpen(false);
-                handHoldTime = handReleaseTime = 0; handToggleArmed = false;
-                return;
-            }
-            var right = Hands.ReefHands.Get(1);
-            if (!right.Tracked)
-            {
-                if (openedByHand) SetOpen(false);
-                handHoldTime = handReleaseTime = 0; handToggleArmed = false;
-                return;
-            }
-            bool gesture = right.MiddlePinch && !Hands.ReefInput.HandBusy(1);
-            if (!gesture)
-            {
-                handHoldTime = 0; handReleaseTime += dt;
-                if (handReleaseTime >= .15f) handToggleArmed = true;
-                return;
-            }
-            handReleaseTime = 0;
-            if (!handToggleArmed) return;
-            handHoldTime += dt;
-            if (handHoldTime < .5f) return;
-            SetOpen(!IsOpen);
-            openedByHand = IsOpen;
-            handToggleArmed = false; handHoldTime = 0;
         }
 
         void LateUpdate()
@@ -189,13 +154,13 @@ namespace Reefkeeper
             }
             if (XRSettings.isDeviceActive) HandlePointer();
             bool controller = workshop.xrGroup.activeSelf && !pickup.CenterMode;
-            // Reuse the existing wheel; controller key hints do not apply to hands.
-            if (toolHint) toolHint.gameObject.SetActive(!Hands.ReefInput.HandsMode);
+            // Bare hands reach tools by hand; the A-button menu hint does not apply.
+            if (toolHint) toolHint.gameObject.SetActive(!Hands.ReefInput.HandsMode || IsOpen);
             openGlyph.enabled = !controller && tabGlyph;
             closeGlyph.enabled = !controller && escapeGlyph;
             openKeyText.text = controller ? "A" : tabGlyph ? "" : "Tab";
             closeKeyText.text = controller ? "B" : escapeGlyph ? "" : "Esc";
-            closeHint.gameObject.SetActive(IsOpen && !Hands.ReefInput.HandsMode);
+            closeHint.gameObject.SetActive(IsOpen);
             for (int i = 0; i < displays.Length; i++) if (displays[i])
             {
                 var tool = i == 0 ? workshop.brush : workshop.scraper;
@@ -208,14 +173,7 @@ namespace Reefkeeper
         {
             if (DiveCardMock.BlocksControls) return;
             bool click = Mouse.current?.leftButton.wasPressedThisFrame == true;
-            if (Hands.ReefInput.HandsMode && workshop.xrGroup.activeSelf && !pickup.CenterMode)
-            {
-                var right = Hands.ReefHands.Get(1);
-                if (!right.Tracked) return;
-                if (!right.Pinch && !right.MiddlePinch) handSelectionArmed = true;
-                click = handSelectionArmed && right.PinchDown;
-            }
-            else if (workshop.xrGroup.activeSelf && !pickup.CenterMode) click |= triggerPressed;
+            if (workshop.xrGroup.activeSelf && !pickup.CenterMode) click |= triggerPressed;
             if (!pointerValid || !click) return;
             if (Contains(toolHint,pointerScreen)) SetOpen(!IsOpen);
             else if (IsOpen && Contains(closeHint,pointerScreen)) SetOpen(false);
@@ -230,11 +188,7 @@ namespace Reefkeeper
         {
             if (index < 0 || index >= owned.Length || !owned[index]) return false;
             SetOpen(false);
-            bool equipped = pickup.EquipFromMenu(index == 0 ? pickup.brush : pickup.scraper);
-            // A successful pinch selection becomes the tool's hold, so do not keep
-            // world input blocked until that same pinch releases the equipped tool.
-            if (equipped && Hands.ReefInput.HandsMode) consumeClick = false;
-            return equipped;
+            return pickup.EquipFromMenu(index == 0 ? pickup.brush : pickup.scraper);
         }
         public void SetOpen(bool value)
         {
@@ -242,8 +196,6 @@ namespace Reefkeeper
             IsOpen = value;
             if (value)
             {
-                if (DiveCardMock.Instance && DiveCardMock.Instance.IsOpen) DiveCardMock.Instance.SetOpen(false);
-                handSelectionArmed = false;
                 previousCursor = Cursor.lockState; previousCursorVisible = Cursor.visible;
                 if (simulator)
                 {
@@ -256,7 +208,6 @@ namespace Reefkeeper
             }
             else
             {
-                openedByHand = false; handSelectionArmed = false;
                 RestoreHeld();
                 if (simulator && originalMouseDelta != null) { simulator.mouseRotationDeltaInput = originalMouseDelta; simulator.toggleMouseInput = originalMouseToggle; originalMouseDelta = null; }
                 Cursor.lockState = previousCursor; Cursor.visible = previousCursorVisible;
@@ -281,15 +232,14 @@ namespace Reefkeeper
             if (Instance == this) Instance = null;
         }
 
-        bool Contains(RectTransform rect, Vector2 screen) => rect.gameObject.activeInHierarchy && RectTransformUtility.RectangleContainsScreenPoint(rect,screen,canvas.renderMode == RenderMode.WorldSpace ? pickup.View : null);
+        bool Contains(RectTransform rect, Vector2 screen) => RectTransformUtility.RectangleContainsScreenPoint(rect,screen,canvas.renderMode == RenderMode.WorldSpace ? pickup.View : null);
         void UpdatePointer()
         {
             pointerValid = false;
-            var activeRay = Hands.ReefInput.HandsMode ? Hands.ReefInput.RayOrigin(1) : rayOrigin;
-            bool tracked = (XRSettings.isDeviceActive || Hands.ReefInput.HandsMode) && workshop.xrGroup.activeSelf && activeRay;
+            bool tracked = XRSettings.isDeviceActive && workshop.xrGroup.activeSelf && rayOrigin;
             if (tracked && IsOpen)
             {
-                var ray = new Ray(activeRay.position,activeRay.forward);
+                var ray = new Ray(rayOrigin.position,rayOrigin.forward);
                 var plane = new Plane(canvas.transform.forward,canvas.transform.position);
                 if (plane.Raycast(ray,out float distance) && distance < 5)
                 {
