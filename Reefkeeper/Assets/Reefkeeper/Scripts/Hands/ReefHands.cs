@@ -18,12 +18,16 @@ namespace Reefkeeper.Hands
         const float FistOn = 0.08f, FistOff = 0.1f;
         // Index tip to the palm (m). A fist curls the index too; pointing leaves it out.
         const float IndexFistOn = 0.1f, IndexFistOff = 0.12f;
+        // Every fingertip at least this far from the palm (m): an open, flat hand.
+        const float OpenCurl = 0.11f;
 
         public struct State
         {
             public bool Tracked;
             public bool Pinch, PinchDown, PinchUp;
             public bool MiddlePinch;
+            /// <summary>All fingers stretched out (not pinching, pointing or gripping).</summary>
+            public bool Open;
             public bool Fist, FistDown, FistUp;
             /// <summary>Pinch or fist: what grabs a tool or coral.</summary>
             public bool Grab, GrabDown, GrabUp;
@@ -71,8 +75,9 @@ namespace Reefkeeper.Hands
                 curl = n > 0 ? curl / n : 1f;
                 float indexCurl = Vector3.Distance(index.position, palm.position);
                 s.Fist = !s.MiddlePinch && (wasFist ? curl < FistOff && indexCurl < IndexFistOff : curl < FistOn && indexCurl < IndexFistOn);
+                s.Open = !s.Pinch && !s.MiddlePinch && curl > OpenCurl && indexCurl > OpenCurl;
             }
-            else { s.Pinch = s.Fist = s.MiddlePinch = false; s.Tracked = false; }
+            else { s.Pinch = s.Fist = s.MiddlePinch = s.Open = false; s.Tracked = false; }
             s.Grab = s.Pinch || s.Fist;
             s.PinchDown = s.Pinch && !wasPinch; s.PinchUp = !s.Pinch && wasPinch;
             s.FistDown = s.Fist && !wasFist; s.FistUp = !s.Fist && wasFist;
