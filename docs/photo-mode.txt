@@ -1,0 +1,45 @@
+Photo mode and photo wall (2026-11-21)
+
+Flow
+- A species counts as new until it has a photo. 16 species: Fish1, Fish2, Fish3, Manta ray, CoralCrab,
+  and the 11 corals (a coral only once it is fully grown, CoralNurture.FullyGrown).
+- Each new-species subject has a 3 m diameter detection sphere (distance check, no colliders, so it
+  cannot interfere with raycasts, pickups or surface holds). Inside it, a HUD card shows the gesture.
+  Fish schools circle a wide loop, so their zone is the whole loop grown by 1.5 m; the best-placed
+  fish in view (within 9 m) becomes the subject. (First headset test: per-fish 1.5 m never fired.)
+- The card's gesture icon is live: each half lights up while that hand holds its "L", and the
+  centre fills while the gesture is held.
+- Gesture: both hands make an "L" (thumb + index out, about a right angle) facing each other to close
+  a rectangle in front of the eyes; hold 0.3 s. Only works next to a new species.
+- Photo mode: see-through viewfinder (corner brackets, species title, yellow focus ring on the
+  subject, shutter button). Pinch with either hand takes the photo (the subject must be in frame).
+- The photo prints in mid-air in front of the view and develops; pinch/fist to pick it up, let go and
+  it vanishes. Untouched prints fade after 30 s (8 s without a headset).
+- Lowering both hands (0.35 m below the eyes) leaves photo mode; it also closes 1.1 s after a shot.
+- While photo mode is on, pinches don't grab, swim or hold surfaces (ReefPhotoMode.OwnsHands).
+- Editor/desktop: P enters/leaves, Enter takes the photo.
+
+Photo wall
+- Board model: D:/blender-5.2.3/projects/photo_board/photo_board.blend, exported by
+  Blender/PhotoBoard/export_photo_board.py to Meshes/PhotoBoard/PhotoBoard.fbx.
+- Reefkeeper > Photos > Build photo board: materials, Resources/Photos/PhotoBoard.prefab, and an
+  instance beside the CatStall in the open scene (saved in ShallowReef_V4). Scenes without one get
+  it at runtime next to their CatStall.
+- Slot order = ReefSpecies.All (strands left to right, photos top to bottom).
+- Photos are saved as PNG in persistentDataPath/ReefPhotos.
+  Reefkeeper > Photos > Reset photo album clears them.
+
+Headset test (Builds/Reefkeeper_Swan_PhotoMode_2026-11-21b.apk, ImmersiveOpening; the board is
+saved in that scene too). Each species triggers once per install; Reset photo album only clears
+the editor's data, so reinstall (or clear app data) to repeat a test.
+1. Dive, swim close (about 1.5 m) to a fish school: the hint card appears low in view.
+2. Make the two-hand rectangle and hold it: viewfinder opens with a chime. Too hard / too easy?
+3. With the fish inside the brackets (yellow ring), pinch: flash + shutter, print appears.
+4. Lower hands: viewfinder closes. Pinch the print to take it, release: it vanishes.
+5. Check that no pinch in photo mode grabbed, swam or held a surface.
+6. Swim to the board by the cat stall: that fish's slot shows the photo and name.
+7. Grow a coral to full size, repeat. Fish3/Fish1 also visit the shipwreck.
+
+Not yet verified on a headset: the frame gesture thresholds (ReefHands Frame* constants and
+ReefPhotoMode.FrameGesture), and picking up the print with bare hands. Controllers have no way to
+enter photo mode yet.

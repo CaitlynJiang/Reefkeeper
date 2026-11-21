@@ -85372,6 +85372,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4368594035304187198, guid: ab2a6d1d204bb474aa6ea87676bda38d, type: 3}
   m_PrefabInstance: {fileID: 1504578454}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1506973213
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -6.906
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.083
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -4.546
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.65112954
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.1828937
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.72940844
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.102682486
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 22.828
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 98.17
+      objectReference: {fileID: 0}
+    - target: {fileID: 1100405974429897764, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 8.303
+      objectReference: {fileID: 0}
+    - target: {fileID: 2498647125139400491, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
+      propertyPath: m_Name
+      value: "Photo board \u7167\u7247\u5899"
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 16af6e772b5d90348ad86169bbd8d59c, type: 3}
 --- !u!1 &1508640772
 GameObject:
   m_ObjectHideFlags: 0
@@ -139265,3 +139322,4 @@ SceneRoots:
   - {fileID: 1498639489}
   - {fileID: 1753982838}
   - {fileID: 1603344173}
+  - {fileID: 1506973213}
