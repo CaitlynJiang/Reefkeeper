@@ -9,6 +9,10 @@ namespace Reefkeeper
     [RequireComponent(typeof(XRGrabInteractable))]
     public sealed class ReefBrush : MonoBehaviour
     {
+        // Only actual tool cleaning raises this; setup scripts may clear patches silently.
+        public static event System.Action<ReefBrush, RackDirtPatch, Vector3> PatchCleaned;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetEvents() => PatchCleaned = null;
         public Transform bristles;
         public CleaningToolKind toolKind;
         public float contactRadius = 0.075f;
@@ -67,6 +71,7 @@ namespace Reefkeeper
                         float before = patch.Cleaned;
                         patch.ApplyStroke(travel, toolKind);
                         float removed = patch.Cleaned - before;
+                        if (removed > 0 && patch.Complete) PatchCleaned?.Invoke(this, patch, point);
                         if (removed > 0 && toolKind == CleaningToolKind.Scraper && scrapeDebris)
                             scrapeDebris.EmitScrape(patch, point, tangent, removed * Mathf.Max(0.05f, patch.requiredTravel));
                         Scrubbing = !patch.Complete;

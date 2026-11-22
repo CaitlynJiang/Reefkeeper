@@ -1,0 +1,65 @@
+Current status — 2026-11-20
+
+- The user tested surface holding on the headset and reported that it works well.
+  Keep this implementation and its existing swim restart behavior unchanged.
+- The user reported that the right thumb/middle gesture did not open the wheel
+  and decided the gesture was unsuitable. The dedicated wheel commit cff3c4b has
+  been reverted, including its gesture timer, input changes and validation fixture.
+- Left thumb/middle journal control is unchanged. Existing Tab / right-controller
+  A wheel controls remain. No replacement gesture or UI has been added.
+- The builder now targets Reefkeeper_Swan_SurfaceHold_2026-11-20.apk so a future
+  build cannot overwrite or be confused with the combined comparison APK below.
+  No new APK is produced by this cleanup itself.
+- The separate, uncommitted coral-touch prototype is not included in this push.
+- Cleanup validation: Unity compiled successfully; CheckSurfaceHold.cs and
+  CheckHandControls.cs passed in the Editor. Surface-hold source is unchanged
+  from the user-tested build; ReefToolMenu is restored to checkpoint 96c0d91.
+
+Historical combined hand interaction prototype — 2026-11-19
+The following describes the earlier comparison package, not the current wheel controls.
+
+Two separate commits:
+1. cff3c4b: right thumb + middle pinch held 0.5s toggles the existing Tools wheel.
+   Release, aim with the right-hand ray, then index-pinch an acquired tool.
+2. Surface hold: put an empty hand within 7cm of an existing solid collider and
+   thumb + index pinch. Either hand stops body locomotion; release lets go.
+   A second hand can keep holding a surface or use a brush/scraper independently.
+
+After release, move an eligible free hand at least 8cm to rearm its original
+swimming gesture. An already extended, stationary arm cannot resume the old glide.
+This is a stop/hold prototype, not climbing or pulling the body along a surface.
+Head and hand tracking remain live. No UI or player-facing text was added.
+
+Scope and cost:
+- Reuses existing collision geometry. Decoration without a collider cannot anchor.
+- One bounded, nonallocating overlap query per new pinch; no repeated searches
+  while idle/holding, no physics joints or finger rigidbodies.
+- Nearby pickups and Lucky Cat take priority; triggers, rigidbodies, player rig,
+  Water, UI and Ignore Raycast layers cannot become anchors.
+- Releases on pinch opening, tracking loss, disabled/destroyed/moving surface,
+  hand moving over 25cm away, opening a menu, focus loss or changing input mode.
+- A consumed anchor pinch stays unavailable to other grab/use/talk actions until
+  the fingers release, preventing accidental remote grabs after an anchor breaks.
+- The approved 3cm opposing tool offsets, SDK and ordinary swim tuning are unchanged.
+
+Validation:
+- Unity compilation; CheckSurfaceHold.cs; CheckHandToolWheel.cs;
+  CheckHandControls.cs. Synthetic Editor inputs, not physical headset validation.
+- Actual XRI brush/scraper selection while the other hand anchors; immediate zero
+  swim velocity, no stale glide after release, deliberate new movement resumes glide.
+- First-commit reverse merge checked against the combined source without conflict.
+  Either feature can be reverted separately. Earlier working APKs are retained.
+
+Headset checks still needed:
+Normal swimming first; wheel open/select/release; approach a solid bench/ship
+surface, pinch to stop, release and deliberately swim again; then one-hand
+anchoring with the other hand cleaning. Real hand-tracking comfort and performance
+must be confirmed on the PICO device.
+
+Final APK:
+Reefkeeper/Builds/Reefkeeper_Swan_HandWheel_SurfaceHold_2026-11-19.apk
+104473586 bytes
+SHA256: 9D515BCA3D6D9B2C2651E2C6122C6851CFB3BAB573BB23DB64821D374EF30E09
+Unity Android IL2CPP build succeeded. Android signature verified with the same
+debug certificate as the previous test APK. Package com.reefkeeper.v2; PICO hand
+tracking permission present. No physical-device installation/testing was performed.
