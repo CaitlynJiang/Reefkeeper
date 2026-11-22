@@ -27644,6 +27644,7 @@ MonoBehaviour:
   purrMeow: {fileID: 8300000, guid: 0ca9acc9f3e6469e981e09cdf07a5b00, type: 3}
   shortMeow: {fileID: 8300000, guid: 79f3b05073c44323b6e04b8b0a5db51a, type: 3}
   counterSpot: {fileID: 598437247}
+  sellFromCart: 1
 --- !u!1 &497538846
 GameObject:
   m_ObjectHideFlags: 0
@@ -47107,6 +47108,7 @@ MonoBehaviour:
   glideReach: 0.42
   glideHoldSeconds: 0.35
   glideSpeed: 0.55
+  reachForGrab: 0.3
 --- !u!114 &896995183
 MonoBehaviour:
   m_ObjectHideFlags: 0
