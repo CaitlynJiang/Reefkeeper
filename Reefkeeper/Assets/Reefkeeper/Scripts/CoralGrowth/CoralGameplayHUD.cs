@@ -114,12 +114,12 @@ namespace Reefkeeper.Corals
             float p = shown.Progress;
             fill.gameObject.SetActive(p > 0.01f);
             fill.sizeDelta = new Vector2(Mathf.Max(12, TrackWidth * p), 8);
-            fillImage.color = shown.Paused ? Amber : Green;
+            fillImage.color = shown.GrowthPaused ? Amber : Green;
             percent.text = Mathf.FloorToInt(p * 100) + "%";
 
             bool ready = shown.Ready && !shown.Paused;
             button.gameObject.SetActive(ready);
-            status.gameObject.SetActive(!ready);
+            status.gameObject.SetActive(!ready && !shown.TouchPaused);
             card.sizeDelta = new Vector2(CardWidth, ready ? 150 : 132);
             if (ready) return;
             if (shown.Paused) SetStatus(moss, shown.socket.moss.SurfaceName + " is blocking growth", Amber, 1);

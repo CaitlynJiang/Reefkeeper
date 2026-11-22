@@ -18,17 +18,20 @@ namespace Reefkeeper.Corals
         Mood shown;
         float blockedTime, lastCleaned, smileLeft, heartLeft, opacity, popAge;
         bool wasBlocked;
+        bool showCareCues = true;
         Transform stage;
         float stageTopOffset, stageRadius, side;
 
-        public void Bind(CoralNurture care)
+        public void Bind(CoralNurture care, bool ambientCareCues = true)
         {
             nurture = care;
+            showCareCues = ambientCareCues;
             side = (GetInstanceID() & 2) == 0 ? -1f : 1f;
             icons ??= new[]
             {
                 null, Load("Blocked"), Load("Crying"), Load("Fertilize"), Load("Smile"), Load("Heart"),
             };
+            if (bubble) return;
             var visual = new GameObject("Coral care emote");
             visual.transform.SetParent(transform, false);
             bubble = visual.AddComponent<SpriteRenderer>();
@@ -57,13 +60,14 @@ namespace Reefkeeper.Corals
             wasBlocked = blocked;
 
             Mood mood = Mood.None;
-            if (blocked)
+            if (nurture.TouchPaused) mood = Mood.Crying;
+            else if (showCareCues && blocked)
             {
                 if (smileLeft > 0f) mood = Mood.Smile;
                 else mood = blockedTime >= CryAfterSeconds ? Mood.Crying : Mood.Blocked;
             }
-            else if (heartLeft > 0f) mood = Mood.Heart;
-            else if (nurture.Ready) mood = Mood.Fertilize;
+            else if (showCareCues && heartLeft > 0f) mood = Mood.Heart;
+            else if (showCareCues && nurture.Ready) mood = Mood.Fertilize;
 
             if (mood != Mood.None && mood != shown)
             {
