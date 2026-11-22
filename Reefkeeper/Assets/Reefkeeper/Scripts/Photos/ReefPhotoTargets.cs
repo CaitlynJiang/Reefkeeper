@@ -32,6 +32,7 @@ namespace Reefkeeper.Photos
 
         static readonly List<ReefFishSchool> schools = new List<ReefFishSchool>();
         static readonly List<CoralCrab> crabs = new List<CoralCrab>();
+        static readonly List<LuckyCat> cats = new List<LuckyCat>();
         static readonly Dictionary<Transform, float> radii = new Dictionary<Transform, float>();
         static readonly Dictionary<Transform, Renderer> bodies = new Dictionary<Transform, Renderer>();
         static float nextScan = -1;
@@ -66,6 +67,8 @@ namespace Reefkeeper.Photos
             }
             foreach (var crab in crabs)
                 if (crab && crab.isActiveAndEnabled) Consider("CoralCrab", crab.transform, Center(crab.transform));
+            foreach (var cat in cats)
+                if (cat && cat.isActiveAndEnabled) Consider("LuckyCat", cat.transform, Center(cat.transform));
             foreach (var coral in CoralGrowth.Active)
             {
                 if (!coral || !coral.TryGetComponent<CoralNurture>(out var nurture) || !nurture.FullyGrown) continue;
@@ -79,7 +82,8 @@ namespace Reefkeeper.Photos
         {
             if (Time.unscaledTime < nextScan) return;
             nextScan = Time.unscaledTime + 1f;
-            schools.Clear(); crabs.Clear();
+            schools.Clear(); crabs.Clear(); cats.Clear();
+            cats.AddRange(Object.FindObjectsByType<LuckyCat>(FindObjectsSortMode.None));
             schools.AddRange(Object.FindObjectsByType<ReefFishSchool>(FindObjectsSortMode.None));
             crabs.AddRange(Object.FindObjectsByType<CoralCrab>(FindObjectsSortMode.None));
             if (radii.Count > 256) { radii.Clear(); bodies.Clear(); }
@@ -108,6 +112,6 @@ namespace Reefkeeper.Photos
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { schools.Clear(); crabs.Clear(); radii.Clear(); bodies.Clear(); nextScan = -1; }
+        static void ResetStatics() { schools.Clear(); crabs.Clear(); cats.Clear(); radii.Clear(); bodies.Clear(); nextScan = -1; }
     }
 }

@@ -14,6 +14,10 @@ namespace Reefkeeper.Corals
         MaterialPropertyBlock tint;
         int baseColorId;
         readonly List<ShopRecord> inserted = new List<ShopRecord>(3);
+        /// <summary>The record currently playing, or null (read by LuckyCatProgress to spin the turntable).</summary>
+        public ShopRecord Playing => playing;
+        /// <summary>Where a record sits to play.</summary>
+        public BoxCollider Slot => slot;
 
         public static void Install(CoralShop shop, CoralCart sales)
         {

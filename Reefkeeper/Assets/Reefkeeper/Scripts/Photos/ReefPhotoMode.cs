@@ -24,6 +24,10 @@ namespace Reefkeeper.Photos
         public static ReefPhotoMode Instance { get; private set; }
         /// <summary>True while photo mode uses the hands' pinches (and briefly after, until they open).</summary>
         public static bool OwnsHands => Instance && Instance.owning;
+        /// <summary>False until the player has a camera (Lucky Cat's gift): no hint, no gesture while locked.</summary>
+        public static bool Unlocked = true;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetUnlock() => Unlocked = true;
 
         [Header("Gesture")]
         [Tooltip("Seconds the frame gesture must be held to enter photo mode.")] public float holdToEnter = 0.3f;
@@ -104,7 +108,7 @@ namespace Reefkeeper.Photos
             BuildUI();
             var head = view.transform;
             bool blocked = ReefToolMenu.BlocksWorldInput || DiveCardMock.Instance && DiveCardMock.Instance.IsOpen;
-            hasTarget = ReefPhotoTargets.TryFind(head.position, head.forward, out target);
+            hasTarget = Unlocked && ReefPhotoTargets.TryFind(head.position, head.forward, out target);
             string nearby = hasTarget ? target.species : null;
             if (nearby != lastNearby) { Log(nearby != null ? $"near new species {nearby} ({target.distance:F1} m, {target.angle:F0} deg)" : $"left the zone of {lastNearby}"); lastNearby = nearby; }
             float dt = Time.unscaledDeltaTime;
@@ -122,7 +126,7 @@ namespace Reefkeeper.Photos
                 if (hasTarget && Time.unscaledTime >= nextGestureLog) { nextGestureLog = Time.unscaledTime + 1; Log("gesture: " + (frame ? "OK, holding " + frameHeld.ToString("F2") + " s" : why)); }
                 frameHeld = frame ? frameHeld + dt : 0;
                 if (frameHeld >= holdToEnter) Open();
-                else if (keys != null && keys.pKey.wasPressedThisFrame && !blocked)
+                else if (keys != null && keys.pKey.wasPressedThisFrame && !blocked && Unlocked)
                 {
                     if (hasTarget) Open();
                     else Toast("No new species nearby");

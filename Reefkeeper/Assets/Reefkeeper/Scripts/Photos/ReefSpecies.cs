@@ -17,7 +17,8 @@ namespace Reefkeeper.Photos
             ("Fish2", "Blue Reef Fish", Kind.Animal),
             ("Fish3", "Striped Reef Fish", Kind.Animal),
             ("Manta ray", "Manta Ray", Kind.Animal),
-            // The coral crab is off the wall for now: add ("CoralCrab", "Coral Crab", Kind.Animal) back here.
+            // Lucky Cat took the coral crab's place; the crab ("CoralCrab", "Coral Crab") is off the wall for now.
+            ("LuckyCat", "Lucky Cat", Kind.Animal),
             ("BarrelSponge", "Barrel Sponge", Kind.Coral),
             ("BranchCoral", "Branch Coral", Kind.Coral),
             ("DiscCoral", "Mushroom Coral", Kind.Coral),

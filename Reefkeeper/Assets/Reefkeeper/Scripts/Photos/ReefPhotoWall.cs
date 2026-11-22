@@ -147,7 +147,8 @@ namespace Reefkeeper.Photos
             RenderTexture.active = rt;
             GL.Clear(true, true, Paper);
             var icon = Resources.Load<Texture2D>("DiveCards/CoralStickers/" + id + "_S3")
-                ?? (id == "Fish1" ? Resources.Load<Texture2D>("DiveCards/Marine/Visitor0") : id == "Fish3" ? Resources.Load<Texture2D>("DiveCards/Marine/Visitor1") : null);
+                ?? (id == "Fish1" ? Resources.Load<Texture2D>("DiveCards/Marine/Visitor0") : id == "Fish3" ? Resources.Load<Texture2D>("DiveCards/Marine/Visitor1")
+                    : id == "LuckyCat" ? Resources.Load<Texture2D>("DiveCards/LuckyCatStamp") : null);
             if (icon)
             {
                 GL.PushMatrix();
