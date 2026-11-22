@@ -6,14 +6,35 @@ scallops by default. The reward amount is configurable on ReefScallopReward.
 Initialization clears and repeated contact with an already clean patch do not
 award currency. Regrown algae can award a new reward when cleaned again.
 
-Shells pop near the projected cleaning position and fly, staggered, to a
+Shells pop at the actual world-space cleaning position and fly, staggered, to a
 temporary upper-right counter. Each arrival increments the visible number and
 plays the collection sound in the same event. The counter then fades away.
 There is no permanent HUD, additional copy, or input interception.
 
+VR readability prototype: only the upper-right counter stays on the overlay.
+Its icon and peach number are 1.8x their desktop size, shifted slightly inward
+to viewport (0.80,0.80). World shells use 16cm billboard quads (the visible
+shell is smaller due to the original transparent image padding). They always
+face the camera while retaining genuine world positions, perspective and depth
+occlusion. They fade when approaching within 20-45cm along the camera forward
+axis, avoiding a large close-up across the eyes. The arrival target is the
+actual counter icon in VR; desktop uses its projection at a 1.1m depth.
+
+One reusable dynamic mesh draws up to 18 shells and 18 faint trails, using one
+shared material and atlas. No physics, additional cameras or per-shell objects.
+WorldSprite.shader supports stereo rendering and tests against scene depth;
+the existing UI overlay shader is retained for the counter only.
+Separate prototype APK: Builds/Reefkeeper_Swan_WorldScallops_2026-11-21.apk.
+This iteration is a local prototype on top of the committed ScallopRewards
+version; the earlier APK remains available for comparison.
+
 Balance is session-only, credited immediately; the visible count catches up on
-arrival. Workshop reset clears it. Persistent saving and spending are not part
-of this prototype. Award(amount, worldOrigin) is reusable for future rewards.
+arrival. Workshop reset clears it. CoralCart spends through TrySpend and shows
+the existing shortfall feedback if funds are insufficient. Payment shells fly
+from the counter back to the purchased coral. When incoming reward animations
+are still pending, a payment unit waits for a visible unit before leaving so
+the displayed balance never becomes negative. Persistent saving is not included.
+Award(amount, worldOrigin) is reusable for future rewards.
 The flight pool has 18 entries; overlapping rewards queue instead of dropping.
 
 Art uses six transparent 2D renders of the user's coral-color scallop model.
@@ -35,14 +56,29 @@ brush/scraper completion; setup/wrong-tool/duplicate guards; regrowth; arrival
 sound/count synchronization; fade; overlapping queued rewards; fixed pool;
 world-space XR canvas; nonblocking UI; disable/reset behavior.
 These are Editor fixtures, not physical headset or performance tests.
+CheckScallopSpending.cs covers the merged collection/purchase flow, including
+spending immediately before earned shells arrive and failed repeat purchases.
 
 The local preview uses actual Unity-rendered frames and the selected sound
 mixed at recorded arrival timestamps. PICO visual placement and audio feel
 still need headset testing.
 
-PICO test build target: Builds/Reefkeeper_Swan_ScallopRewards_2026-11-21.apk.
-Build with Reefkeeper.Editor.SwanPicoBuild.Build after switching to Android.
-This snapshot includes the previously approved grip and surface holds plus
-scallop rewards. Local coral-touch and hand-overlay experiments are separate.
+PICO test build target: Builds/LDC_Swan_v{number}.apk.
+Stop Play mode and save work. In File > Build Profiles, select Android and
+Switch Platform if Android is not already active. Then use the Unity menu
+Reefkeeper > PICO > Build Swan Test APK. Enter the filename version (e.g. 5)
+in the prompt; it remembers the last entry and confirms existing-file replacement.
+The output folder opens on success. Canceling the prompt does not start a build.
+The number changes the filename only, not Android versionCode/bundleVersion.
+Noninteractive SwanPicoBuild.Build() defaults to v5; BuildVersion("6") selects v6.
+The reusable prompt supports Quest filenames, but its actual Quest build action
+must be wired up when the Quest platform configuration is integrated.
+The menu uses Reefkeeper.Editor.SwanPicoBuild.Build, including existing Swan
+configuration, hand tracking, user icon layers and local test signing.
+Keep the existing debug keystore to update an installed test app in place.
+This is a PICO-only entry; dual-platform configuration is not implemented yet.
+This snapshot combines shared journal/photo/shop features with world-space
+scallop rewards and the enlarged VR counter. The unfinished local coral-touch
+prototype is excluded from this test APK.
 The generated APK is a test build using the established local debug identity;
 it is not a store-release artifact.

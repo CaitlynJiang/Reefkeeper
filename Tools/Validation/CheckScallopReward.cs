@@ -62,9 +62,10 @@ public static class CheckScallopReward
    {
     var type=entry.GetType();
     if(!(bool)type.GetField("active").GetValue(entry))continue;
-    var icon=(Image)type.GetField("image").GetValue(entry);
-    var trail=(Image)type.GetField("trail").GetValue(entry);
-    Need(Array.IndexOf(angles,icon.sprite)>=0&&trail.sprite==icon.sprite,"Flight/trail angle mismatch");
+    var sprite=(Sprite)type.GetField("sprite").GetValue(entry);
+    var origin=(Vector3)type.GetField("origin").GetValue(entry);
+    Need(Array.IndexOf(angles,sprite)>=0,"Flight angle missing from shared atlas");
+    Need(Vector3.Distance(origin,algae.transform.position)<.15f,"Scallop did not spawn near the real cleaning point");
    }
    for(int i=0;i<70;i++)tick(.05f);
    Need(reward.DisplayedBalance==3&&arrivals.Count==3&&!reward.Visible&&reward.InFlight==0,"Arrival count or fade-out failed");
@@ -81,6 +82,13 @@ public static class CheckScallopReward
    typeof(XRWorldHud).GetMethod("Switch",F).Invoke(adapter,new object[]{true});
    Need(canvas.renderMode==RenderMode.WorldSpace&&canvas.worldCamera,"XR feedback is not world-space");
    reward.Award(37,Camera.main.transform.position-Camera.main.transform.forward);
+   tick(.05f);
+   Need(Get<RectTransform>(reward,"counter").localScale.x>=1.79f,"VR counter was not enlarged independently");
+   var end=(Vector3)typeof(ReefScallopReward).GetMethod("FlightDestination",F).Invoke(reward,new object[]{Camera.main});
+   Need(Vector3.Distance(end,Get<RectTransform>(reward,"counterIcon").position)<.001f,"World flight misses the actual VR counter icon");
+   Need(canvas.GetComponentsInChildren<Image>(true).Length==1,"Flying scallops still live on the UI canvas");
+   var world=shop.transform.Find("World scallop rewards");
+   Need(world&&world.GetComponents<MeshRenderer>().Length==1&&!world.GetComponent<Collider>(),"World billboards not pooled into one nonphysical renderer");
    for(int i=0;i<220;i++){tick(.05f);Need(reward.InFlight<=18,"Exceeded fixed visual pool");}
    Need(reward.Balance==46&&reward.DisplayedBalance==46&&!reward.Visible,"Queued bursts/offscreen origin lost rewards or did not fade");
    typeof(XRWorldHud).GetMethod("Switch",F).Invoke(adapter,new object[]{false});
@@ -88,7 +96,7 @@ public static class CheckScallopReward
    Need(!reward.Visible&&reward.DisplayedBalance==reward.Balance&&reward.InFlight==0,"Disabling lost currency or left visible tokens");
    reward.enabled=true;reward.ResetSession();
    Need(reward.Balance==0&&reward.DisplayedBalance==0&&!reward.Visible,"Reset did not clear the prototype session balance");
-   return "PASS: actual brush/scraper Sweep completion, wrong-tool/setup/duplicate guards, algae regrowth, staggered flights, arrival-only audio and numeric increments, fade-out, overlapping/queued rewards, fixed pool, XR world canvas, nonblocking UI, disable/reset. Editor fixtures; PICO visual/audio feel still needs headset testing.";
+   return "PASS: brush/scraper rewards, world-space spawn, shared six-angle atlas, single pooled world renderer, enlarged VR counter and world arrival alignment, arrival-only sound/count, fade, queued bursts, nonblocking UI and reset. Editor fixtures; headset comfort and occlusion still need physical testing.";
   }
   finally
   {
