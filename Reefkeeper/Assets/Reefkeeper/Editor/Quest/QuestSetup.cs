@@ -34,7 +34,7 @@ namespace Reefkeeper.Quest
         public static void Configure()
         {
             var android = NamedBuildTarget.Android;
-            PlayerSettings.productName = "Reefkeeper Quest";
+            PlayerSettings.productName = "Lucky Dive Co.";
             PlayerSettings.SetApplicationIdentifier(android, PackageId);
             PlayerSettings.SetScriptingBackend(android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
