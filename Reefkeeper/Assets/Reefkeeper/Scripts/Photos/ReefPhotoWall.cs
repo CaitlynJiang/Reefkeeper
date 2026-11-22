@@ -23,6 +23,7 @@ namespace Reefkeeper.Photos
         Material[] originalMaterials;
         Coroutine[] reveals;
         bool ready;
+        Vector3[] slotFront, slotUp;
         static readonly int Reveal = Shader.PropertyToID("_Reveal"), PlaceholderMap = Shader.PropertyToID("_PlaceholderMap");
 
         void OnEnable() => activeWalls.Add(this);
@@ -39,7 +40,9 @@ namespace Reefkeeper.Photos
             pose = default;
             int i = ReefSpecies.IndexOf(species);
             if (!ready || i < 0 || i >= slots.Length || !slots[i] || !slots[i].enabled || !slots[i].gameObject.activeInHierarchy) return false;
-            pose = new Pose(slots[i].bounds.center + transform.forward * .025f, Quaternion.LookRotation(-transform.forward, transform.up));
+            Vector3 front=slots[i].transform.TransformDirection(slotFront[i]);
+            Vector3 up=slots[i].transform.TransformDirection(slotUp[i]);
+            pose = new Pose(slots[i].bounds.center + front * .025f, Quaternion.LookRotation(-front, up));
             return true;
         }
 
@@ -50,7 +53,7 @@ namespace Reefkeeper.Photos
             foreach (var candidate in activeWalls)
             {
                 if (!candidate || !candidate.isActiveAndEnabled || !candidate.TryGetSlotPose(species, out var pose)) continue;
-                if (Vector3.Dot(position - pose.position, candidate.transform.forward) < -.025f) continue;
+                if (Vector3.Dot(position - pose.position, -(pose.rotation * Vector3.forward)) < -.025f) continue;
                 foreach (var slot in candidate.slots)
                 {
                     if (!slot || !slot.enabled || !slot.gameObject.activeInHierarchy) continue;
@@ -76,9 +79,14 @@ namespace Reefkeeper.Photos
             placeholders = new Texture[slots.Length];
             reveals = new Coroutine[slots.Length];
             originalMaterials = new Material[slots.Length];
+            slotFront=new Vector3[slots.Length];slotUp=new Vector3[slots.Length];
             developMaterial = new Material(Resources.Load<Shader>("Photos/PhotoDevelop"));
             for (int i = 0; i < slots.Length; i++) if (slots[i])
-            { originalMaterials[i] = slots[i].sharedMaterial; slots[i].sharedMaterial = developMaterial; }
+            {
+                slotFront[i]=slots[i].transform.InverseTransformDirection(transform.forward);
+                slotUp[i]=slots[i].transform.InverseTransformDirection(transform.up);
+                originalMaterials[i] = slots[i].sharedMaterial; slots[i].sharedMaterial = developMaterial;
+            }
             ready = true;
             for (int i = 0; i < slots.Length; i++) Show(i, false);
             // More photos on the board than species: take the spare cards (and their clips) down.
@@ -86,7 +94,9 @@ namespace Reefkeeper.Photos
             {
                 if (!cards[i]) continue;
                 cards[i].gameObject.SetActive(false);
-                var clip = cards[i].parent && cards[i].parent.parent ? cards[i].parent.parent.Find("Pb_Clip_" + cards[i].name.Substring("Photo_".Length)) : null;
+                var clipName = "Pb_Clip_" + cards[i].name.Substring("Photo_".Length);
+                var clip = cards[i].parent ? cards[i].parent.Find(clipName) : null;
+                if (!clip && cards[i].parent && cards[i].parent.parent) clip = cards[i].parent.parent.Find(clipName);
                 if (clip) clip.gameObject.SetActive(false);
             }
             ReefPhotoAlbum.Changed += OnPhoto;

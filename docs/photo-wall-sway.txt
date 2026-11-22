@@ -1,0 +1,31 @@
+Independent photo-wall vines - 2026-11-22
+
+Replaces the misunderstood whole-frame bend prototype. Six vine groups hang
+from six fixed top pivots. Each owns its original stem, leaves, matching photos
+and clips. The wooden posts, beam, crossbar, feet and decorations stay fixed.
+No skinned mesh, rigidbody or joint was added. Original mesh density is unchanged.
+The previous generated whole-wall skin is removed; original frame colliders restored.
+
+Tracked empty-hand palm/fingertip sweeps affect only the nearest contacted vine.
+Pinching, occupied hands, menus, camera mode, tracking loss and jumps are excluded.
+Each strand has an independent damped angular spring, maximum eight degrees.
+One entry gives one impulse; withdraw before touching again. Resting strands sleep.
+This MVP swings each complete strand about its suspension point; it does not
+simulate flexible sections or cloth. Photos inherit their own vine's motion.
+
+HandTrackingSpace now performs the normal lazy rig rebind when its cached origin
+has been replaced. An Editor input failure exposed this missing rebind; the
+corresponding hardware behavior still needs a new PICO test.
+
+PhotoBoardSwayBuilder.Build migrates the old rig without replacing the source
+FBX or unrelated wall content. Repeated calls preserve the independent rig.
+
+Validation: all six independently react, neighbours and wooden frame stay fixed,
+suspension stays fixed, all cards are parented to vines, springs return to rest,
+occupied hands and tracking jumps are ignored. Moving photo deposit target also
+checked against the actual scene without writing save data.
+
+Preview: artifacts/photo-wall-single-vine-recording/PhotoWall_Independent_Vine.mp4
+7 seconds, 30 fps, actual Unity scene rendering. Green point is synthetic fingertip
+input replayed through SampleHands; it is not a PICO hardware recording. No new UI,
+APK or Git commit was produced in this revision.
