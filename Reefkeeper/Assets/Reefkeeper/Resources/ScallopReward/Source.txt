@@ -1,0 +1,20 @@
+Image: six AnglePreviews renders from the user's scallop.blend.
+Scallop.png packs these into one 768x512 atlas, six 256x256 tiles.
+Each flying shell randomly chooses a view at spawn; its trail shares that view.
+The temporary counter uses 03_right_30.png (upper-right comparison view).
+Runtime uses transparent 2D sprites, not live 3D shell models.
+Rebuild via Tools/Validation/PrepareScallopAtlas.cs in the Unity Editor.
+Original sources are archived at ArtSource/Currency/Scallop.
+
+Audio: bubbles 'pop', by farfadet46.
+Source: https://opengameart.org/content/bubbles-pop
+File: https://opengameart.org/sites/default/files/pop.ogg
+License: CC0 1.0 Universal, as stated on the author's source page.
+License reference: https://creativecommons.org/publicdomain/zero/1.0/
+Converted to 44.1kHz mono 16-bit WAV and peak-adjusted for the chosen audition.
+Duration: approximately 0.276 seconds. Retrieved 2026-11-21.
+
+Font: Lilita One, Juan Montoreano, SIL Open Font License 1.1.
+Source: https://github.com/google/fonts/tree/main/ofl/lilitaone
+Full license: LilitaOne-OFL.txt alongside this file.
+User-selected number color: peach #FFC2AC.

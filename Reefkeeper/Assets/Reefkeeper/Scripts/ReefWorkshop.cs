@@ -25,6 +25,7 @@ namespace Reefkeeper
             xrGroup.SetActive(!desktopSmoke); desktopPlayer.SetActive(desktopSmoke);
             if (scraper && !GetComponent<ReefToolMenu>()) gameObject.AddComponent<ReefToolMenu>();
             if (scraper && !GetComponent<DiveCardMock>()) gameObject.AddComponent<DiveCardMock>();
+            if (!GetComponent<ReefScallopReward>()) gameObject.AddComponent<ReefScallopReward>();
         }
         void Update()
         {
@@ -43,6 +44,7 @@ namespace Reefkeeper
         }
         public void ResetWorkshop()
         {
+            GetComponent<ReefScallopReward>()?.ResetSession();
             if (scraper && scraper.scrapeDebris) scraper.scrapeDebris.Clear();
             foreach (var patch in patches) patch.ResetDirt();
             ReturnBrush();
