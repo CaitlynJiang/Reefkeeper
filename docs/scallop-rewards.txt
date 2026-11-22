@@ -1,0 +1,48 @@
+Scallop collection prototype
+============================
+
+Completing an algae or fire-coral patch using the correct tool awards three
+scallops by default. The reward amount is configurable on ReefScallopReward.
+Initialization clears and repeated contact with an already clean patch do not
+award currency. Regrown algae can award a new reward when cleaned again.
+
+Shells pop near the projected cleaning position and fly, staggered, to a
+temporary upper-right counter. Each arrival increments the visible number and
+plays the collection sound in the same event. The counter then fades away.
+There is no permanent HUD, additional copy, or input interception.
+
+Balance is session-only, credited immediately; the visible count catches up on
+arrival. Workshop reset clears it. Persistent saving and spending are not part
+of this prototype. Award(amount, worldOrigin) is reusable for future rewards.
+The flight pool has 18 entries; overlapping rewards queue instead of dropping.
+
+Art uses six transparent 2D renders of the user's coral-color scallop model.
+Each shell chooses one view at spawn; its faint trail uses the same view.
+The counter keeps the upper-right comparison angle, 03_right_30.png.
+All views share one 768x512 atlas with 256px tiles, bilinear filtering, no
+mipmaps, no readable CPU copy, and an Android ASTC 6x6 override. The shell pool
+is unchanged. Sprite objects are created once and destroyed with the component.
+No live 3D shell rendering is used. Blender sources and original variants are
+in ArtSource/Currency/Scallop. Repack with Tools/Validation/PrepareScallopAtlas.cs.
+Numbers use Lilita One in peach #FFC2AC; the OFL license accompanies the font.
+Audio is farfadet46's bubbles 'pop', approximately 0.276 seconds, licensed CC0:
+https://opengameart.org/content/bubbles-pop
+Runtime source/license details are beside the imported assets in
+Reefkeeper/Assets/Reefkeeper/Resources/ScallopReward/Source.txt.
+
+Validation: Tools/Validation/CheckScallopReward.cs passed in Unity Play mode:
+brush/scraper completion; setup/wrong-tool/duplicate guards; regrowth; arrival
+sound/count synchronization; fade; overlapping queued rewards; fixed pool;
+world-space XR canvas; nonblocking UI; disable/reset behavior.
+These are Editor fixtures, not physical headset or performance tests.
+
+The local preview uses actual Unity-rendered frames and the selected sound
+mixed at recorded arrival timestamps. PICO visual placement and audio feel
+still need headset testing.
+
+PICO test build target: Builds/Reefkeeper_Swan_ScallopRewards_2026-11-21.apk.
+Build with Reefkeeper.Editor.SwanPicoBuild.Build after switching to Android.
+This snapshot includes the previously approved grip and surface holds plus
+scallop rewards. Local coral-touch and hand-overlay experiments are separate.
+The generated APK is a test build using the established local debug identity;
+it is not a store-release artifact.
