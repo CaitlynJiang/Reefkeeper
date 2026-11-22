@@ -17,6 +17,7 @@ namespace Reefkeeper
         protected override void Awake()
         {
             base.Awake();
+            ReefUnderwaterThrow.Install(this);
             foreach (var mesh in GetComponentsInChildren<MeshFilter>())
             {
                 var shell = new GameObject("Brush pickup outline");

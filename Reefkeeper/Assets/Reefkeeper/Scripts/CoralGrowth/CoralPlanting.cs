@@ -247,6 +247,8 @@ namespace Reefkeeper.Corals
             if (!fragment) return null;
             var coral = fragment.GetComponent<CoralGrowth>();
             string species = CoralRules.Species(fragment.gameObject);
+            var throwing = fragment.GetComponent<ReefUnderwaterThrow>();
+            if (throwing) { throwing.StopMotion(); throwing.enabled = false; Destroy(throwing); }
             Destroy(fragment);   // planted corals stay put; the grab component goes
             foreach (var c in coral.GetComponents<Collider>()) c.isTrigger = true;   // the brush reaches the moss through it
             CoralSeating.Seat(coral, socket, null, rope);

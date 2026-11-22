@@ -1,0 +1,29 @@
+Underwater throw prototype
+
+Scope
+- Brush, scraper, loose coral fragments and printed photos share ReefUnderwaterThrow.
+- Release slowly to leave the item in place; move a tracked hand/controller deliberately and release to launch.
+- Existing grab controls and calibrated tool grip transforms are unchanged. No new UI or copy.
+- Desktop center-aim's persistent item slot is unchanged. This prototype targets tracked XR input.
+
+Motion
+- Palm poses (bare hands) or controller poses are sampled relative to the XR tracking origin, excluding locomotion and artificial turning.
+- A preallocated 24-sample ring estimates motion over up to 120 ms; at least 55 ms of continuous history is required.
+- Threshold 0.55 m/s, velocity multiplier 0.85, maximum launch 1.8 m/s, angular cap 4 rad/s.
+- Photos cap at 1.2 m/s with stronger damping (3.5 vs 2.5 for other objects).
+- No gravity: items drift, slow down, and become kinematic again after settling or four seconds. This is neutral buoyancy, not a sinking/fluid simulation.
+- Uses existing colliders and a temporary dynamic rigidbody with speculative continuous collision detection. CharacterController collisions are ignored on launch.
+- Tracking loss/jumps, canceled selections and menu ownership suppress launch. Regrabbing stops flight. Planting, photo deposit and tool recall cancel queued motion.
+
+Integration
+- ReefBrushInteractable / ReefCoralFragment install the shared component at runtime.
+- ReefCoralPickup relinquishes its persistent slot after a tracked release; planting and shop returns take priority.
+- ReefPrintedPhoto installs a paper profile and stops motion before collection/fade-out.
+- CoralPlanting removes the throw component when planted; CoralShop and ReefWorkshop stop it before returning items.
+
+Validation (Unity 6000.3.19f1, Editor)
+- CheckUnderwaterThrow: actual XRI select/exit with synthetic tracked-hand samples; gentle release, capped throw, regrab/second release, tracking loss/jump/cancellation, tracking-origin translation/rotation exclusion, recall/disabled collector, physical drag/barrier collision/settling.
+- CheckPhotoDeposit: existing collection, reveal, duplicate and texture-persistence checks pass.
+- PreviewUnderwaterThrow: 270 native URP scene frames with scripted launch impulses. Encoded as artifacts/underwater-throw-preview.mp4. This is a visual fixture, not headset input footage.
+- No headset timing/comfort or controller hardware validation yet. Tune threshold, drag and range after PICO testing.
+- No APK generated, no commits or push performed for this prototype.

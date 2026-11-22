@@ -116,6 +116,7 @@ namespace Reefkeeper.Corals
 
         void PutOnCounter(ReefCoralFragment fragment)
         {
+            fragment.GetComponent<ReefUnderwaterThrow>()?.StopMotion();
             fragment.transform.SetPositionAndRotation(counterSpot.position, Quaternion.Euler(0, counterSpot.eulerAngles.y, 0));
             // Held corals turn their colliders into triggers; on the counter they are solid again so hands find them.
             foreach (var c in fragment.colliders) if (c) c.isTrigger = false;

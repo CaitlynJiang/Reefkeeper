@@ -78,6 +78,7 @@ namespace Reefkeeper.Photos
             grab.throwOnDetach = false;
             grab.useDynamicAttach = true;
             grab.retainTransformParent = false;
+            ReefUnderwaterThrow.Install(grab, paper: true);
             grab.enabled = false; // not while it is still sliding out
             grab.selectEntered.AddListener(_ => everHeld = true);
             grab.selectExited.AddListener(_ => { releasedAt = Time.time; rest = transform.position; });
@@ -117,6 +118,7 @@ namespace Reefkeeper.Photos
             if (!everHeld || depositing || vanishing || ReefPhotoAlbum.Has(species)) return false;
             if (!ReefPhotoWall.TryFindDeposit(species, transform.position, out var wall)) return false;
             depositing = true;
+            GetComponent<ReefUnderwaterThrow>()?.StopMotion();
             // Release XRI ownership before moving the print ourselves.
             grab.enabled = false;
             StartCoroutine(Deposit(wall));
@@ -153,6 +155,7 @@ namespace Reefkeeper.Photos
         {
             if (vanishing) return;
             vanishing = true;
+            GetComponent<ReefUnderwaterThrow>()?.StopMotion();
             if (grab) grab.enabled = false;
             StartCoroutine(Shrink());
         }
