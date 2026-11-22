@@ -244,10 +244,17 @@ namespace Reefkeeper.Corals
             return fragment;
         }
 
-        /// <summary>A coral was taken from the cart. No currency yet: the cat just thanks the player.</summary>
+        /// <summary>A coral was bought from the cart.</summary>
         public void Sold(string species, int price)
         {
             Say($"A {CoralRules.DisplayName(species)}, {price} scallops. Thank you! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy, 4f);
+        }
+
+        /// <summary>The player tried to take a coral they can't afford.</summary>
+        public void TooExpensive(string species, int price, int balance)
+        {
+            int missing = price - balance;
+            Say($"The {CoralRules.DisplayName(species)} is {price} scallops. {missing} more! Clean algae on the rack to earn some.", LuckyCat.Mood.Sad, 4f);
         }
 
         void Say(string text, LuckyCat.Mood face, float seconds = 0)

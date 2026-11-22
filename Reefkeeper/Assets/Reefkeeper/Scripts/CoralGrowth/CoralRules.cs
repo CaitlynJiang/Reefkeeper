@@ -46,16 +46,19 @@ namespace Reefkeeper.Corals
             _ => species,
         };
 
-        /// <summary>Price in scallops at Lucky Cat's cart (shown only; there is no currency yet).</summary>
+        /// <summary>
+        /// Price in scallops at Lucky Cat's cart. A cleaned patch pays 3 (ReefScallopReward), so the
+        /// tutorial's three spots (9) buy any of the cheaper corals.
+        /// </summary>
         public static int Price(string species) => species switch
         {
-            Disc => 5,
-            "BranchCoral" => 8,
-            Finger => 8,
-            "TendrilCoral" => 10,
-            "BarrelSponge" => 12,
-            "PolypPillar_Coral" or "PolypPillar_Pink" => 12,
-            _ => 10,
+            Disc => 3,
+            "BranchCoral" => 5,
+            Finger => 5,
+            "TendrilCoral" => 6,
+            "BarrelSponge" => 8,
+            "PolypPillar_Coral" or "PolypPillar_Pink" => 8,
+            _ => 6,
         };
 
         /// <summary>Where this coral can go, as a short hint.</summary>

@@ -120,6 +120,7 @@ namespace Reefkeeper
         public void TryGrabAimed()
         {
             if (!Aimed || Aimed == Held || Aimed.isSelected) return;
+            if (!Aimed.PurchaseAllowed) { Aimed.purchaseRefused?.Invoke(); return; }
             var target = Aimed;
             ClearHeld();
             holdParent = null;
