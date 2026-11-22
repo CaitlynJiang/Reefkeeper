@@ -22,13 +22,15 @@ namespace Reefkeeper
         public bool Visible => canvas && canvas.enabled && group.alpha > 0;
         public int InFlight { get; private set; }
         public event Action<int> Collected;
+        /// <summary>Raised with the amount when a purchase is paid.</summary>
+        public event Action<int> Spent;
 
         const int PoolSize = 18;
-        sealed class Batch { public int remaining; public Vector3 origin; }
+        sealed class Batch { public int remaining; public Vector3 origin; public bool spend; }
         sealed class Flight
         {
             public Image image, trail;
-            public bool active;
+            public bool active, spend;
             public float age, turn;
             public Vector2 origin, scatter;
         }
@@ -44,7 +46,7 @@ namespace Reefkeeper
         Sprite[] shellAngles;
         Material overlay;
         AudioSource audioSource;
-        float spawnWait, idleAge, pulse;
+        float spawnWait, idleAge, pulse, shortfall;
         int sequence;
 
         void Awake() => workshop = GetComponent<ReefWorkshop>();
@@ -82,6 +84,33 @@ namespace Reefkeeper
             // Intentionally no sound or displayed-number change here.
         }
 
+        /// <summary>
+        /// Pays <paramref name="amount"/> if the balance covers it: debited immediately; the counter
+        /// counts down as shells leave it and fly to <paramref name="worldTarget"/> (the reward flight
+        /// in reverse). Returns false, changing nothing, when the balance is too low.
+        /// </summary>
+        public bool TrySpend(int amount, Vector3 worldTarget)
+        {
+            if (amount <= 0) return true;
+            if (!isActiveAndEnabled || Balance < amount) return false;
+            BuildPresentation();
+            Balance -= amount;
+            pending.Enqueue(new Batch { remaining = amount, origin = worldTarget, spend = true });
+            idleAge = 0;
+            canvas.enabled = true;
+            Spent?.Invoke(amount);
+            return true;
+        }
+
+        /// <summary>Shows the counter with a short red shake: not enough scallops.</summary>
+        public void ShowShortfall()
+        {
+            if (!isActiveAndEnabled) return;
+            BuildPresentation();
+            shortfall = 1; idleAge = 0;
+            canvas.enabled = true;
+        }
+
         public void ResetSession()
         {
             Balance = 0;
@@ -89,7 +118,7 @@ namespace Reefkeeper
         }
         void ClearPresentation()
         {
-            pending.Clear();InFlight=0;spawnWait=idleAge=pulse=0;
+            pending.Clear();InFlight=0;spawnWait=idleAge=pulse=shortfall=0;
             DisplayedBalance=Balance;
             foreach(var f in flights) if(f != null)
             { f.active=false;f.image.gameObject.SetActive(false);f.trail.gameObject.SetActive(false); }
@@ -107,14 +136,22 @@ namespace Reefkeeper
             Vector2 size=root.rect.size;
             Vector2 destination=Vector2.Scale(size,new Vector2(Mathf.Clamp(targetViewport.x,.6f,.9f)-.5f,
                 Mathf.Clamp(targetViewport.y,.6f,.9f)-.5f));
-            counter.anchoredPosition=destination;
+            shortfall=Mathf.MoveTowards(shortfall,0,dt*1.6f);
+            counter.anchoredPosition=destination+new Vector2(Mathf.Sin(Time.unscaledTime*45)*7*shortfall,0);
+            number.color=Color.Lerp(new Color32(255,194,172,255),new Color32(240,96,84,255),Mathf.Clamp01(shortfall*1.5f));
             spawnWait=Mathf.Max(0,spawnWait-dt);
             if(pending.Count>0 && spawnWait<=0)
             {
                 foreach(var f in flights) if(!f.active)
                 {
                     var batch=pending.Peek();
-                    Spawn(f,ProjectOrigin(batch.origin,size));
+                    Spawn(f,ProjectOrigin(batch.origin,size),batch.spend);
+                    if(batch.spend)
+                    {
+                        // Paying: the number drops as each shell leaves the counter.
+                        DisplayedBalance--;number.text=DisplayedBalance.ToString();pulse=1;
+                        if(collectClip)audioSource.PlayOneShot(collectClip,volume*.7f);
+                    }
                     if(--batch.remaining==0)pending.Dequeue();
                     spawnWait=Mathf.Max(.03f,staggerSeconds);
                     break;
@@ -127,6 +164,7 @@ namespace Reefkeeper
                 if(t>=1)
                 {
                     f.active=false;f.image.gameObject.SetActive(false);f.trail.gameObject.SetActive(false);InFlight--;
+                    if(f.spend)continue; // A paid shell simply arrives at the purchase.
                     DisplayedBalance++;
                     number.text=DisplayedBalance.ToString();
                     pulse=1;idleAge=0;
@@ -135,27 +173,30 @@ namespace Reefkeeper
                     Collected?.Invoke(DisplayedBalance);
                     continue;
                 }
-                f.image.rectTransform.anchoredPosition=Position(f,destination,t);
-                float scale=t<.2f?Mathf.Lerp(.35f,1.15f,Mathf.Sin(t/.2f*Mathf.PI*.5f))
-                    :Mathf.Lerp(1.15f,.38f,Mathf.Pow((t-.2f)/.8f,2));
+                // Paid shells travel the same path backwards, from the counter to the purchase.
+                float path=f.spend?1-t:t;
+                f.image.rectTransform.anchoredPosition=Position(f,destination,path);
+                float scale=path<.2f?Mathf.Lerp(.35f,1.15f,Mathf.Sin(path/.2f*Mathf.PI*.5f))
+                    :Mathf.Lerp(1.15f,.38f,Mathf.Pow((path-.2f)/.8f,2));
                 f.image.rectTransform.localScale=Vector3.one*scale;
                 f.image.rectTransform.localEulerAngles=new Vector3(0,0,Mathf.Sin(t*Mathf.PI)*f.turn);
                 f.trail.gameObject.SetActive(t>.25f);
-                f.trail.rectTransform.anchoredPosition=Position(f,destination,Mathf.Max(0,t-.065f));
+                f.trail.rectTransform.anchoredPosition=Position(f,destination,f.spend?Mathf.Min(1,path+.065f):Mathf.Max(0,t-.065f));
                 f.trail.rectTransform.localScale=Vector3.one*scale*.85f;
                 f.trail.rectTransform.localRotation=f.image.rectTransform.localRotation;
             }
             pulse=Mathf.MoveTowards(pulse,0,dt*5);
             counter.localScale=Vector3.one*(1+.14f*Mathf.Sin(pulse*Mathf.PI*.5f));
-            bool busy=pending.Count>0||InFlight>0;
+            bool busy=pending.Count>0||InFlight>0||shortfall>0;
             idleAge=busy?0:idleAge+dt;
             float alpha=busy||idleAge<holdSeconds?1:1-Mathf.Clamp01((idleAge-holdSeconds)/Mathf.Max(.05f,fadeSeconds));
             group.alpha=Mathf.MoveTowards(group.alpha,alpha,dt*10);
             if(!busy && group.alpha<=0)canvas.enabled=false;
         }
 
-        void Spawn(Flight f,Vector2 origin)
+        void Spawn(Flight f,Vector2 origin,bool spend=false)
         {
+            f.spend=spend;
             int n=sequence++;
             // Pick once per shell, so it does not flicker between views during flight.
             var angle=shellAngles[cosmeticRandom.Next(shellAngles.Length)];

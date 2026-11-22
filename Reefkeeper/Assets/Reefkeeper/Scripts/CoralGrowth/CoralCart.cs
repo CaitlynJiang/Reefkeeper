@@ -8,8 +8,9 @@ namespace Reefkeeper.Corals
     /// <summary>
     /// Lucky Cat's wheelbarrow as a shop: a few corals stand in a row in the cart, spaced apart so a
     /// hand can't take the wrong one. Looking at one (head gaze) or pointing a hand/controller ray at it
-    /// highlights it and shows its price above it (scallop icon and number). Grabbing it buys it
-    /// (no currency yet: grabbing is enough). A bought coral is held only while pinching, like the
+    /// highlights it and shows its price above it (scallop icon and number). Grabbing it buys it,
+    /// paid from the scallop balance (ReefScallopReward); one the player can't afford shows its price
+    /// in red and can't be picked up, and trying makes the cat say so. A bought coral is held only while pinching, like the
     /// brush, and stays where it is let go (unless it is planted). The empty slot restocks after a while.
     /// </summary>
     [DefaultExecutionOrder(116)]
@@ -29,6 +30,8 @@ namespace Reefkeeper.Corals
         readonly Vector3[] spots = new Vector3[8];
         readonly RaycastHit[] hits = new RaycastHit[16];
         Quaternion facing;
+        ReefScallopReward wallet;
+        float nextRefusal;
         ReefCoralFragment gazed;
         Transform tag;
         Text price;
@@ -41,6 +44,8 @@ namespace Reefkeeper.Corals
         public void Initialize(CoralShop owner, Transform cartSocket)
         {
             shop = owner; cart = cartSocket;
+            wallet = shop.workshop ? shop.workshop.GetComponent<ReefScallopReward>() : null;
+            if (!wallet) wallet = FindFirstObjectByType<ReefScallopReward>();
             // The decorative heap in the cart makes way for the few corals on sale.
             var heap = cart.Find("Cart corals (display)");
             if (heap) heap.gameObject.SetActive(false);
@@ -77,6 +82,9 @@ namespace Reefkeeper.Corals
             fragment.pinchToHold = true;
             fragment.leaveWhereReleased = true;
             fragment.selectEntered.AddListener(OnGrabbed);
+            int price = CoralRules.Price(coral.name);
+            fragment.purchaseAllowed = () => Affordable(price);
+            fragment.purchaseRefused = () => Refuse(fragment);
             IgnoreBodies(fragment);
             items[i] = fragment;
             restockAt[i] = 0;
@@ -98,12 +106,39 @@ namespace Reefkeeper.Corals
             var fragment = args.interactableObject as ReefCoralFragment;
             int i = System.Array.IndexOf(items, fragment);
             if (i < 0) return;
-            // Bought. No currency yet: taking it is the purchase.
+            // Bought: pay for it (the grab was only allowed if the balance covers the price).
+            string species = CoralRules.Species(fragment.gameObject);
+            int price = CoralRules.Price(species);
+            if (wallet && !wallet.TrySpend(price, fragment.transform.position))
+                Debug.LogWarning($"[Cart] {species} taken without enough scallops ({wallet.Balance}/{price})");
             fragment.selectEntered.RemoveListener(OnGrabbed);
+            fragment.purchaseAllowed = null; fragment.purchaseRefused = null;
             if (fragment == gazed) { fragment.SetAim(false); gazed = null; }
             items[i] = null;
             restockAt[i] = Time.time + restockSeconds;
-            shop.Sold(CoralRules.Species(fragment.gameObject), CoralRules.Price(CoralRules.Species(fragment.gameObject)));
+            shop.Sold(species, price);
+        }
+
+        bool Affordable(int price) => !wallet || wallet.Balance >= price;
+
+        void Refuse(ReefCoralFragment fragment)
+        {
+            if (Time.time < nextRefusal) return;
+            nextRefusal = Time.time + 1.5f;
+            string species = CoralRules.Species(fragment.gameObject);
+            shop.TooExpensive(species, CoralRules.Price(species), wallet ? wallet.Balance : 0);
+            if (wallet) wallet.ShowShortfall();
+        }
+
+        /// <summary>Headset: a grab attempt (pinch/fist, or grip) on a highlighted coral the player can't afford.</summary>
+        void CheckRefusedGrab(ReefCoralFragment show)
+        {
+            if (!show || show.PurchaseAllowed || shop.corals.CenterAimMode) return;
+            for (int i = 0; i < 2; i++)
+            {
+                bool tried = Hands.ReefInput.HandsMode ? Hands.ReefHands.Get(i).GrabDown : Hands.ReefInput.TalkDown(i);
+                if (tried) { Refuse(show); return; }
+            }
         }
 
         void Update()
@@ -138,6 +173,7 @@ namespace Reefkeeper.Corals
             if (!show) foreach (var it in items) if (it && it.Highlighted) { show = it; break; }
             Highlighted = show;
             UpdateTag(show);
+            CheckRefusedGrab(show);
         }
 
         bool SpotIsClear(Vector3 spot)
@@ -195,7 +231,10 @@ namespace Reefkeeper.Corals
             var b = coral.colliders.Count > 0 && coral.colliders[0] ? coral.colliders[0].bounds : new Bounds(coral.transform.position, Vector3.one * .1f);
             tag.position = new Vector3(b.center.x, b.max.y + .09f, b.center.z);
             tag.rotation = Quaternion.LookRotation(tag.position - view.transform.position, Vector3.up);
-            price.text = CoralRules.Price(CoralRules.Species(coral.gameObject)).ToString();
+            int cost = CoralRules.Price(CoralRules.Species(coral.gameObject));
+            price.text = cost.ToString();
+            // Too expensive for the current balance: the price shows in soft red.
+            price.color = Affordable(cost) ? Cream : new Color(.95f, .5f, .45f);
         }
 
         static Sprite pillSprite;
