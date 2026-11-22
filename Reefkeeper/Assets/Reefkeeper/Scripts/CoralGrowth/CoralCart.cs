@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace Reefkeeper.Corals
@@ -33,8 +35,11 @@ namespace Reefkeeper.Corals
         ReefScallopReward wallet;
         float nextRefusal;
         ReefCoralFragment gazed;
+        readonly Dictionary<Collider, ShopRecord> recordTargets = new Dictionary<Collider, ShopRecord>();
+        readonly List<ShopRecord> records = new List<ShopRecord>(3);
         Transform tag;
         Text price;
+        int shownCost = -1;
         Material overlay;
         static readonly Color Cream = new Color(.97f, .93f, .81f), Panel = new Color(.15f, .22f, .28f, .94f);
 
@@ -46,6 +51,8 @@ namespace Reefkeeper.Corals
             shop = owner; cart = cartSocket;
             wallet = shop.workshop ? shop.workshop.GetComponent<ReefScallopReward>() : null;
             if (!wallet) wallet = FindFirstObjectByType<ReefScallopReward>();
+            BuildTag();
+            if (!cart) { slots = 0; return; }
             // The decorative heap in the cart makes way for the few corals on sale.
             var heap = cart.Find("Cart corals (display)");
             if (heap) heap.gameObject.SetActive(false);
@@ -61,7 +68,13 @@ namespace Reefkeeper.Corals
                     && hit.collider.transform.IsChildOf(shop.transform) ? hit.point : p;
                 Stock(i);
             }
-            BuildTag();
+        }
+
+        internal void RegisterRecord(ShopRecord record, Collider disc, MeshFilter sleeve)
+        {
+            records.Add(record);
+            recordTargets.Add(disc, record);
+            record.sleeve = sleeve;
         }
 
         void Stock(int i)
@@ -123,22 +136,26 @@ namespace Reefkeeper.Corals
 
         void Refuse(ReefCoralFragment fragment)
         {
+            string species = CoralRules.Species(fragment.gameObject);
+            Refuse(species, CoralRules.Price(species));
+        }
+
+        internal void Refuse(string product, int cost)
+        {
             if (Time.time < nextRefusal) return;
             nextRefusal = Time.time + 1.5f;
-            string species = CoralRules.Species(fragment.gameObject);
-            shop.TooExpensive(species, CoralRules.Price(species), wallet ? wallet.Balance : 0);
+            shop.TooExpensive(product, cost, wallet ? wallet.Balance : 0);
             if (wallet) wallet.ShowShortfall();
         }
 
-        /// <summary>Headset: a grab attempt (pinch/fist, or grip) on a highlighted coral the player can't afford.</summary>
-        void CheckRefusedGrab(ReefCoralFragment show)
+        bool TriedGrab()
         {
-            if (!show || show.PurchaseAllowed || shop.corals.CenterAimMode) return;
-            for (int i = 0; i < 2; i++)
-            {
-                bool tried = Hands.ReefInput.HandsMode ? Hands.ReefHands.Get(i).GrabDown : Hands.ReefInput.TalkDown(i);
-                if (tried) { Refuse(show); return; }
-            }
+            if (shop.corals.CenterAimMode)
+                return Keyboard.current != null && Keyboard.current.gKey.wasPressedThisFrame;
+            for (int hand = 0; hand < 2; hand++)
+                if (Hands.ReefInput.HandsMode ? Hands.ReefHands.Get(hand).GrabDown : Hands.ReefInput.TalkDown(hand))
+                    return true;
+            return false;
         }
 
         void Update()
@@ -146,34 +163,81 @@ namespace Reefkeeper.Corals
             if (!shop) return;
             for (int i = 0; i < slots; i++)
                 if (!items[i] && restockAt[i] > 0 && Time.time >= restockAt[i] && SpotIsClear(spots[i])) Stock(i);
+
             view = Camera.main;
-            ReefCoralFragment target = null;
-            // Head gaze (headset; the desktop crosshair is handled by ReefCoralPickup's own aim).
-            if (view && !shop.corals.CenterAimMode && !ReefToolMenu.BlocksWorldInput)
+            XRGrabInteractable target = null;
+            bool eyeTracked = false;
+            bool canAim = view && !ReefToolMenu.BlocksWorldInput &&
+                (shop.workshop.xrGroup.activeSelf || Cursor.lockState == CursorLockMode.Locked || shop.corals.Automated);
+            if (canAim)
             {
-                var t = view.transform;
-                int n = Physics.SphereCastNonAlloc(new Ray(t.position, t.forward), .03f, hits, gazeReach, ~0, QueryTriggerInteraction.Collide);
+                var ray = new Ray(view.transform.position, view.transform.forward);
+                if (!shop.corals.CenterAimMode && Hands.ReefEyeGaze.TryGetRay(Hands.ReefInput.HandTrackingSpace, out var eye))
+                {
+                    ray = eye;
+                    eyeTracked = true;
+                }
+                int n = Physics.SphereCastNonAlloc(ray, .03f, hits, gazeReach, ~0, QueryTriggerInteraction.Collide);
                 float nearest = float.MaxValue;
                 for (int k = 0; k < n; k++)
                 {
-                    var f = hits[k].collider.GetComponentInParent<ReefCoralFragment>();
-                    if (!f || System.Array.IndexOf(items, f) < 0 || hits[k].distance >= nearest) continue;
-                    nearest = hits[k].distance; target = f;
+                    var hit = hits[k];
+                    if (hit.distance >= nearest) continue;
+                    if (recordTargets.TryGetValue(hit.collider, out var record))
+                    {
+                        if (!record || record.owned) continue;
+                        target = record;
+                    }
+                    else
+                    {
+                        // Desktop corals are aimed by the existing crosshair pickup system.
+                        var coral = hit.collider.GetComponentInParent<ReefCoralFragment>();
+                        if (!coral || System.Array.IndexOf(items, coral) < 0 ||
+                            (shop.corals.CenterAimMode && coral != shop.corals.Aimed)) continue;
+                        target = coral;
+                    }
+                    nearest = hit.distance;
+                }
+                // Ray-test the three sleeve meshes' local bounds without adding physics obstacles.
+                foreach (var record in records)
+                {
+                    if (!record || record.owned || !record.sleeve || !record.sleeve.sharedMesh) continue;
+                    var sleeve = record.sleeve.transform;
+                    var localRay = new Ray(sleeve.InverseTransformPoint(ray.origin),
+                        sleeve.worldToLocalMatrix.MultiplyVector(ray.direction));
+                    if (!record.sleeve.sharedMesh.bounds.IntersectRay(localRay, out float localDistance)) continue;
+                    float distance = Vector3.Distance(ray.origin, sleeve.TransformPoint(localRay.GetPoint(localDistance)));
+                    if (distance > gazeReach || distance >= nearest) continue;
+                    nearest = distance;
+                    target = record;
                 }
             }
-            if (gazed != target)
+            var aimedCoral = shop.corals.CenterAimMode ? null : target as ReefCoralFragment;
+            if (gazed != aimedCoral)
             {
                 if (gazed) gazed.SetAim(false);
-                gazed = target;
+                gazed = aimedCoral;
                 if (gazed) gazed.SetAim(true);
             }
-            // The tag follows whichever shop coral is highlighted: ray/hand hover first, then gaze or crosshair.
-            ReefCoralFragment show = null;
-            foreach (var it in items) if (it && it.isHovered && !it.isSelected) { show = it; break; }
-            if (!show) foreach (var it in items) if (it && it.Highlighted) { show = it; break; }
-            Highlighted = show;
-            UpdateTag(show);
-            CheckRefusedGrab(show);
+            XRGrabInteractable show = target;
+            if (canAim && !(eyeTracked && target))
+            {
+                foreach (var coral in items)
+                    if (coral && coral.isHovered && !coral.isSelected) { show = coral; break; }
+                foreach (var record in records)
+                    if (record && !record.owned && record.isHovered) { show = record; break; }
+                if (!show) foreach (var coral in items)
+                    if (coral && coral.Highlighted) { show = coral; break; }
+            }
+            Highlighted = show as ReefCoralFragment;
+            var vinyl = show as ShopRecord;
+            int cost = vinyl ? ShopRecord.Price : Highlighted ? CoralRules.Price(CoralRules.Species(show.gameObject)) : 0;
+            UpdateTag(show, cost);
+            if (show && !Affordable(cost) && TriedGrab())
+            {
+                if (vinyl) Refuse(vinyl.productName, cost);
+                else if (!shop.corals.CenterAimMode) Refuse(Highlighted);
+            }
         }
 
         bool SpotIsClear(Vector3 spot)
@@ -223,16 +287,15 @@ namespace Reefkeeper.Corals
             return g;
         }
 
-        void UpdateTag(ReefCoralFragment coral)
+        void UpdateTag(XRGrabInteractable item, int cost)
         {
             if (!tag) return;
-            tag.gameObject.SetActive(coral && view);
-            if (!coral || !view) return;
-            var b = coral.colliders.Count > 0 && coral.colliders[0] ? coral.colliders[0].bounds : new Bounds(coral.transform.position, Vector3.one * .1f);
+            tag.gameObject.SetActive(item && view);
+            if (!item || !view) return;
+            var b = item.colliders.Count > 0 && item.colliders[0] ? item.colliders[0].bounds : new Bounds(item.transform.position, Vector3.one * .1f);
             tag.position = new Vector3(b.center.x, b.max.y + .09f, b.center.z);
             tag.rotation = Quaternion.LookRotation(tag.position - view.transform.position, Vector3.up);
-            int cost = CoralRules.Price(CoralRules.Species(coral.gameObject));
-            price.text = cost.ToString();
+            if (shownCost != cost) { price.text = cost.ToString(); shownCost = cost; }
             // Too expensive for the current balance: the price shows in soft red.
             price.color = Affordable(cost) ? Cream : new Color(.95f, .5f, .45f);
         }

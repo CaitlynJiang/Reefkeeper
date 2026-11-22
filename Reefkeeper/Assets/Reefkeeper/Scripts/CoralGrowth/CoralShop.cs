@@ -105,10 +105,13 @@ namespace Reefkeeper.Corals
                 return false;
             };
             var cartSocket = sellFromCart ? transform.Find("Cart 珊瑚推车 (empty)") : null;
-            if (cartSocket)
+            bool hasRecords = cat && counterSpot && workshop;
+            if (cartSocket || hasRecords)
             {
-                Cart = gameObject.AddComponent<CoralCart>();
-                Cart.Initialize(this, cartSocket);
+                var sales = gameObject.AddComponent<CoralCart>();
+                sales.Initialize(this, cartSocket);
+                if (cartSocket) Cart = sales;
+                if (hasRecords) VinylPlayer.Install(this, sales);
             }
         }
 
