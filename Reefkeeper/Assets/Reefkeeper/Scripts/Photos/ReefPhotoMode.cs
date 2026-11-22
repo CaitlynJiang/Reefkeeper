@@ -243,13 +243,14 @@ namespace Reefkeeper.Photos
             }
             var cam = captureCam;
             cam.transform.SetPositionAndRotation(view.transform.position, view.transform.rotation);
-            cam.stereoTargetEye = StereoTargetEyeMask.None;
             cam.clearFlags = view.clearFlags; cam.backgroundColor = view.backgroundColor;
             cam.cullingMask = view.cullingMask & ~(1 << UILayer);
             cam.nearClipPlane = Mathf.Max(.03f, view.nearClipPlane); cam.farClipPlane = view.farClipPlane;
             cam.fieldOfView = fieldOfView; cam.aspect = (float)photoWidth / photoHeight;
             cam.allowHDR = view.allowHDR; cam.allowMSAA = false;
             var src = view.GetUniversalAdditionalCameraData(); var dst = cam.GetUniversalAdditionalCameraData();
+            // Capture one flat photo without the built-in-only stereoTargetEye API.
+            dst.allowXRRendering = false;
             if (src && dst)
             {
                 dst.renderPostProcessing = true;
