@@ -41,7 +41,7 @@ namespace Reefkeeper.Editor
             EditorUtility.SetDirty(pipeline);
             ConfigureUnderwaterEffect();
             PlayerSettings.companyName = "Reefkeeper";
-            PlayerSettings.productName = "Reefkeeper";
+            PlayerSettings.productName = "Lucky Dive Co.";
             PlayerSettings.defaultScreenWidth = 1600;
             PlayerSettings.defaultScreenHeight = 900;
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed;

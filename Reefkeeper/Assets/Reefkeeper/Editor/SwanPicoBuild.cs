@@ -12,7 +12,20 @@ namespace Reefkeeper.Editor
 {
     public static class SwanPicoBuild
     {
-        public const string ApkPath = "Builds/Reefkeeper_Swan_ScallopRewards_2026-11-21.apk";
+        public static string ApkPath { get; private set; } = OpeningPicoBuild.ApkPath;
+
+        [MenuItem("Reefkeeper/PICO/Build Swan Test APK")]
+        public static void BuildFromMenu()
+        {
+            if (Application.isPlaying || EditorApplication.isCompiling)
+                throw new InvalidOperationException("Stop Play mode and wait for compilation before building.");
+            LdcBuildVersionWindow.Open("Swan", version =>
+            {
+                if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+                BuildVersion(version);
+                EditorUtility.RevealInFinder(Path.GetFullPath(ApkPath));
+            });
+        }
 
         [MenuItem("Reefkeeper/Hands/Build and Run Hand Skeleton on PICO")]
         public static void BuildAndRunHandSkeleton()
@@ -123,6 +136,14 @@ namespace Reefkeeper.Editor
 
         public static void Build()
         {
+            BuildVersion("5");
+        }
+
+        public static void BuildVersion(string version)
+        {
+            ApkPath = LdcBuildVersionWindow.OutputPath("Swan", version);
+            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
+                throw new InvalidOperationException("Select Android in File > Build Profiles and click Switch Platform first.");
             Configure();
             // Test APK: use the same local Android debug identity as earlier prototypes.
             // Restore publishing settings afterward; this is not a store-release signing setup.
@@ -140,8 +161,7 @@ namespace Reefkeeper.Editor
                 PlayerSettings.Android.keyaliasName = "androiddebugkey";
                 PlayerSettings.Android.keystorePass = "android";
                 PlayerSettings.Android.keyaliasPass = "android";
-                OpeningPicoBuild.Build();
-                File.Copy(OpeningPicoBuild.ApkPath, ApkPath, true);
+                OpeningPicoBuild.BuildToPath(ApkPath);
             }
             finally
             {

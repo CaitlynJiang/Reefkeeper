@@ -16,7 +16,7 @@ namespace Reefkeeper.Editor
 {
     public static class OpeningPicoBuild
     {
-        public const string ApkPath="Builds/Reefkeeper_ImmersiveOpening_PICO.apk";
+        public const string ApkPath="Builds/LDC_Swan_v5.apk";
         public static void BuildFromCommandLine()
         {
             EditorSceneManager.OpenScene(ImmersiveOpeningBuilder.Opening,OpenSceneMode.Single);
@@ -72,15 +72,20 @@ namespace Reefkeeper.Editor
 
         public static void Build()
         {
+            BuildToPath(ApkPath);
+        }
+
+        public static void BuildToPath(string apkPath)
+        {
             if(EditorUserBuildSettings.activeBuildTarget!=BuildTarget.Android)throw new InvalidOperationException("Switch to Android first.");
             Configure();
             Directory.CreateDirectory("Builds");
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{
-                scenes=new[]{ImmersiveOpeningBuilder.Opening},locationPathName=ApkPath,
+                scenes=new[]{ImmersiveOpeningBuilder.Opening},locationPathName=apkPath,
                 target=BuildTarget.Android,options=BuildOptions.None
             });
             var summary=report.summary;
-            string result=$"{summary.result} | {summary.totalSize} bytes | {summary.totalTime} | errors {summary.totalErrors} | {Path.GetFullPath(ApkPath)}";
+            string result=$"{summary.result} | {summary.totalSize} bytes | {summary.totalTime} | errors {summary.totalErrors} | {Path.GetFullPath(apkPath)}";
             File.WriteAllText("Builds/last-opening-build.txt",result+"\n"+string.Join("\n",report.steps.SelectMany(s=>s.messages).Where(m=>m.type==LogType.Error||m.type==LogType.Exception).Select(m=>m.content)));
             Debug.Log("[Opening PICO] "+result);
             if(summary.result!=BuildResult.Succeeded)throw new InvalidOperationException(result);
