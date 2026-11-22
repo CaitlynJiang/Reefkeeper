@@ -94,7 +94,11 @@ namespace Reefkeeper
             {
                 var hand = Hands.ReefHands.Get(i);
                 // A hand that pinches, grips or holds something is working, not swimming.
-                if (!hand.Tracked || hand.Grab || i == 0 && hand.MiddlePinch || Hands.ReefInput.HandBusy(i) || DiveCardMock.Instance && DiveCardMock.Instance.OwnsHand(i)) { hadPalm[i] = false; glideHeld[i] = 0; continue; }
+                if (!hand.Tracked || hand.Grab || i == 0 && hand.MiddlePinch || Photos.ReefPhotoMode.OwnsHands || Hands.ReefInput.HandBusy(i) || DiveCardMock.Instance && DiveCardMock.Instance.OwnsHand(i)) { hadPalm[i] = false; glideHeld[i] = 0; continue; }
+                // A hand reaching for something it can grab is not swimming: an open palm pushed
+                // toward a coral would otherwise count as a stroke and shove the body backwards.
+                if (ReachingForGrabbable(space.TransformPoint(hand.Palm.position)))
+                { hadPalm[i] = false; palmVelocity[i] = Vector3.zero; glideHeld[i] = 0; continue; }
                 Vector3 relative = hand.Palm.position - head;
                 palmVelocity[i] = hadPalm[i] ? Vector3.Lerp(palmVelocity[i], (relative - lastPalm[i]) / dt, 0.5f) : Vector3.zero;
                 lastPalm[i] = relative; hadPalm[i] = true;
@@ -112,6 +116,21 @@ namespace Reefkeeper
             if (thrust.sqrMagnitude > 0) Velocity = Vector3.ClampMagnitude(Velocity + thrust * Mathf.Min(dt, 0.05f), strokeMaxSpeed);
             Gliding = glide.sqrMagnitude > 0.01f;
             Tick(Gliding ? glide.normalized * glideSpeed : Vector3.zero, false, false, dt);
+        }
+
+        /// <summary>How close (m) a palm must be to something grabbable to count as reaching for it.</summary>
+        public float reachForGrab = 0.3f;
+        readonly Collider[] nearby = new Collider[24];
+
+        bool ReachingForGrabbable(Vector3 palm)
+        {
+            int n = Physics.OverlapSphereNonAlloc(palm, reachForGrab, nearby, ~0, QueryTriggerInteraction.Collide);
+            for (int k = 0; k < n; k++)
+            {
+                var grab = nearby[k].GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+                if (grab && grab.isActiveAndEnabled && !grab.isSelected) return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -167,7 +186,10 @@ namespace Reefkeeper
             dt = Mathf.Clamp(dt, 0, 0.05f);
             body.center = transform.InverseTransformPoint(view.transform.position);
             Velocity = DiveMotor.IntegrateVelocity(Velocity, worldDirection, boost, brake, dt, 2.1f, 4, 3.5f, 1.1f, 12);
-            body.Move(Velocity * dt);
+            // Only collide while actually moving. The capsule follows the head, so a Move every frame
+            // shoved the player backwards whenever they leaned or reached over the cart or a rack.
+            if (Velocity.sqrMagnitude < 1e-4f && worldDirection.sqrMagnitude < 1e-6f) Velocity = Vector3.zero;
+            else body.Move(Velocity * dt);
             if (view.transform.position.y > 14.2f)
             {
                 body.Move(Vector3.down * (view.transform.position.y - 14.2f));

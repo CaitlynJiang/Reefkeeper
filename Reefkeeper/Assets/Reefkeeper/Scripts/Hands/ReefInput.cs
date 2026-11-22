@@ -124,7 +124,14 @@ namespace Reefkeeper.Hands
         public static bool TalkDown(int hand) =>
             HandsMode ? !SurfaceOwnsInput(hand) && ReefHands.Get(hand).PinchDown : talk != null && talk[hand].WasPressedThisFrame();
 
-        static bool SurfaceOwnsInput(int hand) => ReefSurfaceHold.Instance && ReefSurfaceHold.Instance.OwnsHand(hand);
+        static bool SurfaceOwnsInput(int hand) => ReefSurfaceHold.Instance && ReefSurfaceHold.Instance.OwnsHand(hand) || Photos.ReefPhotoMode.OwnsHands;
+
+        /// <summary>The live hand or controller model root for this hand (hidden while a photo is taken).</summary>
+        public static Transform DeviceRoot(int hand)
+        {
+            if (!origin) Bind();
+            return HandsMode ? hands[hand] : controllers[hand];
+        }
 
         /// <summary>"Pull the trigger" / "Pinch", for prompts.</summary>
         public static string UseVerb => HandsMode ? "Pinch" : "Pull the trigger";

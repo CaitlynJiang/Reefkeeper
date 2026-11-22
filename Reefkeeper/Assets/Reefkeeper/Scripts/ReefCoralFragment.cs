@@ -12,6 +12,15 @@ namespace Reefkeeper
         public ReefCoralPickup owner;
         public Material outlineMaterial;
         public GameObject suspensionLine;
+        [Tooltip("Bare hands may only hold it while pinching (not a fist), like the brush.")]
+        public bool pinchToHold;
+        [Tooltip("Letting go leaves it where it is (unless planted), like the brush, instead of keeping it in hand.")]
+        public bool leaveWhereReleased;
+        /// <summary>For corals on sale: false while the player can't afford it (it can't be picked up).</summary>
+        public System.Func<bool> purchaseAllowed;
+        /// <summary>For corals on sale: called when the player tries to take one they can't afford.</summary>
+        public System.Action purchaseRefused;
+        public bool PurchaseAllowed => isSelected || purchaseAllowed == null || purchaseAllowed();
         readonly List<Renderer> outlines = new List<Renderer>();
         bool aimed;
         public bool Highlighted { get; private set; }
@@ -41,6 +50,8 @@ namespace Reefkeeper
         // G also drives the simulator's right grip in FPS mode. Give center aim
         // exclusive ownership there so one key press cannot grab two fragments.
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
+            PurchaseAllowed &&
+            (!pinchToHold || !Hands.ReefInput.TryGetBareHand(interactor, out int handIndex) || Hands.ReefHands.Get(handIndex).Pinch) &&
             (!ReefToolMenu.BlocksWorldInput || isSelected) &&
             (isSelected || !owner || !owner.CenterAimMode || ReferenceEquals(interactor, owner.hand)) && base.IsSelectableBy(interactor);
         public override bool IsHoverableBy(IXRHoverInteractor interactor) =>

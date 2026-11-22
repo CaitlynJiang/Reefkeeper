@@ -7,10 +7,11 @@ using UnityEngine.XR.Interaction.Toolkit;
 namespace Reefkeeper.Corals
 {
     /// <summary>
-    /// Lucky Cat's coral cart. Aim at the cat and press G (desktop), or point a controller ray at it
-    /// and press that hand's Grip, or touch it with a controller, to talk:
-    /// the cat hands over a random coral from the cart, at its smallest stage, straight into the
-    /// player's hand. One coral at a time: plant it before asking for another.
+    /// Lucky Cat's coral shop. Aim at the cat and press G (desktop), or point a controller ray at it
+    /// and press that hand's Grip, or touch it with a controller, to talk.
+    /// With <see cref="sellFromCart"/> (default) corals are on display in the wheelbarrow
+    /// (<see cref="CoralCart"/>): look at or point at one to see its price, grab it to buy it.
+    /// Otherwise the cat hands over a random coral from the stock, at its smallest stage.
     /// </summary>
     [DefaultExecutionOrder(115)]
     public sealed class CoralShop : MonoBehaviour
@@ -30,6 +31,10 @@ namespace Reefkeeper.Corals
         [SerializeField] AudioClip purrMeow, shortMeow;
         [Tooltip("VR: where the cat sets a coral down on the counter for the player to pick up.\nVR 珊瑚放在柜台上的位置")]
         public Transform counterSpot;
+        [Tooltip("Sell corals on display in the wheelbarrow (look or point to see the price, grab to buy) instead of the cat handing one over.\n小车展示售卖")]
+        public bool sellFromCart = true;
+        /// <summary>The wheelbarrow display, when selling from the cart.</summary>
+        public CoralCart Cart { get; private set; }
 
         public bool AimingCat { get; private set; }
         /// <summary>The cat has handed over the dive journal and waits for the player to open and close it.</summary>
@@ -88,10 +93,23 @@ namespace Reefkeeper.Corals
             // A counter coral let go away from a planting spot goes back on the counter.
             corals.ReturnOnRelease = fragment =>
             {
-                if (!fragment || fragment != counterCoral) return false;
-                PutOnCounter(fragment);
-                return true;
+                if (!fragment) return false;
+                if (fragment == counterCoral) { PutOnCounter(fragment); return true; }
+                // A coral bought from the cart stays where it is let go, like the brush.
+                if (fragment.leaveWhereReleased && !corals.CenterAimMode)
+                {
+                    foreach (var c in fragment.colliders) if (c) c.isTrigger = false;
+                    CoralCart.IgnoreBodies(fragment);
+                    return true;
+                }
+                return false;
             };
+            var cartSocket = sellFromCart ? transform.Find("Cart 珊瑚推车 (empty)") : null;
+            if (cartSocket)
+            {
+                Cart = gameObject.AddComponent<CoralCart>();
+                Cart.Initialize(this, cartSocket);
+            }
         }
 
         void OnDestroy() { if (corals) corals.ReturnOnRelease = null; }
@@ -113,7 +131,8 @@ namespace Reefkeeper.Corals
                 else if (journalSeenOpen && !DiveCardMock.BlocksControls)
                 {
                     AwaitingJournal = false; journalSeenOpen = false;
-                    GiveCoral("Now your first coral! ");
+                    if (Cart) Say("Now pick your first coral from my cart!", LuckyCat.Mood.Beckon, 5f);
+                    else GiveCoral("Now your first coral! ");
                 }
             }
             if (ReefToolMenu.BlocksWorldInput) return;
@@ -195,6 +214,11 @@ namespace Reefkeeper.Corals
                 Say("Your coral is on the counter. Take it and plant it!", LuckyCat.Mood.Beckon);
                 return null;
             }
+            if (Cart)
+            {
+                Say("Pick any coral from my cart! Look at one to see its price.", LuckyCat.Mood.Beckon);
+                return null;
+            }
             return GiveCoral("");
         }
 
@@ -218,6 +242,19 @@ namespace Reefkeeper.Corals
             corals.Give(fragment);
             Say($"{intro}Here's a {CoralRules.DisplayName(species)}! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy);
             return fragment;
+        }
+
+        /// <summary>A coral was bought from the cart.</summary>
+        public void Sold(string species, int price)
+        {
+            Say($"A {CoralRules.DisplayName(species)}, {price} scallops. Thank you! {CoralRules.Needs(species)}.", LuckyCat.Mood.Happy, 4f);
+        }
+
+        /// <summary>The player tried to take a coral they can't afford.</summary>
+        public void TooExpensive(string species, int price, int balance)
+        {
+            int missing = price - balance;
+            Say($"The {CoralRules.DisplayName(species)} is {price} scallops. {missing} more! Clean algae on the rack to earn some.", LuckyCat.Mood.Sad, 4f);
         }
 
         void Say(string text, LuckyCat.Mood face, float seconds = 0)
