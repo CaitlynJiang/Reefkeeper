@@ -45,7 +45,7 @@ namespace Reefkeeper.Photos
             float bestScore = float.MaxValue;
             void Consider(string species, Transform t, Vector3 point, float reach = ZoneDiameter * .5f)
             {
-                if (!t || !ReefSpecies.Known(species) || ReefPhotoAlbum.Has(species)) return;
+                if (!t || !ReefSpecies.Known(species) || ReefPhotoAlbum.Has(species) || ReefPrintedPhoto.HasPending(species)) return;
                 float distance = Mathf.Max(0, Vector3.Distance(eye, point) - Radius(t));
                 if (distance > reach) return;
                 float angle = Vector3.Angle(forward, point - eye);

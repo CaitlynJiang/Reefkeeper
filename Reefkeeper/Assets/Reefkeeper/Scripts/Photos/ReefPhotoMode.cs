@@ -224,11 +224,10 @@ namespace Reefkeeper.Photos
             string species = target.species, name = ReefSpecies.DisplayName(species);
             flash = 1;
             Play(shutterClip, 1);
-            ReefPhotoAlbum.Store(species, photo);
-            ReefPrintedPhoto.Spawn(photo, view.transform, name);
+            ReefPrintedPhoto.Spawn(photo, view.transform, name, species);
             Play(printClip, .55f, .25f);
             closeAt = Time.unscaledTime + closeAfterShot;
-            Toast(name + " added to the photo wall!", 4f);
+            Toast("placeholder text", 4f);
         }
 
         Texture2D Capture()

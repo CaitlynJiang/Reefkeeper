@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Reefkeeper.Photos
@@ -15,6 +16,51 @@ namespace Reefkeeper.Photos
         public Renderer[] slots = new Renderer[0];
         [Tooltip("The paper card each picture is on; it pops when a new photo arrives.")]
         public Transform[] cards = new Transform[0];
+        [Min(.05f)] public float collectionDistance = .4f;
+        [Min(.1f)] public float revealSeconds = .8f;
+        static readonly HashSet<ReefPhotoWall> activeWalls = new HashSet<ReefPhotoWall>();
+        Material developMaterial;
+        Material[] originalMaterials;
+        Coroutine[] reveals;
+        bool ready;
+        static readonly int Reveal = Shader.PropertyToID("_Reveal"), PlaceholderMap = Shader.PropertyToID("_PlaceholderMap");
+
+        void OnEnable() => activeWalls.Add(this);
+        void OnDisable()
+        {
+            activeWalls.Remove(this);
+            if (ready) for (int i = 0; i < slots.Length; i++) Show(i, false);
+        }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetWalls() => activeWalls.Clear();
+
+        public bool TryGetSlotPose(string species, out Pose pose)
+        {
+            pose = default;
+            int i = ReefSpecies.IndexOf(species);
+            if (!ready || i < 0 || i >= slots.Length || !slots[i] || !slots[i].enabled || !slots[i].gameObject.activeInHierarchy) return false;
+            pose = new Pose(slots[i].bounds.center + transform.forward * .025f, Quaternion.LookRotation(-transform.forward, transform.up));
+            return true;
+        }
+
+        public static bool TryFindDeposit(string species, Vector3 position, out ReefPhotoWall wall)
+        {
+            wall = null;
+            float nearest = float.PositiveInfinity;
+            foreach (var candidate in activeWalls)
+            {
+                if (!candidate || !candidate.isActiveAndEnabled || !candidate.TryGetSlotPose(species, out var pose)) continue;
+                if (Vector3.Dot(position - pose.position, candidate.transform.forward) < -.025f) continue;
+                foreach (var slot in candidate.slots)
+                {
+                    if (!slot || !slot.enabled || !slot.gameObject.activeInHierarchy) continue;
+                    float distance = (slot.bounds.ClosestPoint(position) - position).sqrMagnitude;
+                    if (distance <= candidate.collectionDistance * candidate.collectionDistance && distance < nearest)
+                    { nearest = distance; wall = candidate; }
+                }
+            }
+            return wall;
+        }
         [Tooltip("Write the species name under each photo.")] public bool labels = true;
 
         static readonly int BaseMap = Shader.PropertyToID("_BaseMap"), BaseColor = Shader.PropertyToID("_BaseColor"), Emission = Shader.PropertyToID("_Emission");
@@ -28,6 +74,12 @@ namespace Reefkeeper.Photos
             block = new MaterialPropertyBlock();
             names = new TextMesh[slots.Length];
             placeholders = new Texture[slots.Length];
+            reveals = new Coroutine[slots.Length];
+            originalMaterials = new Material[slots.Length];
+            developMaterial = new Material(Resources.Load<Shader>("Photos/PhotoDevelop"));
+            for (int i = 0; i < slots.Length; i++) if (slots[i])
+            { originalMaterials[i] = slots[i].sharedMaterial; slots[i].sharedMaterial = developMaterial; }
+            ready = true;
             for (int i = 0; i < slots.Length; i++) Show(i, false);
             // More photos on the board than species: take the spare cards (and their clips) down.
             for (int i = ReefSpecies.Count; i < cards.Length; i++)
@@ -43,6 +95,10 @@ namespace Reefkeeper.Photos
         void OnDestroy()
         {
             ReefPhotoAlbum.Changed -= OnPhoto;
+            activeWalls.Remove(this);
+            if (originalMaterials != null) for (int i = 0; i < slots.Length; i++)
+                if (slots[i]) slots[i].sharedMaterial = originalMaterials[i];
+            if (developMaterial) Destroy(developMaterial);
             if (placeholders != null) foreach (var t in placeholders) if (t) Destroy(t);
         }
 
@@ -61,11 +117,14 @@ namespace Reefkeeper.Photos
             var photo = ReefPhotoAlbum.Get(id);
             slot.GetPropertyBlock(block);
             block.SetTexture(BaseMap, photo ? photo : Placeholder(i, id));
+            block.SetTexture(PlaceholderMap, Placeholder(i, id));
+            block.SetFloat(Reveal, pop && photo ? 0 : 1);
             block.SetColor(BaseColor, Color.white);
             block.SetFloat(Emission, photo ? .45f : .2f);
             slot.SetPropertyBlock(block);
             if (labels) Label(i, photo ? displayName : "???");
-            if (pop && i < cards.Length && cards[i]) StartCoroutine(Pop(cards[i]));
+            if (reveals[i] != null) { StopCoroutine(reveals[i]); reveals[i] = null; }
+            if (pop && photo && isActiveAndEnabled) reveals[i] = StartCoroutine(Develop(i));
         }
 
         /// <summary>Paper-coloured card with the species' sticker as a faded silhouette (corals), or blank.</summary>
@@ -107,7 +166,7 @@ namespace Reefkeeper.Photos
                 var t = go.AddComponent<TextMesh>();
                 var hud = FindFirstObjectByType<ReefCleaningHUD>(FindObjectsInactive.Include);
                 t.font = hud && hud.boldFont ? hud.boldFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                go.GetComponent<MeshRenderer>().sharedMaterial = t.font.material;
+                go.AddComponent<ReefPhotoCaption>().Bind(t);
                 t.anchor = TextAnchor.MiddleCenter; t.alignment = TextAlignment.Center;
                 t.fontSize = 64; t.characterSize = .0045f; t.color = Ink;
                 names[i] = t;
@@ -115,18 +174,18 @@ namespace Reefkeeper.Photos
             names[i].text = text;
         }
 
-        static IEnumerator Pop(Transform card)
+        IEnumerator Develop(int i)
         {
-            var baseScale = card.localScale;
-            float velocity = 0, scale = 1.35f;
-            for (float t = 0; t < 1.2f; t += Time.deltaTime)
+            // Develop onto the existing paper; no new particles, cameras or UI panels.
+            for (float t = 0; t < 1; t += Time.deltaTime / revealSeconds)
             {
-                velocity += (-(scale - 1) * 260f - velocity * 11f) * Time.deltaTime;
-                scale += velocity * Time.deltaTime;
-                card.localScale = baseScale * scale;
+                slots[i].GetPropertyBlock(block);
+                block.SetFloat(Reveal, Mathf.SmoothStep(0, 1, t));
+                slots[i].SetPropertyBlock(block);
                 yield return null;
             }
-            card.localScale = baseScale;
+            slots[i].GetPropertyBlock(block); block.SetFloat(Reveal, 1); slots[i].SetPropertyBlock(block);
+            reveals[i] = null;
         }
 
         /// <summary>
