@@ -36,6 +36,10 @@ namespace Reefkeeper.Corals
         public CoralNurture Hovered { get; private set; }
         public IReadOnlyList<CoralNurture> Planted => planted;
         public bool Automated { get; set; }
+        /// <summary>Raised whenever a coral is planted (rewards, Lucky Cat's story).</summary>
+        public static event System.Action<CoralNurture> CoralPlanted;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetEvents() => CoralPlanted = null;
 
         readonly List<CoralNurture> planted = new List<CoralNurture>();
         readonly List<RackSocket> sockets = new List<RackSocket>();
@@ -247,6 +251,8 @@ namespace Reefkeeper.Corals
             if (!fragment) return null;
             var coral = fragment.GetComponent<CoralGrowth>();
             string species = CoralRules.Species(fragment.gameObject);
+            var throwing = fragment.GetComponent<ReefUnderwaterThrow>();
+            if (throwing) { throwing.StopMotion(); throwing.enabled = false; Destroy(throwing); }
             Destroy(fragment);   // planted corals stay put; the grab component goes
             foreach (var c in coral.GetComponents<Collider>()) c.isTrigger = true;   // the brush reaches the moss through it
             CoralSeating.Seat(coral, socket, null, rope);
@@ -259,6 +265,7 @@ namespace Reefkeeper.Corals
             if (showCareEmotes) coral.gameObject.AddComponent<CoralCareEmote>().Bind(nurture);
             planted.Add(nurture);
             coral.Poke();
+            CoralPlanted?.Invoke(nurture);
             return nurture;
         }
 

@@ -307,11 +307,12 @@ public class PlanarReflectionManager : MonoBehaviour
 
         dest.CopyFrom(src);
         dest.enabled = false;
-        dest.stereoTargetEye = StereoTargetEyeMask.None;
         dest.useOcclusionCulling = false;
 
         if (dest.gameObject.TryGetComponent(out UnityEngine.Rendering.Universal.UniversalAdditionalCameraData camData))
         {
+            // URP uses camera data for mono auxiliary views; stereoTargetEye is built-in only.
+            camData.allowXRRendering = false;
             camData.renderShadows = false;
             if (volume.reflectSkybox) dest.clearFlags = CameraClearFlags.Skybox;
             else

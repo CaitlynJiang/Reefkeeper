@@ -108,7 +108,10 @@ namespace Reefkeeper.Hands
             return false;
         }
 
-        public static Transform HandTrackingSpace => origin ? origin.CameraFloorOffsetObject.transform : null;
+        public static Transform HandTrackingSpace
+        {
+            get { if (!origin) Bind(); return origin && origin.CameraFloorOffsetObject ? origin.CameraFloorOffsetObject.transform : null; }
+        }
 
         public static UnityEngine.XR.Interaction.Toolkit.Interactors.NearFarInteractor BareHandInteractor(int hand)
         {

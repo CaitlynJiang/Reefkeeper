@@ -49,6 +49,14 @@ namespace Reefkeeper.Hands
         public static string FrameDebug(int hand) { Refresh(); return frameDebug[hand]; }
         static readonly List<XRHandSubsystem> subsystems = new List<XRHandSubsystem>();
         static int frame = -1;
+        static XRHandSubsystem activeSubsystem;
+
+        internal static XRHand TrackedHand(int hand)
+        {
+            Refresh();
+            if (activeSubsystem == null) return default;
+            return hand == 0 ? activeSubsystem.leftHand : activeSubsystem.rightHand;
+        }
 
         public static State Get(int hand) { Refresh(); return states[hand]; }
 
@@ -60,6 +68,7 @@ namespace Reefkeeper.Hands
             subsystems.Clear();
             SubsystemManager.GetSubsystems(subsystems);
             foreach (var s in subsystems) if (s.running) { subsystem = s; break; }
+            activeSubsystem = subsystem;
             for (int i = 0; i < 2; i++)
                 Update(ref states[i], subsystem == null ? default : i == 0 ? subsystem.leftHand : subsystem.rightHand, subsystem != null);
         }

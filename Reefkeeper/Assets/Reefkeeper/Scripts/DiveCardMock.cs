@@ -58,6 +58,9 @@ namespace Reefkeeper
         public bool EditorHandPreview { get; set; }
         public bool FollowsHand => handLayout;
         RectTransform printRect, controlsButton, closeButton;
+        RectTransform skeletonButton;
+        Text skeletonLabel;
+        Hands.ReefHandOverlay skeleton;
         Text objectiveText;
         bool controlsPage;
         public bool ControlsVisible => controlsPage;
@@ -86,6 +89,7 @@ namespace Reefkeeper
             // Stored in Resources so Android builds retain the overlay shader.
             OverlayMaterial=new Material(Resources.Load<Shader>("DiveCards/JournalOverlay")){name="Journal UI overlay"};
             generated.Add(OverlayMaterial);
+            skeleton = gameObject.AddComponent<Hands.ReefHandOverlay>();
             cards=new GameObject("Dive journal / PVC cards").transform;
             cards.SetParent(transform,false);
             BuildModel();BuildPrint();AlignTabs();ShowPage(0);cards.gameObject.SetActive(false);
@@ -190,6 +194,7 @@ namespace Reefkeeper
         static bool Hit(RectTransform rect,Ray ray) => rect && new Plane(rect.forward,rect.position).Raycast(ray,out float d) && rect.rect.Contains(rect.InverseTransformPoint(ray.GetPoint(d)));
         public bool ClickUI(Ray ray)
         {
+            if(Hit(skeletonButton,ray)){skeleton.Toggle();return true;}
             if(Hit(closeButton,ray)){SetOpen(false);return true;}
             if(Hit(controlsButton,ray)){controlsPage=!controlsPage;if(habitatJournal)habitatJournal.ShowControls(controlsPage);return true;}
             for(int i=0;i<4;i++)if(Hit((RectTransform)tabs[i],ray)){SelectTab(i);return true;}
@@ -344,6 +349,9 @@ namespace Reefkeeper
             objectiveText=Print(canvas.transform,"",new Vector2(-40,146),new Vector2(520,32),17,ink);
             controlsButton=Panel(canvas.transform,"Controls",new Vector2(190,184),new Vector2(120,33),new Color(.98f,.83f,.43f)).rectTransform;
             Print(controlsButton,"Controls",Vector2.zero,new Vector2(115,32),17,ink);
+            skeletonButton=Panel(canvas.transform,"Hand skeleton",new Vector2(52,184),new Vector2(144,33),new Color(.70f,.91f,.84f)).rectTransform;
+            skeletonLabel=Print(skeletonButton,"Skeleton: OFF",Vector2.zero,new Vector2(143,32),17,ink);
+            skeleton.VisibilityChanged += visible => skeletonLabel.text = visible ? "Skeleton: ON" : "Skeleton: OFF";
             closeButton=Panel(canvas.transform,"Close journal",new Vector2(286,184),new Vector2(40,33),new Color(.96f,.90f,.75f)).rectTransform;
             Print(closeButton,"X",Vector2.zero,new Vector2(38,32),19,ink);
             Print(canvas.transform,"A LITTLE HELP FROM LUCKY CAT",new Vector2(-85,-188),new Vector2(420,24),14,ink);

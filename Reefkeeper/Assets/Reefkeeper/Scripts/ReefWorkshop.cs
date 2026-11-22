@@ -66,8 +66,9 @@ namespace Reefkeeper
             var home = tool == scraper ? scraperHome : brushHome;
             var grab = tool.GetComponent<XRGrabInteractable>();
             if (grab.isSelected) grab.interactionManager.CancelInteractableSelection((IXRSelectInteractable)grab);
+            tool.GetComponent<ReefUnderwaterThrow>()?.StopMotion();
             var body = tool.GetComponent<Rigidbody>();
-            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
+            if (!body.isKinematic) { body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; }
             tool.transform.SetPositionAndRotation(home.position, home.rotation);
             body.position = home.position; body.rotation = home.rotation;
             Physics.SyncTransforms();

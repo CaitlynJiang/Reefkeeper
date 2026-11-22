@@ -1,0 +1,38 @@
+Coral touch reaction prototype — 2026-11-19
+
+An empty tracked palm or index fingertip entering a planted coral's touch volume
+plays its existing squash-and-spring Poke animation, shows the existing Crying
+care emote and pauses care progress for 3 seconds. Duration is adjustable on
+CoralNurture.touchPauseSeconds. No new artwork, panels or player-facing copy.
+
+The hand must leave by 6cm for 0.15s before another contact can fire. Contact
+starts within 1.8cm. Holding a hand in place does not renew the timer. Tracking
+recovery, closing a menu or releasing a tool while already touching does not
+count as a new touch. Planting requires the hand to withdraw first. Either hand
+can touch; occupied hands, pinch/fist/middle-pinch gestures and menus are excluded.
+
+Only planted nursery corals are wired into this prototype. Mature nursery corals
+can react without losing harvest eligibility. Loose shop stock, decorative reef
+meshes, fire-coral cleaning patches and shipwreck display copies are unchanged.
+Controller and desktop touch shortcuts have not been added.
+
+Touch rest is separate from algae blocking. It never erases growth progress or
+clears algae. Fertilizing waits until the rest finishes. Repeated accepted touches
+reset the same short timer rather than stacking delays. After rest, an existing
+care emote resumes its previous logic; touch-only emotes fade out.
+
+Contact uses cached per-mesh resting bounds for the current growth stage, not
+individual branch triangles. This is intentionally an approximate MVP volume;
+reach and empty gaps between branches should be assessed on the headset. Recoil
+does not shrink the contact volume and accidentally retrigger a stationary hand.
+No new colliders, rigidbodies, physics queries or additional runtime cameras.
+
+Validation: Unity compilation and Tools/Validation/CheckCoralTouch.cs passed.
+Checks cover real assets, spring response, pause/resume including partial frames,
+held-contact debounce, tracking/busy/menu ownership, growth-stage geometry across
+shop species, algae independence, fertilizer recovery and mature harvest state.
+After warmup, 1000 steady contact polls allocated zero managed bytes in the Editor.
+Actual tracked-joint samples were injected for the runtime Update path; this does
+not replace physical headset testing. No new APK has been built for this feature.
+Preview: artifacts/coral-touch-preview.png (real engine render; temporary objects
+removed afterward without changing the scene or saved progress).

@@ -18,6 +18,8 @@ namespace Reefkeeper.Corals
         public Vector2 mossReturnSeconds = new Vector2(25f, 50f);
         [Tooltip("Growth speed multiplier; set by CoralColony from the coral's neighbours.")]
         public float growthRate = 1f;
+        [Min(0f), Tooltip("Seconds growth rests after an empty-hand touch.")]
+        public float touchPauseSeconds = 3f;
 
         /// <summary>Progress of the current stage, 0 to 1.</summary>
         public float Progress { get; private set; }
@@ -25,7 +27,10 @@ namespace Reefkeeper.Corals
         public int Stage => coral ? coral.stage : 0;
         public bool FinalStage => Stage >= CoralRules.StageCount - 1;
         public bool Paused => socket && socket.Mossy;
-        public bool Ready => !FinalStage && Progress >= 1f;
+        public float TouchPauseRemaining { get; private set; }
+        public bool TouchPaused => TouchPauseRemaining > 0f;
+        public bool GrowthPaused => Paused || TouchPaused;
+        public bool Ready => !TouchPaused && !FinalStage && Progress >= 1f;
         public bool FullyGrown => FinalStage && Progress >= 1f;
         public string DisplayName => CoralRules.DisplayName(species);
 
@@ -39,17 +44,41 @@ namespace Reefkeeper.Corals
             socket = at; coral = growth; species = id;
             coral.SetStage(0, false);
             Progress = 0f;
+            TouchPauseRemaining = 0f;
             ResetMossTimer();
+            var touch = GetComponent<CoralTouchReaction>();
+            if (!touch) touch = gameObject.AddComponent<CoralTouchReaction>();
+            touch.Bind(this);
         }
 
-        void Update()
+        /// <summary>Visual recoil and a brief rest; repeated touches reset, never stack, the timer.</summary>
+        public void ReactToTouch()
         {
-            if (!coral || Paused) return;
+            if (!isActiveAndEnabled || !coral) return;
+            coral.Poke();
+            TouchPauseRemaining = Mathf.Max(0f, touchPauseSeconds);
+            var emote = GetComponent<CoralCareEmote>();
+            if (!emote)
+            {
+                emote = gameObject.AddComponent<CoralCareEmote>();
+                emote.Bind(this, false);
+            }
+        }
+
+        void Update() => AdvanceCare(Time.deltaTime);
+
+        void AdvanceCare(float dt)
+        {
+            dt = Mathf.Max(0f, dt);
+            float rested = Mathf.Min(dt, TouchPauseRemaining);
+            TouchPauseRemaining = Mathf.Max(0f, TouchPauseRemaining - dt);
+            dt -= rested;
+            if (!coral || Paused || dt <= 0f) return;
             if (Progress < 1f)
             {
-                Progress = Mathf.Min(1f, Progress + Time.deltaTime * growthRate / secondsPerStage);
+                Progress = Mathf.Min(1f, Progress + dt * growthRate / secondsPerStage);
                 // Moss only creeps back while the coral is actively growing.
-                mossTimer -= Time.deltaTime;
+                mossTimer -= dt;
                 // Only algae returns on this short care timer. Cleared fire coral stays cleared.
                 if (mossTimer <= 0f && socket && socket.moss && socket.moss.surfaceKind == ReefSurfaceKind.Algae)
                 { socket.moss.ResetDirt(); ResetMossTimer(); }

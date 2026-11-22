@@ -35,6 +35,10 @@ namespace Reefkeeper.Corals
         public bool sellFromCart = true;
         /// <summary>The wheelbarrow display, when selling from the cart.</summary>
         public CoralCart Cart { get; private set; }
+        /// <summary>What the counter holds as the game moves on (camera gift, then the vinyl shop).</summary>
+        public LuckyCatProgress Progress { get; private set; }
+        /// <summary>Raised each time the player talks to the cat.</summary>
+        public event System.Action Talked;
 
         public bool AimingCat { get; private set; }
         /// <summary>The cat has handed over the dive journal and waits for the player to open and close it.</summary>
@@ -105,10 +109,18 @@ namespace Reefkeeper.Corals
                 return false;
             };
             var cartSocket = sellFromCart ? transform.Find("Cart 珊瑚推车 (empty)") : null;
-            if (cartSocket)
+            bool hasRecords = cat && counterSpot && workshop;
+            if (cartSocket || hasRecords)
             {
-                Cart = gameObject.AddComponent<CoralCart>();
-                Cart.Initialize(this, cartSocket);
+                var sales = gameObject.AddComponent<CoralCart>();
+                sales.Initialize(this, cartSocket);
+                if (cartSocket) Cart = sales;
+                if (hasRecords) VinylPlayer.Install(this, sales);
+                if (hasRecords)
+                {
+                    Progress = gameObject.AddComponent<LuckyCatProgress>();
+                    Progress.Initialize(this);
+                }
             }
         }
 
@@ -116,6 +128,7 @@ namespace Reefkeeper.Corals
 
         void PutOnCounter(ReefCoralFragment fragment)
         {
+            fragment.GetComponent<ReefUnderwaterThrow>()?.StopMotion();
             fragment.transform.SetPositionAndRotation(counterSpot.position, Quaternion.Euler(0, counterSpot.eulerAngles.y, 0));
             // Held corals turn their colliders into triggers; on the counter they are solid again so hands find them.
             foreach (var c in fragment.colliders) if (c) c.isTrigger = false;
@@ -187,12 +200,14 @@ namespace Reefkeeper.Corals
         /// </summary>
         public ReefCoralFragment Talk()
         {
+            Talked?.Invoke();
             var journal = DiveCardMock.Instance;
             if (journal && !journal.Available && planting)
             {
                 if (!planting.ClearedFirstSpots)
                 {
-                    Say($"Clear {planting.SpotsToClear} mossy planting spots first, then come see me!", LuckyCat.Mood.Beckon);
+                    Say(Cart ? $"Hello! Clean {planting.SpotsToClear} mossy spots on the rack to earn scallops, then buy corals from my cart, right next to me!"
+                        : $"Clear {planting.SpotsToClear} mossy planting spots first, then come see me!", LuckyCat.Mood.Beckon, Cart ? 6f : 0f);
                     return null;
                 }
                 journal.Available = true; AwaitingJournal = true; journalSeenOpen = false;
@@ -216,7 +231,8 @@ namespace Reefkeeper.Corals
             }
             if (Cart)
             {
-                Say("Pick any coral from my cart! Look at one to see its price.", LuckyCat.Mood.Beckon);
+                if (Progress && Progress.TalkLine(out var story, out var face)) { Say(story, face, 5f); return null; }
+                Say("Pick any coral from my cart, right next to me! Look at one to see its price.", LuckyCat.Mood.Beckon);
                 return null;
             }
             return GiveCoral("");
@@ -256,6 +272,9 @@ namespace Reefkeeper.Corals
             int missing = price - balance;
             Say($"The {CoralRules.DisplayName(species)} is {price} scallops. {missing} more! Clean algae on the rack to earn some.", LuckyCat.Mood.Sad, 4f);
         }
+
+        /// <summary>The cat says something (speech bubble, meow and mood).</summary>
+        public void Speak(string text, LuckyCat.Mood face, float seconds = 0) => Say(text, face, seconds);
 
         void Say(string text, LuckyCat.Mood face, float seconds = 0)
         {

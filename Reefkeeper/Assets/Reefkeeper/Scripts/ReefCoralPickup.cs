@@ -171,6 +171,12 @@ namespace Reefkeeper
             if (clearing || Held != fragment) return;
             if (PlantOnRelease != null && PlantOnRelease(fragment)) return;
             if (ReturnOnRelease != null && ReturnOnRelease(fragment)) { Held = null; return; }
+            if (fragment.TryGetComponent<ReefUnderwaterThrow>(out var throwing) && throwing.ReleasedFromTrackedInput)
+            {
+                foreach (var collider in fragment.colliders) if (collider) collider.isTrigger = false;
+                Held = null; pendingHold = false;
+                return;
+            }
             holdParent = controller == hand.transform ? null : controller;
             pendingHold = true;
         }

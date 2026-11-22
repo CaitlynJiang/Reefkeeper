@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -7,12 +8,26 @@ namespace Reefkeeper.Photos
 {
     /// <summary>
     /// An instant photo printed in mid-air in front of the player: it slides out, develops from dark,
-    /// and floats until picked up (pinch/fist or controller grip). Letting go makes it vanish; the
-    /// photo itself stays on the photo wall. Untouched prints fade away after <see cref="lifetime"/>.
+    /// and floats until picked up. Carrying it near the wall deposits it into the matching slot.
+    /// Released prints remain available until their unattended lifetime expires.
     /// </summary>
     public sealed class ReefPrintedPhoto : MonoBehaviour
     {
-        public float lifetime = 30f;
+        public float lifetime = 120f;
+        static readonly HashSet<ReefPrintedPhoto> pending = new HashSet<ReefPrintedPhoto>();
+        Texture2D photoTexture;
+        string species;
+        bool stored, depositing;
+        float releasedAt;
+        public string Species => species;
+        public bool Depositing => depositing;
+        public static bool HasPending(string id)
+        {
+            foreach (var p in pending) if (p && !p.vanishing && p.species == id) return true;
+            return false;
+        }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetPending() => pending.Clear();
         const float Width = .17f, Height = .15f, PicWidth = .15f, PicHeight = .1f;
 
         XRGrabInteractable grab;
@@ -22,7 +37,7 @@ namespace Reefkeeper.Photos
         bool vanishing, everHeld;
         Vector3 rest;
 
-        public static ReefPrintedPhoto Spawn(Texture2D photo, Transform head, string caption)
+        public static ReefPrintedPhoto Spawn(Texture2D photo, Transform head, string caption, string species)
         {
             var forward = head.forward;
             var position = head.position + forward * .42f - head.up * .04f;
@@ -33,6 +48,9 @@ namespace Reefkeeper.Photos
             var body = go.AddComponent<Rigidbody>();
             body.isKinematic = true; body.useGravity = false;
             var printed = go.AddComponent<ReefPrintedPhoto>();
+            printed.species = species;
+            printed.photoTexture = photo;
+            pending.Add(printed);
             printed.Build(photo, caption);
             return printed;
         }
@@ -52,7 +70,7 @@ namespace Reefkeeper.Photos
             label.transform.localPosition = new Vector3(0, -Height * .5f + .0125f, -.001f);
             label.text = caption; label.anchor = TextAnchor.MiddleCenter; label.alignment = TextAlignment.Center;
             label.font = font && font.boldFont ? font.boldFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.GetComponent<MeshRenderer>().sharedMaterial = label.font.material;
+            label.gameObject.AddComponent<ReefPhotoCaption>().Bind(label);
             label.fontSize = 64; label.characterSize = .0024f; label.color = new Color(.09f, .25f, .30f);
 
             grab = gameObject.AddComponent<XRGrabInteractable>();
@@ -60,10 +78,12 @@ namespace Reefkeeper.Photos
             grab.throwOnDetach = false;
             grab.useDynamicAttach = true;
             grab.retainTransformParent = false;
+            ReefUnderwaterThrow.Install(grab, paper: true);
             grab.enabled = false; // not while it is still sliding out
             grab.selectEntered.AddListener(_ => everHeld = true);
-            grab.selectExited.AddListener(_ => Vanish());
+            grab.selectExited.AddListener(_ => { releasedAt = Time.time; rest = transform.position; });
             born = Time.time;
+            releasedAt = born;
             rest = transform.position;
             StartCoroutine(PrintOut());
         }
@@ -87,11 +107,47 @@ namespace Reefkeeper.Photos
             // Develops from a dark blue-grey to the full picture, like an instant photo.
             developed = Mathf.Min(1, developed + Time.deltaTime / 1.8f);
             picture.SetColor("_BaseColor", Color.Lerp(new Color(.16f, .2f, .26f), Color.white, Mathf.SmoothStep(0, 1, developed)));
-            if (vanishing || grab.isSelected) return;
+            if (vanishing || depositing) return;
+            if (grab.isSelected) { TryDeposit(); return; }
             if (!everHeld) transform.position = rest + Vector3.up * Mathf.Sin((Time.time - born) * 1.6f) * .006f;
-            // A desktop/simulator player cannot reach out for it: let it fade sooner.
-            float life = UnityEngine.XR.XRSettings.isDeviceActive ? lifetime : 8f;
-            if (Time.time - born > life) Vanish();
+            if (Time.time - releasedAt > lifetime) Vanish();
+        }
+
+        bool TryDeposit()
+        {
+            if (!everHeld || depositing || vanishing || ReefPhotoAlbum.Has(species)) return false;
+            if (!ReefPhotoWall.TryFindDeposit(species, transform.position, out var wall)) return false;
+            depositing = true;
+            GetComponent<ReefUnderwaterThrow>()?.StopMotion();
+            // Release XRI ownership before moving the print ourselves.
+            grab.enabled = false;
+            StartCoroutine(Deposit(wall));
+            return true;
+        }
+
+        IEnumerator Deposit(ReefPhotoWall wall)
+        {
+            Vector3 start = transform.position;
+            Quaternion rotation = transform.rotation;
+            for (float t = 0; t < 1; t += Time.deltaTime / .4f)
+            {
+                if (!wall || !wall.isActiveAndEnabled || !wall.TryGetSlotPose(species, out var pose))
+                { depositing = false; releasedAt = Time.time; grab.enabled = true; yield break; }
+                float eased = Mathf.SmoothStep(0, 1, t);
+                transform.SetPositionAndRotation(Vector3.Lerp(start, pose.position, eased), Quaternion.Slerp(rotation, pose.rotation, eased));
+                yield return null;
+            }
+            if (wall && wall.isActiveAndEnabled && wall.TryGetSlotPose(species, out var finalPose))
+            {
+                transform.SetPositionAndRotation(finalPose.position, finalPose.rotation);
+                if (!ReefPhotoAlbum.Has(species))
+                {
+                    ReefPhotoAlbum.Store(species, photoTexture);
+                    stored = ReefPhotoAlbum.Get(species) == photoTexture;
+                }
+                Vanish();
+            }
+            else { depositing = false; releasedAt = Time.time; grab.enabled = true; }
         }
 
         /// <summary>Shrinks with a little spin and is gone.</summary>
@@ -99,6 +155,7 @@ namespace Reefkeeper.Photos
         {
             if (vanishing) return;
             vanishing = true;
+            GetComponent<ReefUnderwaterThrow>()?.StopMotion();
             if (grab) grab.enabled = false;
             StartCoroutine(Shrink());
         }
@@ -115,7 +172,12 @@ namespace Reefkeeper.Photos
             Destroy(gameObject);
         }
 
-        void OnDestroy() { if (picture) Destroy(picture); if (paper) Destroy(paper); }
+        void OnDestroy()
+        {
+            pending.Remove(this);
+            if (!stored && photoTexture) Destroy(photoTexture);
+            if (picture) Destroy(picture); if (paper) Destroy(paper);
+        }
 
         void Quad(string name, Vector3 at, Vector2 size, Material material, bool back)
         {

@@ -1,0 +1,36 @@
+Photo wall deposit prototype — 2026-11-22
+
+Taking a photo now creates a pending physical print, not an album entry.
+Pending species are excluded from photo targeting until the print is delivered
+or disappears. Existing album photos and saved files remain valid.
+
+Carry a grabbed print within 0.4 m of a picture slot on the front of the cat's
+photo wall. Any nearby slot can trigger the transfer, but the print always flies
+to its own species' slot. The wall must contain that slot and be active.
+XRI releases ownership before the 0.4-second eased flight. Storage and the wall
+event happen only on arrival, followed by the existing 0.3-second shrinking/spin
+disappearance. The wall picture develops over 0.8 seconds with a soft vertical
+reveal. Both wall distances and reveal duration are Inspector parameters.
+
+Releasing an undelivered print leaves it in place for pickup. Unattended prints
+expire after 120 seconds; held prints do not expire. Missing/destroyed walls
+cancel the flight without storing the photo and allow pickup again. Unstored
+textures belong to prints; on delivery the album takes ownership. Photo captions
+on prints and wall cards use depth-tested, single-sided font rendering.
+
+No new panels or controls. The old immediate-success toast is now the literal
+"placeholder text", pending user-authored wording. No third-party animation
+package/assets were imported. The original lightweight shader uses a smoothstep
+reveal and color interpolation; reference:
+https://docs.unity.cn/Packages/com.unity.shadergraph%4016.0/manual/Smoothstep-Node.html
+
+CheckPhotoDeposit.cs passed in Editor Play mode. It validates deferred storage,
+pending protection, front-side/range/species routing, release behavior, single
+arrival/event, saved PNG and texture lifetime. It restores the pre-test album
+entry/file. Actual engine renders verified readable front captions, blank backs,
+and the develop shader. Test images use a diagnostic two-color texture.
+This is not headset gesture/performance validation. No APK built for this change.
+
+Local recovery scene files and the unrelated VoiceCapture tool are not part of
+this commit. PICO Live Preview and PC quality experiments were reverted at the
+user's request, preserving the Lucky Dive Co. application name.
