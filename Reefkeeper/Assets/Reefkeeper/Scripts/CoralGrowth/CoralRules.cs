@@ -46,6 +46,18 @@ namespace Reefkeeper.Corals
             _ => species,
         };
 
+        /// <summary>Price in scallops at Lucky Cat's cart (shown only; there is no currency yet).</summary>
+        public static int Price(string species) => species switch
+        {
+            Disc => 5,
+            "BranchCoral" => 8,
+            Finger => 8,
+            "TendrilCoral" => 10,
+            "BarrelSponge" => 12,
+            "PolypPillar_Coral" or "PolypPillar_Pink" => 12,
+            _ => 10,
+        };
+
         /// <summary>Where this coral can go, as a short hint.</summary>
         public static string Needs(string species) => species switch
         {
