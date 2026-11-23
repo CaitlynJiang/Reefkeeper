@@ -24,6 +24,7 @@ namespace Reefkeeper
         public Vector3 seatedEye = new Vector3(0, 16.57f, -14.47f);
         public Vector3 underwaterEye = new Vector3(-.456255f, 1.674831f, -17.225203f);
         public float underwaterHeading = 2.8949914f, desktopEntryPitch = 10.749868f;
+        public bool showSwimLesson = true;
         public float fadeOutSeconds = .5f, fadeInSeconds = 1.1f;
         public Phase State { get; private set; }
         public float FadeAlpha { get; private set; } = 1;
@@ -229,6 +230,7 @@ namespace Reefkeeper
             if (desktop) desktop.SetControl(true);
             else { Cursor.lockState = CursorLockMode.None; Cursor.visible = false; }
             State = Phase.Swimming;
+            if (showSwimLesson) SwimLesson.Begin(view);
             Debug.Log("[OpeningDive] Same scene and camera preserved; swimming restored.");
             yield return new WaitForSecondsRealtime(2);
             if (fade) Destroy(fade.gameObject);

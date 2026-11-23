@@ -52230,6 +52230,7 @@ MonoBehaviour:
   underwaterEye: {x: -0.456255, y: 1.674831, z: -17.225203}
   underwaterHeading: 2.8949914
   desktopEntryPitch: 10.749868
+  showSwimLesson: 1
   fadeOutSeconds: 0.5
   fadeInSeconds: 1.1
 --- !u!4 &945895818

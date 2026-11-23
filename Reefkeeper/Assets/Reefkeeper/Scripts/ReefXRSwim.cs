@@ -34,6 +34,9 @@ namespace Reefkeeper
         public Vector3 Velocity { get; private set; }
         /// <summary>True while an outstretched hand is gliding.</summary>
         public bool Gliding { get; private set; }
+        public bool GlidingTogether { get; private set; }
+        public bool Braking { get; private set; }
+        const float HandsTogetherDistance = .16f;
         readonly Vector3[] lastPalm = new Vector3[2], palmVelocity = new Vector3[2];
         readonly bool[] hadPalm = new bool[2];
         readonly float[] glideHeld = new float[2];
@@ -80,6 +83,8 @@ namespace Reefkeeper
         {
             float dt = Time.deltaTime;
             Gliding = false;
+            GlidingTogether = false;
+            Braking = false;
             if (dt <= 0) return;
             // Hand joints and the camera's local pose share the camera offset's space.
             var space = view.transform.parent;
@@ -89,6 +94,13 @@ namespace Reefkeeper
                 for (int i = 0; i < 2; i++) { hadPalm[i] = false; palmVelocity[i] = Vector3.zero; glideHeld[i] = 0; }
                 return;
             }
+            var left = Hands.ReefHands.Get(0);
+            var right = Hands.ReefHands.Get(1);
+            bool together = left.Tracked && right.Tracked &&
+                Vector3.Distance(left.Palm.position, right.Palm.position) <= HandsTogetherDistance;
+            bool braking = together && left.Fist && right.Fist && !Hands.ReefInput.HandBusy(0)
+                && !Hands.ReefInput.HandBusy(1) && !Photos.ReefPhotoMode.OwnsHands
+                && !ReefToolMenu.BlocksWorldInput;
             Vector3 head = view.transform.localPosition, thrust = Vector3.zero, glide = Vector3.zero;
             for (int i = 0; i < 2; i++)
             {
@@ -115,7 +127,8 @@ namespace Reefkeeper
             }
             if (thrust.sqrMagnitude > 0) Velocity = Vector3.ClampMagnitude(Velocity + thrust * Mathf.Min(dt, 0.05f), strokeMaxSpeed);
             Gliding = glide.sqrMagnitude > 0.01f;
-            Tick(Gliding ? glide.normalized * glideSpeed : Vector3.zero, false, false, dt);
+            GlidingTogether = together && Gliding && glideHeld[0] >= glideHoldSeconds && glideHeld[1] >= glideHoldSeconds;
+            Tick(Gliding ? glide.normalized * glideSpeed : Vector3.zero, false, braking, dt);
         }
 
         /// <summary>How close (m) a palm must be to something grabbable to count as reaching for it.</summary>
@@ -183,6 +196,7 @@ namespace Reefkeeper
 
         public void Tick(Vector3 worldDirection, bool boost, bool brake, float dt)
         {
+            Braking = brake;
             dt = Mathf.Clamp(dt, 0, 0.05f);
             body.center = transform.InverseTransformPoint(view.transform.position);
             Velocity = DiveMotor.IntegrateVelocity(Velocity, worldDirection, boost, brake, dt, 2.1f, 4, 3.5f, 1.1f, 12);
