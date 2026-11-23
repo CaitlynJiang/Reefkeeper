@@ -38,7 +38,8 @@ namespace Reefkeeper.Corals
         Vector3 counterSpot, front, right;
         ShopCounterItem cameraItem;
         VinylPlayer vinylPlayer;
-        Transform platter;
+        Transform platter, turntable;
+        GameObject crate;
         readonly System.Collections.Generic.List<GameObject> vinylShop = new System.Collections.Generic.List<GameObject>();
         ShopPriceTag tag;
         ShopCounterItem gazed;
@@ -57,7 +58,7 @@ namespace Reefkeeper.Corals
             right = Vector3.Cross(Vector3.up, front);
             tag = new ShopPriceTag("Counter price tag");
             ReefPhotoMode.Unlocked = false;   // the camera has to be earned first
-            Place("RecordCrate", -.62f);      // empty for now
+            crate = PlaceCrate();             // empty until the vinyl shop opens
             HideVinylShop();
             CoralPlanting.CoralPlanted += OnPlanted;
             ReefPhotoAlbum.Changed += OnPhoto;
@@ -122,6 +123,8 @@ namespace Reefkeeper.Corals
             foreach (var display in shop.GetComponentsInChildren<VinylDisplay>(true)) vinylShop.Add(display.gameObject);
             foreach (var record in shop.GetComponentsInChildren<ShopRecord>(true))
                 if (!vinylShop.Exists(g => record.transform.IsChildOf(g.transform))) vinylShop.Add(record.gameObject);
+            FileRecordsInCrate();
+            ApplyCovers();
             if (vinylPlayer)
             {
                 vinylShop.Add(vinylPlayer.gameObject);
@@ -135,43 +138,146 @@ namespace Reefkeeper.Corals
             if (VinylShopOpen) return;
             VinylShopOpen = true;
             foreach (var g in vinylShop) if (g) { g.SetActive(true); StartCoroutine(PopIn(g.transform)); }
-            shop.Speak($"What a lovely photo, thank you! I got a record player and some records in. Records are {ShopRecord.Price} scallops!", LuckyCat.Mood.Happy, 6f);
+            shop.Speak($"What a lovely photo, thank you! I got a record player in, and records in the crate by my stall. {ShopRecord.Price} scallops each!", LuckyCat.Mood.Happy, 6f);
         }
 
-        /// <summary>The music corner turntable under the record player's slot: platter centred on it, its top under the record.</summary>
+        /// <summary>The record crate stands on the counter, beside the turntable (to the customer's right).</summary>
+        GameObject PlaceCrate()
+        {
+            var go = Place("RecordCrate", crateAlong);
+            if (!go) return null;
+            go.transform.rotation = go.transform.rotation * Quaternion.Euler(0, -10, 0);
+            go.transform.localScale = Vector3.one * crateScale;
+            return go;
+        }
+
+        [Header("Record crate")]
+        [Tooltip("Where along the counter, from the counter spot (m); negative is the customer's right.")] public float crateAlong = -.62f;
+        [Tooltip("Scale of the crate, so the shop's enlarged records fit in it.")] public float crateScale = 1.15f;
+
+        /// <summary>The highest seabed point under <paramref name="p"/>, ignoring the stall itself and the player.</summary>
+        Vector3 Ground(Vector3 p)
+        {
+            float best = float.NegativeInfinity; var at = p;
+            foreach (var h in Physics.RaycastAll(p + Vector3.up * 2f, Vector3.down, 6f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (h.collider.transform.IsChildOf(shop.transform) || h.collider.GetComponentInParent<CharacterController>()) continue;
+                if (h.point.y > best) { best = h.point.y; at = h.point; }
+            }
+            return at;
+        }
+
+        /// <summary>
+        /// Caitlyn's three record sets (sleeve + disc, shown at 2x) stand upright in the crate, back ones a little
+        /// higher, each disc peeking out of its sleeve to be taken. Their home is updated so an unplayed record returns here.
+        /// </summary>
+        void FileRecordsInCrate()
+        {
+            if (!crate) return;
+            var displays = shop.GetComponentsInChildren<VinylDisplay>(true);
+            var t = crate.transform;
+            var box = crate.GetComponent<BoxCollider>();
+            float floor = box ? .03f * crateScale : .03f;
+            for (int i = 0; i < displays.Length; i++)
+            {
+                var set = displays[i].transform;
+                float depth = (i - (displays.Length - 1) * .5f) * .07f * crateScale;    // back (-) to front (+)
+                int behind = displays.Length - 1 - i;                                   // 0 = front sleeve
+                var sleeve = displays[i].sleeve ? displays[i].sleeve.GetComponent<Renderer>() : null;
+                float half = sleeve ? sleeve.bounds.extents.y : .19f;
+                // Like a real crate: sleeves lean back, the ones behind stand higher so each one shows.
+                set.SetPositionAndRotation(t.position + t.up * (floor + half + behind * .06f) + t.forward * depth,
+                    t.rotation * Quaternion.Euler(-12f, 0, 0));
+                if (displays[i].record)
+                {
+                    var disc = displays[i].record.transform;
+                    disc.localPosition = new Vector3(0, .05f, 0);   // half a sleeve's worth out, to grab
+                    disc.localRotation = Quaternion.identity;
+                    var record = disc.GetComponent<ShopRecord>();
+                    if (record) { record.home = disc.position; record.homeRotation = disc.rotation; }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Lucky Cat album covers (Figma "Lucky Cat - Album Covers", Resources/VinylShop/Covers/&lt;variant&gt;.png) on both
+        /// faces of each record sleeve. The sleeve meshes are flat-coloured without UVs, so each face gets a thin quad.
+        /// </summary>
+        void ApplyCovers()
+        {
+            var shader = Shader.Find("Reefkeeper/UnderWater/Toon");
+            foreach (var display in shop.GetComponentsInChildren<VinylDisplay>(true))
+            {
+                if (!display.sleeve || !display.sleeve.sharedMesh) continue;
+                var art = Resources.Load<Texture2D>("VinylShop/Covers/" + display.variant);
+                if (!art || !shader) continue;
+                var material = new Material(shader) { name = display.variant + " cover" };
+                material.SetTexture("_BaseMap", art);
+                material.SetColor("_BaseColor", Color.white);
+                if (material.HasProperty("_Emission")) material.SetFloat("_Emission", .35f);
+                var b = display.sleeve.sharedMesh.bounds;
+                for (int side = 0; side < 2; side++)
+                {
+                    var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    Destroy(q.GetComponent<Collider>());
+                    q.name = side == 0 ? "Cover (front)" : "Cover (back)";
+                    q.transform.SetParent(display.sleeve.transform, false);
+                    // The sleeve lies in its XY plane; a quad faces -Z, so the back one turns round.
+                    float z = side == 0 ? b.min.z - .0006f : b.max.z + .0006f;
+                    q.transform.localPosition = new Vector3(b.center.x, b.center.y, z);
+                    q.transform.localRotation = side == 0 ? Quaternion.identity : Quaternion.Euler(0, 180, 0);
+                    q.transform.localScale = new Vector3(b.size.x * .995f, b.size.y * .995f, 1);
+                    var r = q.GetComponent<MeshRenderer>();
+                    r.sharedMaterial = material;
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The music corner turntable stands on the middle of the counter, sized so its platter fits one of the
+        /// shop's records, and the record player's slot (Caitlyn's trigger and hologram) moves onto its platter.
+        /// </summary>
         void AddTurntable()
         {
             var source = Resources.Load<GameObject>("Shop/RecordPlayer");
             var slot = vinylPlayer.Slot;
             if (!source || !slot) return;
-            var model = Instantiate(source, vinylPlayer.transform.position, vinylPlayer.transform.rotation);
+            var model = Instantiate(source);
             model.name = "Turntable (music corner)";
+            turntable = model.transform;
             foreach (var c in model.GetComponentsInChildren<Collider>(true)) Destroy(c); // the slot is the player's own trigger
             foreach (var t in model.GetComponentsInChildren<Transform>(true))
             {
                 if (t.name == "Record_Default") t.gameObject.SetActive(false); // the bought records go on the platter
                 if (t.name == "Platter") platter = t;
             }
-            if (!platter) { model.transform.SetParent(vinylPlayer.transform, true); return; }
-            var renderers = platter.GetComponentsInChildren<Renderer>();
-            if (renderers.Length == 0) { model.transform.SetParent(vinylPlayer.transform, true); return; }
-            // Sized to the shop's records (shown enlarged for VR) rather than the player's scaled slot:
-            // the platter is a little wider than one record.
-            var top = renderers[0].bounds; foreach (var r in renderers) top.Encapsulate(r.bounds);
-            float platterSize = Mathf.Max(top.size.x, top.size.z);
+            // Size: platter as wide as one record.
+            var renderers = platter ? platter.GetComponentsInChildren<Renderer>() : new Renderer[0];
             var record = shop.GetComponentInChildren<ShopRecord>(true);
             var recordMesh = record ? record.GetComponent<MeshFilter>() : null;
-            if (recordMesh && recordMesh.sharedMesh && platterSize > .001f)
+            if (renderers.Length > 0 && recordMesh && recordMesh.sharedMesh)
             {
+                var top = renderers[0].bounds; foreach (var r in renderers) top.Encapsulate(r.bounds);
                 var size = Vector3.Scale(recordMesh.sharedMesh.bounds.size, record.transform.lossyScale);
                 float recordSize = Mathf.Max(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
-                model.transform.localScale = Vector3.one * (recordSize * 1.12f / platterSize);
-                top = renderers[0].bounds; foreach (var r in renderers) top.Encapsulate(r.bounds);
+                float platterSize = Mathf.Max(top.size.x, top.size.z);
+                if (platterSize > .001f) model.transform.localScale = Vector3.one * (recordSize / platterSize);
             }
+            // Stand it on the counter top, level with it, facing the customer.
+            var p = counterSpot + right * -.05f - front * .15f;
+            var rotation = Quaternion.LookRotation(front, Vector3.up);
+            if (Physics.Raycast(p + Vector3.up * .8f, Vector3.down, out var hit, 1.6f, ~0, QueryTriggerInteraction.Ignore) && hit.collider.transform.IsChildOf(shop.transform))
+            { p = hit.point; rotation = Quaternion.FromToRotation(Vector3.up, hit.normal) * rotation; }
+            model.transform.SetPositionAndRotation(p, rotation);
+            if (renderers.Length == 0) return;
+            // The record player's slot follows: same orientation as the turntable, centred just above the platter,
+            // so a record set down there lies flat on it.
+            var platterTop = renderers[0].bounds; foreach (var r in renderers) platterTop.Encapsulate(r.bounds);
+            var seat = new Vector3(platterTop.center.x, platterTop.max.y, platterTop.center.z) + model.transform.up * .006f;
+            vinylPlayer.transform.rotation = rotation;
+            vinylPlayer.transform.position += seat - vinylPlayer.transform.TransformPoint(slot.center);
             model.transform.SetParent(vinylPlayer.transform, true);
-            var seat = vinylPlayer.transform.TransformPoint(slot.center);
-            // A record is set down flat at the slot centre; the platter top sits just under it.
-            model.transform.position += new Vector3(seat.x - top.center.x, seat.y - .006f - top.max.y, seat.z - top.center.z);
         }
 
         /// <summary>An item was picked up (or taken with G on desktop).</summary>
@@ -201,11 +307,13 @@ namespace Reefkeeper.Corals
             var view = Camera.main;
             if (!view || !shop) return;
             // The platter (and the record on it) turn while music plays: 33 rpm.
-            if (vinylPlayer && vinylPlayer.Playing && platter)
+            // Both turn about the turntable's own axis (the counter tilts a little), the record about its own
+            // centre: it lies on its face, so that is its local Z.
+            if (vinylPlayer && vinylPlayer.Playing && platter && turntable)
             {
                 float step = 200f * Time.deltaTime;
-                platter.Rotate(Vector3.up, step, Space.World);
-                vinylPlayer.Playing.transform.Rotate(Vector3.up, step, Space.World);
+                platter.Rotate(turntable.up, step, Space.World);
+                vinylPlayer.Playing.transform.Rotate(Vector3.forward, step, Space.Self);
             }
             // First visit: the cat waves the player over until they talk to it.
             // Only while the cat isn't already saying something, and only before the story moves on.

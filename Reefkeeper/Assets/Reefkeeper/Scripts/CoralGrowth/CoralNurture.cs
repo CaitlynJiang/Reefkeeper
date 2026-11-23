@@ -56,6 +56,9 @@ namespace Reefkeeper.Corals
         {
             if (!isActiveAndEnabled || !coral) return;
             coral.Poke();
+            // A coral waiting for fertilizer has nothing left to rest from, and fertilizing by hand means reaching
+            // into it: a rest here cancelled every attempt (headset). Just the recoil.
+            if (!FinalStage && Progress >= 1f) return;
             TouchPauseRemaining = Mathf.Max(0f, touchPauseSeconds);
             var emote = GetComponent<CoralCareEmote>();
             if (!emote)
