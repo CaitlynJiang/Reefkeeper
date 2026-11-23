@@ -77,9 +77,9 @@ public static class CheckCoralTouch
             socket.moss=moss;moss.ResetDirt();care.ReactToTouch();progress=care.Progress;advance(4);
             Need(!care.TouchPaused&&care.Paused&&care.Progress==progress,"Touch recovery cleared the independent algae block");
             moss.ApplyStroke(100,CleaningToolKind.Brush);advance(.3f);Need(care.Progress>progress,"Cleared algae failed to resume growth");
+            // A coral waiting for fertilizer only recoils: the hand reaching in to fertilize must not block it.
             Set(care,"<Progress>k__BackingField",1f);care.ReactToTouch();int stage=care.Stage;
-            Need(!care.Ready&&!care.Fertilize()&&care.Stage==stage,"Fertilizer bypassed touch rest");advance(3);
-            Need(care.Ready&&care.Fertilize()&&care.Stage==stage+1,"Fertilizing did not recover after rest");
+            Need(!care.TouchPaused&&care.Ready&&care.Fertilize()&&care.Stage==stage+1,"Touching a coral that waits for fertilizer blocked fertilizing");
             coral.SetStage(CoralRules.StageCount-1,false);Set(care,"<Progress>k__BackingField",1f);care.ReactToTouch();
             Need(care.FullyGrown&&care.TouchPaused,"Mature coral lost harvest state during its visual reaction");advance(3);
 
