@@ -88,6 +88,7 @@ namespace Reefkeeper.Corals
                 item.owned=PlayerPrefs.GetInt(item.unlockKey)==1;
                 item.sales = sales;
                 item.music=placedInScene?player.displays[i].music:null;
+                item.musicGain=placedInScene?player.displays[i].musicGain:1f;
                 item.productName = color + " record";
                 // Only the disc is grabbable. The sleeve participates in gaze targeting alone.
                 var sleeve = set.transform.Find("Sleeve");
@@ -194,7 +195,7 @@ namespace Reefkeeper.Corals
         {
             playing=item;
             if (placementRing) placementRing.enabled = false;
-            if(soundscape)soundscape.PlayMusic(item.music?item.music:soundscape.music,musicFadeIn);
+            if(soundscape)soundscape.PlayMusic(item.music?item.music:soundscape.music,musicFadeIn,item.musicGain);
         }
         void StopMusic()
         {

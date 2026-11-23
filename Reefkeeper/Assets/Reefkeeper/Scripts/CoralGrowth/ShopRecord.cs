@@ -14,6 +14,7 @@ namespace Reefkeeper.Corals
         internal MeshFilter sleeve;
         internal string productName;
         public AudioClip music;
+        public float musicGain = 1f;
         internal string unlockKey;
         internal bool owned;
         internal Vector3 home;

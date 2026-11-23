@@ -377,6 +377,8 @@ namespace Reefkeeper.Corals
             if (!source) { Debug.LogWarning("[Counter] Missing Resources/Shop/" + prefab + " (Reefkeeper > Shop > Build counter props)"); return null; }
             var p = counterSpot + right * along - front * .17f;
             var rotation = Quaternion.LookRotation(front, Vector3.up);
+            if (prefab == "InstantCamera" && shop.cameraGiftSpawn)
+                return Instantiate(source, shop.cameraGiftSpawn.position, shop.cameraGiftSpawn.rotation);
             if (Physics.Raycast(p + Vector3.up * .8f, Vector3.down, out var hit, 1.6f, ~0, QueryTriggerInteraction.Ignore) && hit.collider.transform.IsChildOf(shop.transform))
             { p = hit.point; rotation = Quaternion.FromToRotation(Vector3.up, hit.normal) * rotation; }
             var go = Instantiate(source, p, rotation);

@@ -11,6 +11,8 @@ namespace Reefkeeper
         public AudioSource AmbienceSource { get; private set; }
         public AudioSource MusicSource { get; private set; }
         Coroutine musicTransition;
+        float albumGain = 1f;
+        float PlaybackVolume => Mathf.Clamp01(musicVolume * albumGain);
         void Start()
         {
             AmbienceSource = Loop("Underwater ambience", ambience, ambienceVolume, 32);
@@ -28,11 +30,12 @@ namespace Reefkeeper
         void OnValidate()
         {
             if (AmbienceSource) AmbienceSource.volume = ambienceVolume;
-            if (MusicSource&&musicTransition==null&&!MusicSource.mute) MusicSource.volume = musicVolume;
+            if (MusicSource&&musicTransition==null&&!MusicSource.mute) MusicSource.volume = PlaybackVolume;
         }
-        public void PlayMusic(AudioClip clip,float fadeSeconds)
+        public void PlayMusic(AudioClip clip,float fadeSeconds,float gain=1f)
         {
             if(!MusicSource||!clip)return;
+            albumGain=Mathf.Clamp(gain,0,4);
             if(musicTransition!=null)StopCoroutine(musicTransition);
             musicTransition=StartCoroutine(ChangeMusic(clip,Mathf.Max(0,fadeSeconds)));
         }
@@ -49,7 +52,7 @@ namespace Reefkeeper
             {
                 MusicSource.Stop();MusicSource.clip=clip;MusicSource.volume=0;MusicSource.mute=false;MusicSource.Play();
             }
-            yield return FadeVolume(musicVolume,seconds);musicTransition=null;
+            yield return FadeVolume(PlaybackVolume,seconds);musicTransition=null;
         }
         IEnumerator FadeOut(float seconds)
         {

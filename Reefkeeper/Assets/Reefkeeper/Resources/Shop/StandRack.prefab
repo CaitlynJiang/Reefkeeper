@@ -50,6 +50,7 @@ MonoBehaviour:
   sleeve: {fileID: 3097400838174416729}
   record: {fileID: 6524965082267145260}
   music: {fileID: 0}
+  musicGain: 1
 --- !u!1 &999080639003480444
 GameObject:
   m_ObjectHideFlags: 0
@@ -736,6 +737,7 @@ MonoBehaviour:
   sleeve: {fileID: 3577299696399778555}
   record: {fileID: 6036033499062399292}
   music: {fileID: 8300000, guid: 7bebe1174ced1f94d8583126fc19ea35, type: 3}
+  musicGain: 2
 --- !u!1 &2737043076185919972
 GameObject:
   m_ObjectHideFlags: 0
@@ -1973,6 +1975,7 @@ MonoBehaviour:
   sleeve: {fileID: 7162996028575183406}
   record: {fileID: 696341008351419695}
   music: {fileID: 8300000, guid: dd0fb73831b87884a9c60460a1d0adc4, type: 3}
+  musicGain: 2.5
 --- !u!1 &6880586700274843213
 GameObject:
   m_ObjectHideFlags: 0

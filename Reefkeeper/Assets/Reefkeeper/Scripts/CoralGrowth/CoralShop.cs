@@ -31,11 +31,13 @@ namespace Reefkeeper.Corals
         [SerializeField] AudioClip purrMeow, shortMeow;
         [Tooltip("VR: where the cat sets a coral down on the counter for the player to pick up.\nVR 珊瑚放在柜台上的位置")]
         public Transform counterSpot;
+        [Tooltip("Optional camera gift spawn pose. Move this scene marker to adjust where the camera appears.")]
+        public Transform cameraGiftSpawn;
         [Tooltip("Sell corals on display in the wheelbarrow (look or point to see the price, grab to buy) instead of the cat handing one over.\n小车展示售卖")]
         public bool sellFromCart = true;
         /// <summary>The wheelbarrow display, when selling from the cart.</summary>
         public CoralCart Cart { get; private set; }
-        /// <summary>What the counter holds as the game moves on (camera gift, then the vinyl shop).</summary>
+        /// <summary>Camera gift and photo rewards, with the vinyl shop available from the start.</summary>
         public LuckyCatProgress Progress { get; private set; }
         /// <summary>Raised each time the player talks to the cat.</summary>
         public event System.Action Talked;

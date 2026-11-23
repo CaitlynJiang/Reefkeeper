@@ -11,6 +11,8 @@ namespace Reefkeeper.Corals
         public MeshFilter record;
         [Tooltip("Music for this album. Leave empty to use the existing background track.")]
         public AudioClip music;
+        [Range(0, 4), Tooltip("Album volume multiplier, relative to the music volume.")]
+        public float musicGain = 1f;
 
         void OnEnable()
         {
