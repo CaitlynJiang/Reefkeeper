@@ -3221,6 +3221,8 @@ MonoBehaviour:
   spring: 25
   damping: 3.8
   touchStrength: 65
+  idleBend: 0.3
+  idlePeriod: 8
 --- !u!1 &2631512460942419556
 GameObject:
   m_ObjectHideFlags: 0

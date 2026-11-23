@@ -28,7 +28,7 @@ namespace Reefkeeper.Photos
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetPending() => pending.Clear();
-        const float Width = .17f, Height = .15f, PicWidth = .15f, PicHeight = .1f;
+        const float Width = .17f, Height = .15f, PicWidth = .15f, PicHeight = .1f, Thickness=.003f;
 
         XRGrabInteractable grab;
         Material picture, paper;
@@ -60,20 +60,24 @@ namespace Reefkeeper.Photos
             visual = new GameObject("Visual").transform;
             visual.SetParent(transform, false);
             paper = Toon(new Color(.984f, .965f, .925f), null, .45f);
-            Quad("Paper", new Vector3(0, 0, 0), new Vector2(Width, Height), paper, false);
-            Quad("Paper back", new Vector3(0, 0, .0008f), new Vector2(Width, Height), paper, true);
+            var stock=GameObject.CreatePrimitive(PrimitiveType.Cube);stock.name="Paper";
+            Destroy(stock.GetComponent<Collider>());stock.transform.SetParent(visual,false);
+            stock.transform.localScale=new Vector3(Width,Height,Thickness);
+            stock.GetComponent<MeshRenderer>().sharedMaterial=paper;
+            stock.GetComponent<MeshRenderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
             picture = Toon(Color.black, photo, .85f);
-            Quad("Picture", new Vector3(0, (Height - PicHeight) * .5f - .01f, -.0008f), new Vector2(PicWidth, PicHeight), picture, false);
+            Quad("Picture", new Vector3(0, (Height - PicHeight) * .5f - .01f, -Thickness*.5f-.0002f), new Vector2(PicWidth, PicHeight), picture, false);
             var font = FindFirstObjectByType<ReefCleaningHUD>(FindObjectsInactive.Include);
             var label = new GameObject("Caption").AddComponent<TextMesh>();
             label.transform.SetParent(visual, false);
-            label.transform.localPosition = new Vector3(0, -Height * .5f + .0125f, -.001f);
+            label.transform.localPosition = new Vector3(0, -Height * .5f + .0125f, -Thickness*.5f-.0004f);
             label.text = caption; label.anchor = TextAnchor.MiddleCenter; label.alignment = TextAlignment.Center;
             label.font = font && font.boldFont ? font.boldFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             label.gameObject.AddComponent<ReefPhotoCaption>().Bind(label);
             label.fontSize = 64; label.characterSize = .0024f; label.color = new Color(.09f, .25f, .30f);
 
             grab = gameObject.AddComponent<XRGrabInteractable>();
+            grab.colliders.Clear();grab.colliders.Add(GetComponent<BoxCollider>());
             grab.movementType = XRBaseInteractable.MovementType.Instantaneous;
             grab.throwOnDetach = false;
             grab.useDynamicAttach = true;

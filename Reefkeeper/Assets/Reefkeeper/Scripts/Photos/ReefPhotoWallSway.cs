@@ -19,7 +19,13 @@ namespace Reefkeeper.Photos
         [Range(1,15)] public float maximumBend=8f;
         [Min(1)] public float spring=25f,damping=3.8f;
         [Min(0)] public float touchStrength=65f;
+        [Tooltip("Very subtle ambient sway in degrees. Set to zero for touch-only movement.")]
+        [Range(0,2)] public float idleBend=.3f;
+        [Tooltip("Approximate seconds per ambient sway cycle; each vine has a slightly different rhythm.")]
+        [Min(1)] public float idlePeriod=8f;
         bool focused=true,initialized;
+        float idleTime;
+        bool idleWasApplied;
         readonly Vector3[] previousPalm=new Vector3[2],previousTip=new Vector3[2];
         readonly bool[] tracked=new bool[2],armed=new bool[2];
         public bool Moving {get {foreach(var v in vines)if(v.moving)return true;return false;}}
@@ -28,7 +34,7 @@ namespace Reefkeeper.Photos
         void ResetHands(){for(int i=0;i<2;i++){tracked[i]=false;armed[i]=false;}}
         void OnDisable()
         {
-            ResetHands();if(!initialized)return;
+            ResetHands();idleTime=0;idleWasApplied=false;if(!initialized)return;
             foreach(var v in vines){v.angle=v.velocity=Vector2.zero;v.moving=false;if(v.pivot)v.pivot.localRotation=v.rest;}
         }
         void Update(){SampleHands();StepMotion(Mathf.Min(Time.deltaTime,.05f));}
@@ -115,18 +121,35 @@ namespace Reefkeeper.Photos
         public void StepMotion(float dt)
         {
             if(dt<=0)return;dt=Mathf.Min(dt,.1f);
+            idleTime+=dt;
+            bool idle=idleBend>0;
+            float amplitude=idleBend*Mathf.SmoothStep(0,1,idleTime/2f);
             int steps=Mathf.CeilToInt(dt/.008f);float step=dt/steps;
-            foreach(var v in vines)
+            for(int i=0;i<vines.Length;i++)
             {
-                if(!v.pivot||!v.moving)continue;
-                for(int k=0;k<steps;k++)
+                var v=vines[i];
+                if(!v.pivot||(!v.moving&&!idle&&!idleWasApplied))continue;
+                if(v.moving)
                 {
-                    v.velocity+=(-spring*v.angle-damping*v.velocity)*step;v.angle+=v.velocity*step;
-                    if(v.angle.magnitude>maximumBend){v.angle=Vector2.ClampMagnitude(v.angle,maximumBend);v.velocity*=.6f;}
+                    for(int k=0;k<steps;k++)
+                    {
+                        v.velocity+=(-spring*v.angle-damping*v.velocity)*step;v.angle+=v.velocity*step;
+                        if(v.angle.magnitude>maximumBend){v.angle=Vector2.ClampMagnitude(v.angle,maximumBend);v.velocity*=.6f;}
+                    }
+                    if(v.angle.sqrMagnitude<.0004f&&v.velocity.sqrMagnitude<.0025f){v.angle=v.velocity=Vector2.zero;v.moving=false;}
                 }
-                if(v.angle.sqrMagnitude<.0004f&&v.velocity.sqrMagnitude<.0025f){v.angle=v.velocity=Vector2.zero;v.moving=false;}
-                v.pivot.localRotation=v.rest*Quaternion.Euler(v.angle.x,0,v.angle.y);
+                // Offset the resting pose without waking the touch spring or adding physics.
+                var ambient=Vector2.zero;
+                if(idle)
+                {
+                    float phase=i*2.399963f;
+                    float wave=idleTime*(2*Mathf.PI/Mathf.Max(1,idlePeriod))*(.9f+i*.04f);
+                    ambient=new Vector2(.35f*Mathf.Sin(wave*.73f+phase+1),.9f*Mathf.Sin(wave+phase))*amplitude;
+                }
+                var bend=Vector2.ClampMagnitude(v.angle+ambient,maximumBend);
+                v.pivot.localRotation=v.rest*Quaternion.Euler(bend.x,0,bend.y);
             }
+            idleWasApplied=idle;
         }
     }
 }

@@ -9,7 +9,12 @@ The previous generated whole-wall skin is removed; original frame colliders rest
 Tracked empty-hand palm/fingertip sweeps affect only the nearest contacted vine.
 Pinching, occupied hands, menus, camera mode, tracking loss and jumps are excluded.
 Each strand has an independent damped angular spring, maximum eight degrees.
-One entry gives one impulse; withdraw before touching again. Resting strands sleep.
+One entry gives one impulse; withdraw before touching again. Touch springs sleep
+when settled. A separate 0.3-degree ambient sway runs on six pivots, with roughly
+eight-second cycles and offset phases so the strands do not move in unison.
+It fades in over two seconds, carries photos/clips with each vine, and keeps the
+wooden frame fixed. Inspector Idle Bend controls strength (zero = touch-only);
+Idle Period controls speed. No additional meshes, joints or rigidbodies.
 This MVP swings each complete strand about its suspension point; it does not
 simulate flexible sections or cloth. Photos inherit their own vine's motion.
 
