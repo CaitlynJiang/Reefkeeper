@@ -54,6 +54,7 @@ namespace Reefkeeper.Photos
         float frameHeld, lowerHeld, untrackedFor, armedAt, closeAt = -1, toastUntil, shotCooldown, flash, shutterPop;
         string toast;
         Camera view, captureCam;
+        OpeningDiveSequence opening;
         Font font, bodyFont;
         Material overlay;
         Sprite disc, ring, thinRing;
@@ -83,6 +84,7 @@ namespace Reefkeeper.Photos
         void Awake()
         {
             Instance = this;
+            opening = FindFirstObjectByType<OpeningDiveSequence>();
             var hud = FindFirstObjectByType<ReefCleaningHUD>(FindObjectsInactive.Include);
             font = hud && hud.boldFont ? hud.boldFont : hud && hud.font ? hud.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             bodyFont = hud && hud.font ? hud.font : font;
@@ -103,8 +105,15 @@ namespace Reefkeeper.Photos
 
         void Update()
         {
+            // The opening moves/replaces the active view before swimming begins. Never show a
+            // nearby-species hint or retain a viewfinder/flash while seated or during entry.
+            if (!Unlocked || opening && opening.State != OpeningDiveSequence.Phase.Swimming)
+            {
+                HideImmediately();
+                return;
+            }
             view = Camera.main;
-            if (!view) { if (Active) Close("no camera"); return; }
+            if (!view) { HideImmediately(); return; }
             BuildUI();
             var head = view.transform;
             bool blocked = ReefToolMenu.BlocksWorldInput || DiveCardMock.Instance && DiveCardMock.Instance.IsOpen;
@@ -152,6 +161,20 @@ namespace Reefkeeper.Photos
             // Keep the pinch until both hands open again, so a shot never grabs or holds on release.
             owning = Active || hands && (left.Pinch || right.Pinch) && owning;
             UpdateUI(head, dt, hands);
+        }
+
+        void HideImmediately()
+        {
+            if (Active) Close("photography unavailable");
+            owning = hasTarget = false;
+            target = default;
+            lastNearby = toast = null;
+            frameHeld = lowerHeld = untrackedFor = toastUntil = shotCooldown = flash = shutterPop = 0;
+            closeAt = -1;
+            if (finderGroup) finderGroup.alpha = 0;
+            if (hintGroup) hintGroup.alpha = 0;
+            if (finder) finder.gameObject.SetActive(false);
+            if (hint) hint.gameObject.SetActive(false);
         }
 
         // ---------------- gesture ----------------
@@ -416,8 +439,8 @@ namespace Reefkeeper.Photos
         void BuildUI()
         {
             if (finder && finder.parent == view.transform) return;
-            if (finder) Destroy(finder.gameObject);
-            if (hint) Destroy(hint.gameObject);
+            if (finder) { finder.gameObject.SetActive(false); Destroy(finder.gameObject); }
+            if (hint) { hint.gameObject.SetActive(false); Destroy(hint.gameObject); }
             float halfV = ViewfinderDistance * 1000f * Mathf.Tan(fieldOfView * .5f * Mathf.Deg2Rad);
             var frameSize = new Vector2(halfV * 2 * photoWidth / photoHeight, halfV * 2);
 
@@ -470,7 +493,11 @@ namespace Reefkeeper.Photos
             canvas.sortingOrder = 50;
             ((RectTransform)go.transform).sizeDelta = new Vector2(1600, 1200);
             group = go.GetComponent<CanvasGroup>();
+            // CanvasGroup defaults to alpha=1. UpdateUI would otherwise reactivate a closed
+            // viewfinder for its first fade-out, including after a camera/rig switch.
+            group.alpha = 0;
             group.interactable = group.blocksRaycasts = false;
+            go.SetActive(false);
             return go.transform;
         }
 
