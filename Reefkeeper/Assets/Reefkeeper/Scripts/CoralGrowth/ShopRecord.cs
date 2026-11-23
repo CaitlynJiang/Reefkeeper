@@ -13,6 +13,7 @@ namespace Reefkeeper.Corals
         internal CoralCart sales;
         internal MeshFilter sleeve;
         internal string productName;
+        public AudioClip music;
         internal string unlockKey;
         internal bool owned;
         internal Vector3 home;
@@ -32,6 +33,7 @@ namespace Reefkeeper.Corals
         protected override void OnSelectEntered(SelectEnterEventArgs args)
         {
             base.OnSelectEntered(args);
+            if(player)player.LiftRecord(this);
             if (owned) return;
             if (!wallet || !wallet.TrySpend(Price,transform.position))
             {

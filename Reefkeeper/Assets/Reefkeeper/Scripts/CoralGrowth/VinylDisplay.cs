@@ -9,6 +9,8 @@ namespace Reefkeeper.Corals
         public string variant;
         public MeshFilter sleeve;
         public MeshFilter record;
+        [Tooltip("Music for this album. Leave empty to use the existing background track.")]
+        public AudioClip music;
 
         void OnEnable()
         {

@@ -1,0 +1,27 @@
+Editable turntable and automatic tonearm - 2026-11-23
+
+In ImmersiveOpening, Turntable - editable contains the model and Record placement
+target. Move the group to reposition everything. Move/rotate Record placement
+target to adjust both the light arcs and actual landing pose. Its BoxCollider
+defines release tolerance. Placement light arcs is its visual child; its Scale
+controls visual diameter, and VinylPlayer.Ring Rotation Speed controls rotation.
+Do not move only the visual child when changing the gameplay landing position.
+Runtime no longer repositions an authored turntable or placement target.
+
+An owned record released inside the empty target seats, then the arm raises,
+swings over and lowers before music fades in. Taking the record cancels cueing,
+returns the arm and fades music out. There is no headshell grab target, so it
+cannot compete with record selection. The light arcs hide while a record is seated.
+
+VinylTonearm exposes Play Angle, Lift Height and Animation Seconds in the Inspector.
+VinylPlayer exposes Music Fade In / Out (1.2 / 0.8 seconds). Each VinylDisplay has
+a Music AudioClip field; empty falls back to the existing background track.
+Put new music in Assets/Audio/Music/Vinyl. The existing audio source and purchases
+are reused. No new gameplay text or UI. Scene records are 7 mm thick; printed
+photos have solid 3 mm paper stock with image and caption outside the front face.
+Three soft arcs use a shared 192-triangle mesh and one unlit transparent pass;
+the arm uses constrained transforms without a Rigidbody or physics joint.
+
+Automatic cue/interrupt/return, real-frame volume fades, rapid track-switch
+cancellation, per-album clips and placement persistence checked in Editor.
+PICO hardware grab comfort and device rendering still need a headset test.

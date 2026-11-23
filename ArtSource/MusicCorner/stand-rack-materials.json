@@ -1,0 +1,74 @@
+{
+  "Mc_wood": {
+    "color": [
+      0.2961382567882538,
+      0.11697066575288773,
+      0.04666508734226227,
+      1.0
+    ],
+    "texture": null
+  },
+  "Rack_Mat_Rack_Pocket1": {
+    "color": [
+      0.800000011920929,
+      0.800000011920929,
+      0.800000011920929,
+      1.0
+    ],
+    "texture": "Assets/Reefkeeper/Textures/MusicCorner/StandRack/Rack_Mat_Rack_Pocket1.png"
+  },
+  "Mc_wood_d": {
+    "color": [
+      0.15592646598815918,
+      0.05612849071621895,
+      0.024157632142305374,
+      1.0
+    ],
+    "texture": null
+  },
+  "Outline": {
+    "color": [
+      0.06847816705703735,
+      0.03310476616024971,
+      0.021219009533524513,
+      1.0
+    ],
+    "texture": null
+  },
+  "Rack_Mat_Rack_Pocket3": {
+    "color": [
+      0.800000011920929,
+      0.800000011920929,
+      0.800000011920929,
+      1.0
+    ],
+    "texture": "Assets/Reefkeeper/Textures/MusicCorner/StandRack/Rack_Mat_Rack_Pocket3.png"
+  },
+  "Mc_wood_l": {
+    "color": [
+      0.5271151065826416,
+      0.23074005544185638,
+      0.08437620848417282,
+      1.0
+    ],
+    "texture": null
+  },
+  "Mc_Rope": {
+    "color": [
+      0.5840784311294556,
+      0.37123769521713257,
+      0.15592646598815918,
+      1.0
+    ],
+    "texture": null
+  },
+  "Rack_Mat_Rack_Pocket2": {
+    "color": [
+      0.800000011920929,
+      0.800000011920929,
+      0.800000011920929,
+      1.0
+    ],
+    "texture": "Assets/Reefkeeper/Textures/MusicCorner/StandRack/Rack_Mat_Rack_Pocket2.png"
+  }
+}

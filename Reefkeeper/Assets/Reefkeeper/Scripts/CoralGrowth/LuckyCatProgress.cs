@@ -8,17 +8,15 @@ using Reefkeeper.Photos;
 namespace Reefkeeper.Corals
 {
     /// <summary>
-    /// What Lucky Cat's counter holds as the game moves on (session only, like the scallop balance):
+    /// Lucky Cat's camera gift and photo rewards, alongside the always-open vinyl shop:
     /// <list type="number">
     /// <item>First time the player comes near: the cat waves them over to talk, and tells them about the cart.</item>
-    /// <item>The counter starts with an empty record crate (a hint of things to come).</item>
+    /// <item>The record rack, albums and record player are available from the start; albums still require purchase.</item>
     /// <item>Every coral planted pays <see cref="plantReward"/> scallops. The first one brings an instant camera
     /// onto the counter, a gift.</item>
     /// <item>Taking the camera unlocks photo mode; every new photo delivered to the wall pays
     /// <see cref="photoReward"/>. The cat asks for a photo of itself (it takes the coral crab's old place on the wall).</item>
-    /// <item>The Lucky Cat photo brings the record player and records onto the counter (Caitlyn's vinyl shop:
-    /// VinylPlayer / ShopRecord, hidden until then). The music corner turntable stands on the player's slot
-    /// and spins while a record plays.</item>
+    /// <item>The music corner turntable stands on the player's slot and spins while a record plays.</item>
     /// </list>
     /// </summary>
     [DefaultExecutionOrder(117)]
@@ -40,7 +38,6 @@ namespace Reefkeeper.Corals
         VinylPlayer vinylPlayer;
         Transform platter, turntable;
         GameObject crate;
-        readonly System.Collections.Generic.List<GameObject> vinylShop = new System.Collections.Generic.List<GameObject>();
         ShopPriceTag tag;
         ShopCounterItem gazed;
         bool talked, cameraOffered;
@@ -58,8 +55,9 @@ namespace Reefkeeper.Corals
             right = Vector3.Cross(Vector3.up, front);
             tag = new ShopPriceTag("Counter price tag");
             ReefPhotoMode.Unlocked = false;   // the camera has to be earned first
-            crate = PlaceCrate();             // empty until the vinyl shop opens
-            HideVinylShop();
+            var placedPlayer = shop.GetComponentInChildren<VinylPlayer>(true);
+            crate = placedPlayer && placedPlayer.recordRack ? placedPlayer.recordRack.gameObject : PlaceCrate();
+            InitializeVinylShop();
             CoralPlanting.CoralPlanted += OnPlanted;
             ReefPhotoAlbum.Changed += OnPhoto;
             shop.Talked += OnTalked;
@@ -83,8 +81,8 @@ namespace Reefkeeper.Corals
         {
             mood = LuckyCat.Mood.Beckon;
             if (cameraItem && !CameraOwned) line = "The camera on the counter is a gift for you. Take it!";
-            else if (CameraOwned && !VinylShopOpen && !ReefPhotoAlbum.Has(CatSpecies)) line = "Make a frame with both hands and take a photo of me! Then pin it on the photo wall.";
-            else if (VinylShopOpen) line = $"Fancy some music? Records are {ShopRecord.Price} scallops. Put one on the record player!";
+            else if (CameraOwned && !ReefPhotoAlbum.Has(CatSpecies)) line = "Make a frame with both hands and take a photo of me! Then pin it on the photo wall.";
+            else if (CameraOwned && VinylShopOpen) line = $"Fancy some music? Records are {ShopRecord.Price} scallops. Put one on the record player!";
             else line = null;
             return line != null;
         }
@@ -112,33 +110,24 @@ namespace Reefkeeper.Corals
             // Every new photo pinned on the wall pays (photos are stored when they reach the wall).
             var wall = FindFirstObjectByType<ReefPhotoWall>();
             if (wallet && photoReward > 0) wallet.Award(photoReward, wall ? wall.transform.position + Vector3.up : counterSpot);
-            if (species == CatSpecies && CameraOwned && !VinylShopOpen) StartCoroutine(After(2f, OpenVinylShop));
         }
 
-        // ---------------- Caitlyn's vinyl shop, held back until the Lucky Cat photo
+        // ---------------- vinyl shop: visible from startup, independent of the camera/photo tutorial
 
-        void HideVinylShop()
+        void InitializeVinylShop()
         {
             vinylPlayer = shop.GetComponentInChildren<VinylPlayer>(true);
-            foreach (var display in shop.GetComponentsInChildren<VinylDisplay>(true)) vinylShop.Add(display.gameObject);
-            foreach (var record in shop.GetComponentsInChildren<ShopRecord>(true))
-                if (!vinylShop.Exists(g => record.transform.IsChildOf(g.transform))) vinylShop.Add(record.gameObject);
+            if (crate) crate.SetActive(true);
             FileRecordsInCrate();
             ApplyCovers();
+            foreach (var display in shop.GetComponentsInChildren<VinylDisplay>(true)) display.gameObject.SetActive(true);
+            foreach (var record in shop.GetComponentsInChildren<ShopRecord>(true)) record.gameObject.SetActive(true);
             if (vinylPlayer)
             {
-                vinylShop.Add(vinylPlayer.gameObject);
+                vinylPlayer.gameObject.SetActive(true);
                 AddTurntable();
             }
-            foreach (var g in vinylShop) if (g) g.SetActive(false);
-        }
-
-        void OpenVinylShop()
-        {
-            if (VinylShopOpen) return;
             VinylShopOpen = true;
-            foreach (var g in vinylShop) if (g) { g.SetActive(true); StartCoroutine(PopIn(g.transform)); }
-            shop.Speak($"What a lovely photo, thank you! I got a record player in, and records in the crate by my stall. {ShopRecord.Price} scallops each!", LuckyCat.Mood.Happy, 6f);
         }
 
         /// <summary>The record crate stands on the counter, beside the turntable (to the customer's right).</summary>
@@ -173,6 +162,8 @@ namespace Reefkeeper.Corals
         /// </summary>
         void FileRecordsInCrate()
         {
+            // Authored rack/record transforms are the source of truth; never overwrite artist edits on Play.
+            if (vinylPlayer && vinylPlayer.recordRack) return;
             if (!crate) return;
             var displays = shop.GetComponentsInChildren<VinylDisplay>(true);
             var t = crate.transform;
@@ -209,6 +200,8 @@ namespace Reefkeeper.Corals
             foreach (var display in shop.GetComponentsInChildren<VinylDisplay>(true))
             {
                 if (!display.sleeve || !display.sleeve.sharedMesh) continue;
+                // Scene-authored covers remain visible/editable before Play and need no runtime duplicates.
+                if (display.sleeve.transform.Find("Cover (front)") && display.sleeve.transform.Find("Cover (back)")) continue;
                 var art = Resources.Load<Texture2D>("VinylShop/Covers/" + display.variant);
                 if (!art || !shader) continue;
                 var material = new Material(shader) { name = display.variant + " cover" };
@@ -240,6 +233,13 @@ namespace Reefkeeper.Corals
         /// </summary>
         void AddTurntable()
         {
+            if(vinylPlayer.turntableModel)
+            {
+                turntable=vinylPlayer.turntableModel;
+                foreach(var t in turntable.GetComponentsInChildren<Transform>(true))if(t.name=="Platter")platter=t;
+                vinylPlayer.tonearm=VinylTonearm.Install(turntable.gameObject,vinylPlayer);
+                return; // Authored placement target and model transforms remain editable.
+            }
             var source = Resources.Load<GameObject>("Shop/RecordPlayer");
             var slot = vinylPlayer.Slot;
             if (!source || !slot) return;
@@ -278,6 +278,8 @@ namespace Reefkeeper.Corals
             vinylPlayer.transform.rotation = rotation;
             vinylPlayer.transform.position += seat - vinylPlayer.transform.TransformPoint(slot.center);
             model.transform.SetParent(vinylPlayer.transform, true);
+            vinylPlayer.turntableModel=model.transform;
+            vinylPlayer.tonearm=VinylTonearm.Install(model,vinylPlayer);
         }
 
         /// <summary>An item was picked up (or taken with G on desktop).</summary>
@@ -290,8 +292,6 @@ namespace Reefkeeper.Corals
                 ReefPhotoMode.Unlocked = true;
                 StartCoroutine(Keep(item));
                 shop.Speak("It's yours! Frame a shot with both thumbs and index fingers. Every new species photo earns scallops. Try one of me first!", LuckyCat.Mood.Happy, 7f);
-                // A Lucky Cat photo from an earlier session already counts.
-                if (ReefPhotoAlbum.Has(CatSpecies)) StartCoroutine(After(7f, OpenVinylShop));
                 return;
             }
             if (wallet && !wallet.TrySpend(item.price, item.transform.position))
